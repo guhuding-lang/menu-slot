@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#efe8dc" />
+  <title>今天吃什么 · 菜单老虎机</title>
+  <style>
+    :root{
+      --bg:#eee7db;
+      --paper:#fbf8f1;
+      --paper-2:#f4eee4;
+      --ink:#332b2a;
+      --muted:#756967;
+      --wine:#7c2635;
+      --wine-dark:#541723;
+      --gold:#c3a46c;
+      --line:rgba(86,55,50,.13);
+      --item-h:clamp(154px, 23vw, 230px);
+      --radius:34px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255,255,255,.92), transparent 29%),
+        radial-gradient(circle at 88% 13%, rgba(255,255,255,.54), transparent 25%),
+        linear-gradient(145deg,#f2ece2 0%,#e8dfd1 55%,#ded2c1 100%);
+      overflow-x:hidden;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      z-index:-1;
+      border-radius:50%;
+      filter:blur(2px);
+      pointer-events:none;
+    }
+    body::before{
+      width:340px;height:340px;left:-160px;bottom:-120px;
+      background:rgba(124,38,53,.07);
+    }
+    body::after{
+      width:420px;height:420px;right:-210px;top:-160px;
+      background:rgba(195,164,108,.12);
+    }
+
+    .page{
+      width:min(1180px, 100%);
+      min-height:100vh;
+      margin:0 auto;
+      padding:clamp(18px,4vw,48px);
+      display:grid;
+      place-items:center;
+    }
+
+    .machine-shell{
+      width:100%;
+      position:relative;
+      padding:clamp(18px,3.4vw,42px);
+      border:1px solid rgba(255,255,255,.74);
+      border-radius:clamp(34px,5vw,58px);
+      background:
+        linear-gradient(160deg,rgba(255,255,255,.76),rgba(244,237,226,.92)),
+        var(--paper);
+      box-shadow:
+        0 34px 75px rgba(73,51,43,.18),
+        inset 0 1px 0 #fff,
+        inset 0 -2px 8px rgba(104,78,65,.05);
+      isolation:isolate;
+    }
+
+    .machine-shell::before{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border:1px solid rgba(124,38,53,.10);
+      border-radius:calc(clamp(34px,5vw,58px) - 12px);
+      pointer-events:none;
+    }
+
+    .topline{
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:24px;
+      margin:0 0 clamp(22px,3vw,34px);
+      padding:0 clamp(2px,1vw,10px);
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+      color:var(--wine);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.16em;
+    }
+    .eyebrow::before{
+      content:"";
+      width:30px;height:2px;border-radius:9px;background:var(--wine);
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(32px,5.4vw,68px);
+      line-height:.98;
+      letter-spacing:-.055em;
+      color:var(--wine-dark);
+      text-shadow:0 2px 0 rgba(255,255,255,.7);
+    }
+
+    .subtitle{
+      margin:12px 0 0;
+      color:var(--muted);
+      font-size:clamp(13px,1.7vw,17px);
+      line-height:1.6;
+    }
+
+    .badge{
+      flex:none;
+      min-width:112px;
+      padding:13px 16px;
+      border-radius:999px;
+      color:#fffaf2;
+      text-align:center;
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.08em;
+      background:linear-gradient(160deg,var(--wine),var(--wine-dark));
+      box-shadow:0 10px 22px rgba(84,23,35,.22), inset 0 1px 0 rgba(255,255,255,.25);
+    }
+
+    .slot-stage{
+      position:relative;
+      padding:clamp(14px,2.5vw,28px);
+      border-radius:clamp(27px,4vw,44px);
+      background:
+        radial-gradient(circle at 50% 0%,rgba(255,255,255,.88),transparent 50%),
+        linear-gradient(180deg,#d8c5ac,#bfa98b);
+      border:1px solid rgba(84,23,35,.16);
+      box-shadow:
+        inset 0 3px 7px rgba(255,255,255,.75),
+        inset 0 -7px 18px rgba(72,40,27,.12),
+        0 22px 45px rgba(73,51,43,.14);
+    }
+
+    .slot-stage::before{
+      content:"";
+      position:absolute;
+      inset:7px;
+      border-radius:inherit;
+      border:1px solid rgba(255,255,255,.48);
+      pointer-events:none;
+    }
+
+    .reels{
+      position:relative;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:clamp(8px,1.8vw,22px);
+    }
+
+    .reel-column{min-width:0}
+
+    .reel-label{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      height:38px;
+      margin-bottom:10px;
+      border-radius:999px;
+      color:var(--wine-dark);
+      font-size:clamp(13px,1.5vw,16px);
+      font-weight:900;
+      letter-spacing:.08em;
+      background:rgba(255,250,242,.78);
+      border:1px solid rgba(255,255,255,.8);
+      box-shadow:0 5px 12px rgba(73,51,43,.08);
+    }
+
+    .label-dot{
+      width:7px;height:7px;border-radius:50%;
+      background:var(--wine);
+      box-shadow:0 0 0 4px rgba(124,38,53,.10);
+    }
+
+    .reel-wrap{
+      position:relative;
+      height:var(--item-h);
+      border-radius:clamp(20px,3vw,30px);
+      background:rgba(251,248,241,.96);
+      border:1px solid rgba(255,255,255,.92);
+      overflow:hidden;
+      cursor:grab;
+      touch-action:none;
+      user-select:none;
+      box-shadow:
+        inset 0 0 0 1px rgba(84,23,35,.06),
+        inset 0 10px 18px rgba(88,57,45,.05),
+        0 13px 22px rgba(72,48,37,.15);
+      outline:none;
+    }
+    .reel-wrap:active{cursor:grabbing}
+    .reel-wrap:focus-visible{box-shadow:0 0 0 4px rgba(124,38,53,.20),0 13px 22px rgba(72,48,37,.15)}
+
+    .reel-wrap::before,
+    .reel-wrap::after{
+      content:"";
+      position:absolute;
+      z-index:5;
+      left:0;right:0;
+      height:24%;
+      pointer-events:none;
+    }
+    .reel-wrap::before{
+      top:0;
+      background:linear-gradient(to bottom,rgba(231,222,210,.70),rgba(251,248,241,0));
+    }
+    .reel-wrap::after{
+      bottom:0;
+      background:linear-gradient(to top,rgba(231,222,210,.70),rgba(251,248,241,0));
+    }
+
+    .focus-line{
+      position:absolute;
+      z-index:4;
+      left:8px;right:8px;top:50%;
+      height:68%;
+      transform:translateY(-50%);
+      border-radius:22px;
+      border:1px solid rgba(124,38,53,.13);
+      pointer-events:none;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.58);
+    }
+
+    .reel-track{
+      will-change:transform;
+      transform:translate3d(0,0,0);
+    }
+
+    .reel-item{
+      height:var(--item-h);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:clamp(5px,1vw,10px);
+      padding:clamp(8px,1.4vw,15px);
+    }
+
+    .food-art{
+      width:min(76%,150px);
+      aspect-ratio:1;
+      display:grid;
+      place-items:center;
+      filter:drop-shadow(0 10px 10px rgba(67,43,34,.13));
+      transform:translateZ(0);
+    }
+    .food-art svg{display:block;width:100%;height:100%;overflow:visible}
+
+    .food-name{
+      max-width:100%;
+      font-size:clamp(13px,1.8vw,20px);
+      line-height:1.2;
+      font-weight:900;
+      text-align:center;
+      color:#3a2e2c;
+      white-space:normal;
+    }
+
+    .arrow{
+      position:absolute;
+      z-index:8;
+      left:50%;
+      width:34px;height:22px;
+      transform:translateX(-50%);
+      border:0;
+      padding:0;
+      border-radius:999px;
+      background:rgba(84,23,35,.72);
+      color:#fff;
+      cursor:pointer;
+      font:900 12px/1 system-ui;
+      opacity:0;
+      transition:opacity .18s ease,transform .18s ease,background .18s ease;
+      box-shadow:0 4px 9px rgba(84,23,35,.18);
+    }
+    .reel-wrap:hover .arrow,.reel-wrap:focus-within .arrow{opacity:1}
+    .arrow:hover{background:var(--wine-dark)}
+    .arrow.up{top:7px}
+    .arrow.down{bottom:7px}
+    .arrow.up:hover{transform:translateX(-50%) translateY(-1px)}
+    .arrow.down:hover{transform:translateX(-50%) translateY(1px)}
+
+    .control-panel{
+      position:relative;
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      gap:18px;
+      margin-top:clamp(22px,3.5vw,40px);
+      padding:0 clamp(2px,1vw,10px);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+    .hint strong{color:var(--wine-dark)}
+    .hint.right{text-align:right}
+
+    .spin-button{
+      position:relative;
+      min-width:clamp(160px,23vw,235px);
+      height:clamp(62px,8vw,78px);
+      border:0;
+      border-radius:999px;
+      padding:0 30px;
+      color:#fffaf3;
+      font-size:clamp(18px,2.5vw,25px);
+      font-weight:950;
+      letter-spacing:.12em;
+      cursor:pointer;
+      background:
+        radial-gradient(circle at 35% 20%,rgba(255,255,255,.30),transparent 22%),
+        linear-gradient(180deg,#a73e50 0%,#7c2635 48%,#5c1825 100%);
+      box-shadow:
+        0 11px 0 #3e1019,
+        0 18px 28px rgba(84,23,35,.28),
+        inset 0 2px 1px rgba(255,255,255,.35),
+        inset 0 -2px 3px rgba(43,8,14,.28);
+      transition:transform .12s ease,box-shadow .12s ease,filter .2s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .spin-button::before{
+      content:"";
+      position:absolute;
+      inset:-8px;
+      z-index:-1;
+      border-radius:inherit;
+      border:2px solid rgba(195,164,108,.62);
+      box-shadow:0 0 0 5px rgba(255,255,255,.38);
+    }
+
+    .spin-button:hover{filter:brightness(1.04);transform:translateY(-2px)}
+    .spin-button:active{
+      transform:translateY(7px);
+      box-shadow:
+        0 4px 0 #3e1019,
+        0 9px 18px rgba(84,23,35,.22),
+        inset 0 2px 1px rgba(255,255,255,.30);
+    }
+    .spin-button:disabled{
+      cursor:wait;
+      filter:saturate(.74);
+      transform:translateY(5px);
+      box-shadow:
+        0 6px 0 #3e1019,
+        0 10px 18px rgba(84,23,35,.17),
+        inset 0 2px 1px rgba(255,255,255,.25);
+    }
+
+    .result-card{
+      margin-top:clamp(20px,3vw,32px);
+      padding:clamp(14px,2vw,20px);
+      border-radius:24px;
+      border:1px solid rgba(124,38,53,.09);
+      background:rgba(255,255,255,.52);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      color:#655957;
+      font-size:clamp(13px,1.5vw,16px);
+    }
+    .result-card b{color:var(--wine-dark)}
+    .result-pill{
+      padding:8px 13px;
+      border-radius:999px;
+      background:#fffaf2;
+      box-shadow:0 5px 13px rgba(73,51,43,.08);
+      font-weight:800;
+      color:#3b302e;
+    }
+
+    .spark{
+      position:absolute;
+      width:8px;height:8px;
+      border-radius:50%;
+      background:var(--gold);
+      opacity:.55;
+      pointer-events:none;
+    }
+    .s1{left:5%;top:25%}.s2{right:6%;top:16%;width:5px;height:5px}.s3{right:3%;bottom:19%}
+
+    @media (max-width:720px){
+      :root{--item-h:clamp(142px,42vw,190px)}
+      .page{padding:12px}
+      .machine-shell{padding:18px 13px 20px;border-radius:30px}
+      .machine-shell::before{inset:8px;border-radius:22px}
+      .topline{align-items:flex-start;margin-bottom:18px;padding:2px 4px}
+      .badge{min-width:0;padding:10px 11px;font-size:10px}
+      h1{font-size:clamp(31px,10.5vw,48px)}
+      .subtitle{font-size:12px;margin-top:8px}
+      .slot-stage{padding:12px 8px 13px;border-radius:26px}
+      .reels{gap:6px}
+      .reel-label{height:30px;margin-bottom:7px;font-size:12px}
+      .label-dot{display:none}
+      .reel-wrap{border-radius:18px}
+      .food-art{width:min(86%,108px)}
+      .food-name{font-size:clamp(12px,3.5vw,16px)}
+      .focus-line{left:4px;right:4px;border-radius:15px}
+      .arrow{display:none}
+      .control-panel{grid-template-columns:1fr;margin-top:25px}
+      .hint{display:none}
+      .spin-button{justify-self:center;width:min(76%,240px)}
+      .result-card{margin-top:22px;gap:7px;padding:13px 9px;font-size:12px}
+      .result-pill{padding:7px 10px}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important}
+      .spin-button,.arrow{transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="machine-shell" aria-label="菜单老虎机">
+      <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span>
+
+      <header class="topline">
+        <div>
+          <div class="eyebrow">DAILY MENU SLOT</div>
+          <h1>今天吃什么</h1>
+          <p class="subtitle">上下滑动自由选菜，或者按下按钮，让三组滚轮替你决定。</p>
+        </div>
+        <div class="badge">一餐 · 三选</div>
+      </header>
+
+      <div class="slot-stage">
+        <div class="reels">
+          <section class="reel-column">
+            <div class="reel-label"><span class="label-dot"></span>主食</div>
+            <div class="reel-wrap" id="staple-reel" tabindex="0" role="listbox" aria-label="主食，可上下滑动选择">
+              <div class="focus-line"></div>
+              <button class="arrow up" aria-label="上一项">▲</button>
+              <button class="arrow down" aria-label="下一项">▼</button>
+              <div class="reel-track"></div>
+            </div>
+          </section>
+
+          <section class="reel-column">
+            <div class="reel-label"><span class="label-dot"></span>蛋白质</div>
+            <div class="reel-wrap" id="protein-reel" tabindex="0" role="listbox" aria-label="蛋白质，可上下滑动选择">
+              <div class="focus-line"></div>
+              <button class="arrow up" aria-label="上一项">▲</button>
+              <button class="arrow down" aria-label="下一项">▼</button>
+              <div class="reel-track"></div>
+            </div>
+          </section>
+
+          <section class="reel-column">
+            <div class="reel-label"><span class="label-dot"></span>蔬菜</div>
+            <div class="reel-wrap" id="veg-reel" tabindex="0" role="listbox" aria-label="蔬菜，可上下滑动选择">
+              <div class="focus-line"></div>
+              <button class="arrow up" aria-label="上一项">▲</button>
+              <button class="arrow down" aria-label="下一项">▼</button>
+              <div class="reel-track"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div class="hint"><strong>手动选择</strong><br>滑动、滚轮或方向键</div>
+        <button class="spin-button" id="spinButton">随机生成</button>
+        <div class="hint right"><strong>随机模式</strong><br>三组滚轮依次停下</div>
+      </div>
+
+      <div class="result-card" aria-live="polite">
+        <b>当前菜单</b>
+        <span class="result-pill" id="resultStaple"></span>
+        <span>+</span>
+        <span class="result-pill" id="resultProtein"></span>
+        <span>+</span>
+        <span class="result-pill" id="resultVeg"></span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const svgWrap = (content) => `
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur"/>
+            <feOffset dy="4" result="off"/>
+            <feComponentTransfer><feFuncA type="linear" slope=".18"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#e5ded3"/>
+          </linearGradient>
+          <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#9c3b4b"/><stop offset="1" stop-color="#5f1b28"/>
+          </linearGradient>
+        </defs>
+        <circle cx="80" cy="78" r="66" fill="#f5efe6"/>
+        ${content}
+      </svg>`;
+
+    const art = {
+      mixedRice: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="113" rx="49" ry="13" fill="#c7b9a8"/>
+          <path d="M28 72 Q80 45 132 72 L122 116 Q80 139 38 116Z" fill="url(#bowl)"/>
+          <ellipse cx="80" cy="72" rx="52" ry="23" fill="#f7f0e5"/>
+          <path d="M39 72 Q80 43 121 72 Q80 96 39 72Z" fill="#a47755"/>
+          <g fill="#f3d49b">
+            <circle cx="53" cy="67" r="7"/><circle cx="71" cy="58" r="7"/><circle cx="90" cy="60" r="7"/>
+            <circle cx="107" cy="69" r="7"/><circle cx="66" cy="75" r="7"/><circle cx="86" cy="73" r="7"/>
+          </g>
+          <g fill="#5f3c58"><circle cx="47" cy="72" r="3"/><circle cx="78" cy="63" r="3"/><circle cx="99" cy="72" r="3"/><circle cx="61" cy="60" r="3"/></g>
+          <g fill="#d8a64f"><circle cx="58" cy="81" r="3"/><circle cx="112" cy="76" r="3"/><circle cx="87" cy="54" r="3"/></g>
+        </g>`),
+      whiteRice: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="115" rx="48" ry="12" fill="#c9bcac"/>
+          <path d="M29 75 Q80 50 131 75 L120 118 Q80 138 40 118Z" fill="url(#bowl)"/>
+          <ellipse cx="80" cy="75" rx="51" ry="22" fill="#f7efe4"/>
+          <path d="M41 77 Q48 43 80 48 Q112 43 120 77 Q80 96 41 77Z" fill="#fffdf7"/>
+          <g fill="none" stroke="#ded7cd" stroke-width="2" stroke-linecap="round">
+            <path d="M54 68q8-8 14 0"/><path d="M76 59q8-8 14 0"/><path d="M94 71q8-8 14 0"/>
+            <path d="M64 79q8-8 14 0"/><path d="M87 82q8-8 14 0"/>
+          </g>
+        </g>`),
+      mantou: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="116" rx="53" ry="12" fill="#cabaa5"/>
+          <ellipse cx="80" cy="98" rx="55" ry="25" fill="#b17643"/>
+          <path d="M25 88h110v20q-55 31-110 0z" fill="#d29659"/>
+          <g stroke="#9d6435" stroke-width="3"><path d="M38 95h84"/><path d="M49 106h62"/></g>
+          <g fill="#fffaf0" stroke="#e3d8c8" stroke-width="2">
+            <path d="M38 87q2-26 22-28 21 4 21 28z"/>
+            <path d="M76 85q2-29 23-31 22 4 22 31z"/>
+          </g>
+          <path d="M59 64q-4 10 0 18M99 59q-4 11 0 20" stroke="#d9cfc0" stroke-width="3" fill="none"/>
+        </g>`),
+      potato: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="111" rx="55" ry="17" fill="#c8baa9"/>
+          <ellipse cx="80" cy="94" rx="57" ry="30" fill="url(#plate)" stroke="#d6cec2" stroke-width="2"/>
+          <g fill="#ddb45f" stroke="#b98b3e" stroke-width="2">
+            <ellipse cx="57" cy="89" rx="22" ry="16" transform="rotate(-16 57 89)"/>
+            <ellipse cx="92" cy="80" rx="24" ry="17" transform="rotate(12 92 80)"/>
+            <ellipse cx="98" cy="103" rx="21" ry="15" transform="rotate(-6 98 103)"/>
+          </g>
+          <g fill="#8c6736"><circle cx="50" cy="85" r="2"/><circle cx="62" cy="94" r="2"/><circle cx="89" cy="75" r="2"/><circle cx="104" cy="84" r="2"/><circle cx="103" cy="101" r="2"/></g>
+        </g>`),
+      eggPork: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="115" rx="52" ry="14" fill="#c7b9a8"/>
+          <path d="M28 75q52-26 104 0l-11 42q-41 22-82 0z" fill="url(#bowl)"/>
+          <ellipse cx="80" cy="75" rx="52" ry="23" fill="#f6ede1"/>
+          <path d="M40 76q40-26 80 0-40 27-80 0z" fill="#a95a3c"/>
+          <g fill="#6e3a2e"><circle cx="52" cy="76" r="5"/><circle cx="65" cy="65" r="5"/><circle cx="95" cy="68" r="5"/><circle cx="107" cy="79" r="5"/><circle cx="84" cy="83" r="5"/></g>
+          <path d="M51 75q4-24 29-22 25-1 30 22-12 18-29 18-18 0-30-18z" fill="#fff9e9"/>
+          <circle cx="81" cy="72" r="15" fill="#e7a628"/>
+          <circle cx="76" cy="67" r="4" fill="#f8d36a" opacity=".8"/>
+          <g stroke="#6e9b49" stroke-width="3"><path d="M42 63l12 5"/><path d="M110 61l-12 6"/></g>
+        </g>`),
+      chickenPepper: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="112" rx="55" ry="15" fill="#c5b7a5"/>
+          <ellipse cx="80" cy="92" rx="58" ry="34" fill="url(#plate)" stroke="#d5ccbf" stroke-width="2"/>
+          <g fill="#d9a26a" stroke="#b47d4b" stroke-width="1.5">
+            <rect x="43" y="72" width="24" height="20" rx="5" transform="rotate(-10 55 82)"/>
+            <rect x="72" y="64" width="25" height="22" rx="5" transform="rotate(8 84 75)"/>
+            <rect x="94" y="84" width="25" height="21" rx="5" transform="rotate(-8 106 94)"/>
+            <rect x="61" y="92" width="25" height="20" rx="5" transform="rotate(9 73 102)"/>
+          </g>
+          <g fill="#4f9d4a" stroke="#347a37" stroke-width="1.5">
+            <path d="M35 88l16-18 15 12-14 18z"/><path d="M90 66l18-10 10 17-18 11z"/>
+            <path d="M87 95l14-12 12 13-13 13z"/><path d="M48 106l13-11 11 13-14 10z"/>
+          </g>
+          <g fill="#e8cf82"><circle cx="58" cy="79" r="3"/><circle cx="83" cy="70" r="3"/><circle cx="105" cy="91" r="3"/></g>
+        </g>`),
+      redThree: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="115" rx="50" ry="13" fill="#c7b9a8"/>
+          <path d="M30 74q50-25 100 0l-10 43q-40 21-80 0z" fill="url(#bowl)"/>
+          <ellipse cx="80" cy="74" rx="50" ry="22" fill="#f6ecdf"/>
+          <path d="M39 75q41-29 82 0-41 29-82 0z" fill="#c64b39"/>
+          <g fill="#e66b3e"><circle cx="50" cy="70" r="7"/><circle cx="68" cy="60" r="7"/><circle cx="88" cy="65" r="7"/><circle cx="108" cy="72" r="7"/><circle cx="77" cy="82" r="7"/></g>
+          <g fill="#75392d"><circle cx="58" cy="81" r="4"/><circle cx="83" cy="57" r="4"/><circle cx="101" cy="82" r="4"/></g>
+          <g fill="#4d9145"><circle cx="43" cy="77" r="3"/><circle cx="72" cy="70" r="3"/><circle cx="95" cy="61" r="3"/><circle cx="112" cy="78" r="3"/></g>
+          <path d="M48 56q10-11 23-7" fill="none" stroke="#3f7e3e" stroke-width="4" stroke-linecap="round"/>
+        </g>`),
+      lettuce: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="113" rx="56" ry="15" fill="#c7b9a8"/>
+          <ellipse cx="80" cy="92" rx="58" ry="34" fill="url(#plate)" stroke="#d6cdc0" stroke-width="2"/>
+          <g fill="#7abf5a" stroke="#459344" stroke-width="2">
+            <path d="M47 102q-20-25 6-40 4-16 23-4 15-16 27 2 23 2 13 25 15 18-8 28-21 11-39 1-15 5-22-12z"/>
+            <path d="M58 98q-9-15 7-25 10-12 20 2 17-10 22 7 10 14-6 23-24 11-43-7z" fill="#93cf68"/>
+          </g>
+          <g stroke="#3f8540" stroke-width="2" fill="none"><path d="M80 68v39"/><path d="M80 82l-18-12"/><path d="M81 89l22-15"/><path d="M80 98l-20 7"/></g>
+          <path d="M47 108q35 8 70-2" stroke="#8b4c34" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+        </g>`),
+      asparagus: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="113" rx="57" ry="15" fill="#c7b9a8"/>
+          <ellipse cx="80" cy="94" rx="59" ry="34" fill="url(#plate)" stroke="#d5ccbf" stroke-width="2"/>
+          <g stroke="#4f9f50" stroke-width="10" stroke-linecap="round">
+            <path d="M50 105l40-48"/><path d="M64 111l37-48"/><path d="M80 112l30-43"/><path d="M43 94l33-40"/>
+          </g>
+          <g fill="#5aae57" stroke="#37853e" stroke-width="2">
+            <path d="M86 58l5-15 7 14z"/><path d="M97 64l5-15 7 14z"/><path d="M106 70l5-15 7 14z"/><path d="M72 55l5-15 7 14z"/>
+          </g>
+          <g stroke="#e5f0b2" stroke-width="2"><path d="M58 94l7 6"/><path d="M70 86l7 6"/><path d="M82 77l7 6"/><path d="M90 91l7 6"/></g>
+        </g>`),
+      waterSpinach: svgWrap(`
+        <g filter="url(#soft)">
+          <ellipse cx="80" cy="113" rx="56" ry="15" fill="#c7b9a8"/>
+          <ellipse cx="80" cy="93" rx="58" ry="34" fill="url(#plate)" stroke="#d5ccbf" stroke-width="2"/>
+          <g fill="none" stroke="#388747" stroke-width="5" stroke-linecap="round">
+            <path d="M45 104q18-30 46-42"/><path d="M56 111q16-34 50-50"/><path d="M72 112q15-28 40-36"/>
+          </g>
+          <g fill="#59a84f" stroke="#367e3f" stroke-width="1.6">
+            <ellipse cx="57" cy="88" rx="14" ry="8" transform="rotate(-30 57 88)"/>
+            <ellipse cx="71" cy="76" rx="14" ry="8" transform="rotate(22 71 76)"/>
+            <ellipse cx="83" cy="92" rx="15" ry="8" transform="rotate(-28 83 92)"/>
+            <ellipse cx="97" cy="77" rx="14" ry="8" transform="rotate(25 97 77)"/>
+            <ellipse cx="104" cy="96" rx="15" ry="8" transform="rotate(-18 104 96)"/>
+            <ellipse cx="66" cy="104" rx="14" ry="8" transform="rotate(18 66 104)"/>
+          </g>
+          <g fill="#f1e3bd"><ellipse cx="105" cy="104" rx="5" ry="2" transform="rotate(-20 105 104)"/><ellipse cx="47" cy="98" rx="5" ry="2" transform="rotate(25 47 98)"/></g>
+        </g>`)
+    };
+
+    const data = {
+      staple: [
+        {name:"杂粮饭", art:art.mixedRice},
+        {name:"白米饭", art:art.whiteRice},
+        {name:"馒头", art:art.mantou},
+        {name:"土豆", art:art.potato}
+      ],
+      protein: [
+        {name:"鸡蛋肉沫", art:art.eggPork},
+        {name:"青椒鸡丁", art:art.chickenPepper},
+        {name:"红三剁", art:art.redThree}
+      ],
+      veg: [
+        {name:"白灼生菜", art:art.lettuce},
+        {name:"白灼芦笋", art:art.asparagus},
+        {name:"清炒空心菜", art:art.waterSpinach}
+      ]
+    };
+
+    const mod = (n,m) => ((n % m) + m) % m;
+    const wait = ms => new Promise(resolve => setTimeout(resolve,ms));
+
+    class SlotReel {
+      constructor(el, items, resultEl){
+        this.el = el;
+        this.track = el.querySelector(".reel-track");
+        this.items = items;
+        this.resultEl = resultEl;
+        this.copyCount = 21;
+        this.middleCopy = Math.floor(this.copyCount / 2);
+        this.virtualIndex = this.middleCopy * items.length;
+        this.itemHeight = 0;
+        this.spinning = false;
+        this.dragging = false;
+        this.transitionTimer = null;
+        this.build();
+        this.bind();
+        requestAnimationFrame(() => {
+          this.measure();
+          this.render(0);
+          this.updateResult();
+        });
+      }
+
+      build(){
+        const html = [];
+        for(let c=0;c<this.copyCount;c++){
+          this.items.forEach((item,i)=>{
+            html.push(`<div class="reel-item" role="option" data-index="${i}">
+              <div class="food-art">${item.art}</div>
+              <div class="food-name">${item.name}</div>
+            </div>`);
+          });
+        }
+        this.track.innerHTML = html.join("");
+      }
+
+      bind(){
+        const up = this.el.querySelector(".arrow.up");
+        const down = this.el.querySelector(".arrow.down");
+        up.addEventListener("click", e => {e.stopPropagation(); this.step(-1);});
+        down.addEventListener("click", e => {e.stopPropagation(); this.step(1);});
+
+        this.el.addEventListener("wheel", e=>{
+          if(this.spinning) return;
+          e.preventDefault();
+          this.step(e.deltaY > 0 ? 1 : -1);
+        },{passive:false});
+
+        this.el.addEventListener("keydown", e=>{
+          if(this.spinning) return;
+          if(e.key==="ArrowUp"){e.preventDefault();this.step(-1)}
+          if(e.key==="ArrowDown"){e.preventDefault();this.step(1)}
+        });
+
+        this.el.addEventListener("pointerdown", e=>{
+          if(this.spinning) return;
+          this.dragging = true;
+          this.pointerId = e.pointerId;
+          this.startY = e.clientY;
+          this.startTranslate = -this.virtualIndex * this.itemHeight;
+          this.currentTranslate = this.startTranslate;
+          this.track.style.transition = "none";
+          this.el.setPointerCapture?.(e.pointerId);
+        });
+
+        this.el.addEventListener("pointermove", e=>{
+          if(!this.dragging || e.pointerId!==this.pointerId) return;
+          const diff = e.clientY - this.startY;
+          this.currentTranslate = this.startTranslate + diff;
+          this.track.style.transform = `translate3d(0,${this.currentTranslate}px,0)`;
+        });
+
+        const endDrag = e=>{
+          if(!this.dragging || (e.pointerId!==undefined && e.pointerId!==this.pointerId)) return;
+          this.dragging = false;
+          const nextVirtual = Math.round(-this.currentTranslate / this.itemHeight);
+          this.virtualIndex = Math.max(1,Math.min(this.items.length*this.copyCount-2,nextVirtual));
+          this.render(220);
+          this.updateResult();
+          this.normalizeLater(260);
+        };
+        this.el.addEventListener("pointerup",endDrag);
+        this.el.addEventListener("pointercancel",endDrag);
+
+        window.addEventListener("resize",()=>{
+          this.measure();
+          this.render(0);
+        });
+      }
+
+      measure(){
+        const item = this.track.querySelector(".reel-item");
+        this.itemHeight = item ? item.getBoundingClientRect().height : this.el.clientHeight;
+      }
+
+      selectedIndex(){ return mod(this.virtualIndex,this.items.length); }
+      selected(){ return this.items[this.selectedIndex()]; }
+
+      updateResult(){
+        const item = this.selected();
+        this.resultEl.textContent = item.name;
+        this.el.setAttribute("aria-activedescendant",`${this.el.id}-item-${this.selectedIndex()}`);
+      }
+
+      render(duration=180){
+        clearTimeout(this.transitionTimer);
+        this.track.style.transition = duration ? `transform ${duration}ms cubic-bezier(.18,.72,.18,1)` : "none";
+        this.track.style.transform = `translate3d(0,${-this.virtualIndex*this.itemHeight}px,0)`;
+      }
+
+      normalizeLater(delay=220){
+        clearTimeout(this.transitionTimer);
+        this.transitionTimer=setTimeout(()=>{
+          const idx=this.selectedIndex();
+          this.virtualIndex=this.middleCopy*this.items.length+idx;
+          this.render(0);
+        },delay);
+      }
+
+      step(direction,duration=180){
+        if(this.spinning) return;
+        this.virtualIndex += direction;
+        this.render(duration);
+        this.updateResult();
+        this.normalizeLater(duration+30);
+      }
+
+      async spinTo(target, cycles){
+        this.spinning=true;
+        let distance = mod(target-this.selectedIndex(),this.items.length);
+        const steps = cycles*this.items.length + distance;
+
+        for(let i=0;i<steps;i++){
+          this.virtualIndex += 1;
+          const progress=(i+1)/steps;
+          let duration;
+          if(progress<.58) duration=54;
+          else{
+            const t=(progress-.58)/.42;
+            duration=54+Math.pow(t,2.15)*260;
+          }
+          this.render(duration);
+          this.updateResult();
+          await wait(duration+7);
+        }
+        this.spinning=false;
+        this.normalizeLater(340);
+      }
+    }
+
+    const reels = [
+      new SlotReel(document.getElementById("staple-reel"),data.staple,document.getElementById("resultStaple")),
+      new SlotReel(document.getElementById("protein-reel"),data.protein,document.getElementById("resultProtein")),
+      new SlotReel(document.getElementById("veg-reel"),data.veg,document.getElementById("resultVeg"))
+    ];
+
+    const button=document.getElementById("spinButton");
+    button.addEventListener("click",async()=>{
+      if(reels.some(r=>r.spinning)) return;
+      button.disabled=true;
+      button.textContent="正在生成…";
+
+      const targets=reels.map(r=>Math.floor(Math.random()*r.items.length));
+      await Promise.all([
+        reels[0].spinTo(targets[0],3),
+        reels[1].spinTo(targets[1],4),
+        reels[2].spinTo(targets[2],5)
+      ]);
+
+      button.textContent="再来一次";
+      button.disabled=false;
+    });
+  </script>
+</body>
+</html>
