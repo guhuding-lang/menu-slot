@@ -2358,11 +2358,7 @@
       overscroll-behavior: none;
     }
 
-    body {
-      background: #f6eadf;
-      transition: background-color 420ms ease;
-    }
-
+    body,
     body.drink-mode {
       background: #18105c;
     }
@@ -2396,17 +2392,31 @@
     .page-viewport {
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      touch-action: pan-y;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .page-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .page-viewport .reel-window {
+      touch-action: pan-x;
     }
 
     .page-track {
       width: 100%;
       height: 100%;
       display: flex;
-      transform: translate3d(0, 0, 0);
-      transition: transform 430ms cubic-bezier(0.22, 0.76, 0.22, 1);
-      will-change: transform;
+      transform: none !important;
+      transition: none;
+      will-change: auto;
     }
 
     .page-track.is-dragging {
@@ -2425,7 +2435,17 @@
       justify-content: center;
       overflow: hidden;
       padding: 0;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
       animation: none;
+    }
+
+    #eatPanel {
+      background: #f6eadf;
+    }
+
+    #drinkPanel {
+      background: #18105c;
     }
 
     .eat-machine.image-eat-scene,
@@ -2574,77 +2594,53 @@
     .lottery-cabinet.visual-machine {
       width: min(500px, calc(100vw - 8px), calc((100svh - 104px) * 0.665));
       border: 0;
-      border-radius: 22px;
+      border-radius: 0;
       background: transparent;
-      filter: drop-shadow(0 16px 22px rgba(4, 4, 45, 0.28));
+      filter: none;
     }
 
     .capsule-motion-layer {
       position: absolute;
       z-index: 4;
-      top: 31.5%;
-      left: 17.5%;
-      width: 65%;
-      height: 29%;
+      top: 28.15%;
+      left: 14.2%;
+      width: 72.2%;
+      height: 29.2%;
       overflow: hidden;
-      border-radius: 18%;
-      opacity: 0;
+      border-radius: 5%;
+      opacity: 1;
       pointer-events: none;
-      transition: opacity 120ms ease;
     }
 
     .motion-capsule {
       position: absolute;
-      width: 24%;
+      width: 18%;
       height: auto;
-      opacity: 0.96;
+      opacity: 0.98;
       transform-origin: 50% 50%;
       filter: drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34));
-      will-change: transform;
+      will-change: left, top, transform;
+      transition: opacity 160ms ease;
     }
 
-    .capsule-a { left: 3%; top: 45%; filter: hue-rotate(0deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
-    .capsule-b { left: 20%; top: 12%; filter: hue-rotate(48deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
-    .capsule-c { left: 38%; top: 50%; filter: hue-rotate(96deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
-    .capsule-d { left: 55%; top: 7%; filter: hue-rotate(142deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
-    .capsule-e { left: 71%; top: 42%; filter: hue-rotate(205deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
-    .capsule-f { left: 30%; top: 67%; filter: hue-rotate(270deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-a { left: 4%; top: 5%; filter: hue-rotate(0deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-b { left: 29%; top: 3%; filter: hue-rotate(40deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-c { left: 54%; top: 6%; filter: hue-rotate(82deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-d { left: 76%; top: 4%; filter: hue-rotate(124deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-e { left: 1%; top: 38%; filter: hue-rotate(166deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-f { left: 26%; top: 36%; filter: hue-rotate(208deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-g { left: 51%; top: 39%; filter: hue-rotate(250deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-h { left: 76%; top: 37%; filter: hue-rotate(292deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-i { left: 13%; top: 70%; filter: hue-rotate(326deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-j { left: 39%; top: 69%; filter: hue-rotate(72deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-k { left: 65%; top: 70%; filter: hue-rotate(212deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
 
-    .neon-machine-scene.is-mixing .capsule-motion-layer {
-      opacity: 1;
+    .motion-capsule.is-exiting {
+      opacity: 0;
     }
 
-    .neon-machine-scene.is-mixing .capsule-a,
-    .neon-machine-scene.is-mixing .capsule-d {
-      animation: capsuleTumbleA 520ms cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
-    }
-
-    .neon-machine-scene.is-mixing .capsule-b,
-    .neon-machine-scene.is-mixing .capsule-e {
-      animation: capsuleTumbleB 610ms cubic-bezier(0.36, 0, 0.64, 1) infinite alternate-reverse;
-    }
-
-    .neon-machine-scene.is-mixing .capsule-c,
-    .neon-machine-scene.is-mixing .capsule-f {
-      animation: capsuleTumbleC 470ms cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
-    }
-
-    @keyframes capsuleTumbleA {
-      0% { transform: translate3d(-18%, 12%, 0) rotate(-32deg) scale(0.92); }
-      45% { transform: translate3d(38%, -46%, 0) rotate(118deg) scale(1.06); }
-      100% { transform: translate3d(78%, 18%, 0) rotate(244deg) scale(0.96); }
-    }
-
-    @keyframes capsuleTumbleB {
-      0% { transform: translate3d(24%, 52%, 0) rotate(18deg) scale(1.02); }
-      52% { transform: translate3d(-42%, -18%, 0) rotate(-142deg) scale(0.9); }
-      100% { transform: translate3d(52%, -52%, 0) rotate(-286deg) scale(1.08); }
-    }
-
-    @keyframes capsuleTumbleC {
-      0% { transform: translate3d(-46%, -32%, 0) rotate(-64deg) scale(0.96); }
-      48% { transform: translate3d(18%, 48%, 0) rotate(92deg) scale(1.08); }
-      100% { transform: translate3d(58%, -26%, 0) rotate(268deg) scale(0.92); }
+    .neon-machine-scene.is-mixing .motion-capsule {
+      animation: none !important;
     }
 
     .visual-machine .drawn-ball-wrap {
@@ -2742,7 +2738,7 @@
     }
   </style>
 </head>
-<body data-build="GESTURE-MACHINES-V2-20260730">
+<body data-build="NATIVE-SWIPE-GACHA-PHYSICS-V3-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -2790,7 +2786,7 @@
             </header>
 
             <div class="lottery-cabinet visual-machine" id="lotteryCabinet">
-              <img class="machine-art" src="assets/gacha-night-v5.webp" alt="紫色霓虹灯光下的立体扭蛋机">
+              <img class="machine-art" src="assets/gacha-night-empty-v6.webp" alt="紫色霓虹灯光下的立体扭蛋机">
               <div class="capsule-motion-layer" aria-hidden="true">
                 <img class="motion-capsule capsule-a" src="assets/capsule-result-v5.png" alt="">
                 <img class="motion-capsule capsule-b" src="assets/capsule-result-v5.png" alt="">
@@ -2798,6 +2794,11 @@
                 <img class="motion-capsule capsule-d" src="assets/capsule-result-v5.png" alt="">
                 <img class="motion-capsule capsule-e" src="assets/capsule-result-v5.png" alt="">
                 <img class="motion-capsule capsule-f" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-g" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-h" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-i" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-j" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-k" src="assets/capsule-result-v5.png" alt="">
               </div>
               <button class="draw-button" id="drawButton" type="button" aria-label="喝一杯，启动扭蛋机">
                 <span>喝一杯</span>
@@ -3154,21 +3155,14 @@
       }, reduceMotion ? 1 : 260);
     });
 
-    /* Horizontal swipe pager */
+    /* Native horizontal swipe pager */
     const pageViewport = document.getElementById("pageViewport");
-    const pageTrack = document.getElementById("pageTrack");
     const panels = [...document.querySelectorAll(".page-panel")];
     let pageIndex = 0;
-    let pagePointerId = null;
-    let pageStartX = 0;
-    let pageStartY = 0;
-    let pageDeltaX = 0;
-    let horizontalDrag = false;
+    let pageScrollFrame = 0;
 
-    function showPage(nextIndex, animate = true) {
+    function updatePageState(nextIndex) {
       pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
-      pageTrack.classList.toggle("is-dragging", !animate);
-      pageTrack.style.transform = `translate3d(${-pageIndex * 100}%, 0, 0)`;
       panels.forEach((panel, index) => {
         const active = index === pageIndex;
         panel.classList.toggle("is-active", active);
@@ -3183,46 +3177,30 @@
           });
         });
       }
-      if (!animate) requestAnimationFrame(() => pageTrack.classList.remove("is-dragging"));
     }
 
-    pageViewport.addEventListener("pointerdown", event => {
-      if (event.target.closest("button, .reel-window, .lever-control, .win-modal")) return;
-      pagePointerId = event.pointerId;
-      pageStartX = event.clientX;
-      pageStartY = event.clientY;
-      pageDeltaX = 0;
-      horizontalDrag = false;
-      pageViewport.setPointerCapture?.(event.pointerId);
-    });
-
-    pageViewport.addEventListener("pointermove", event => {
-      if (event.pointerId !== pagePointerId) return;
-      const dx = event.clientX - pageStartX;
-      const dy = event.clientY - pageStartY;
-      if (!horizontalDrag && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.15) {
-        horizontalDrag = true;
-        pageTrack.classList.add("is-dragging");
-      }
-      if (!horizontalDrag) return;
-      pageDeltaX = dx;
-      const blocked = (pageIndex === 0 && dx > 0) || (pageIndex === panels.length - 1 && dx < 0);
-      const resisted = blocked ? dx * 0.22 : dx;
-      pageTrack.style.transform = `translate3d(calc(${-pageIndex * 100}% + ${resisted}px), 0, 0)`;
-    });
-
-    function finishPageSwipe() {
-      if (pagePointerId === null) return;
-      const threshold = Math.min(92, window.innerWidth * 0.18);
-      const direction = Math.abs(pageDeltaX) >= threshold ? (pageDeltaX < 0 ? 1 : -1) : 0;
-      pagePointerId = null;
-      horizontalDrag = false;
-      pageTrack.classList.remove("is-dragging");
-      showPage(pageIndex + direction);
+    function showPage(nextIndex, animate = true) {
+      const targetIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
+      updatePageState(targetIndex);
+      pageViewport.scrollTo({
+        left: targetIndex * pageViewport.clientWidth,
+        behavior: animate && !reduceMotion ? "smooth" : "auto"
+      });
     }
 
-    pageViewport.addEventListener("pointerup", finishPageSwipe);
-    pageViewport.addEventListener("pointercancel", finishPageSwipe);
+    pageViewport.addEventListener("scroll", () => {
+      if (pageScrollFrame) return;
+      pageScrollFrame = requestAnimationFrame(() => {
+        pageScrollFrame = 0;
+        const width = Math.max(1, pageViewport.clientWidth);
+        updatePageState(Math.round(pageViewport.scrollLeft / width));
+      });
+    }, { passive: true });
+
+    window.addEventListener("resize", () => {
+      pageViewport.scrollTo({ left: pageIndex * pageViewport.clientWidth, behavior: "auto" });
+    });
+
     document.addEventListener("keydown", event => {
       if (event.key === "ArrowLeft") showPage(pageIndex - 1);
       if (event.key === "ArrowRight") showPage(pageIndex + 1);
@@ -3241,7 +3219,174 @@
     const modalClose = document.getElementById("modalClose");
     const acceptDrink = document.getElementById("acceptDrink");
     const drawAgain = document.getElementById("drawAgain");
+    const capsuleMotionLayer = document.querySelector(".capsule-motion-layer");
+    const motionCapsules = [...document.querySelectorAll(".motion-capsule")];
+    const capsuleStarts = [
+      [0.04, 0.05], [0.29, 0.03], [0.54, 0.06], [0.76, 0.04],
+      [0.01, 0.38], [0.26, 0.36], [0.51, 0.39], [0.76, 0.37],
+      [0.13, 0.70], [0.39, 0.69], [0.65, 0.70]
+    ];
+    const capsuleBodies = motionCapsules.map((element, index) => ({
+      element,
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      rotation: index * 23
+    }));
+    let capsuleAnimationFrame = 0;
+    let capsuleLastTime = 0;
+    let capsuleMixing = false;
+    let capsuleSettleUntil = 0;
     let drawing = false;
+
+    function renderCapsules() {
+      capsuleBodies.forEach(body => {
+        body.element.style.left = `${body.x}px`;
+        body.element.style.top = `${body.y}px`;
+        body.element.style.transform = `translate3d(0, 0, 0) rotate(${body.rotation}deg)`;
+      });
+    }
+
+    function layoutCapsules(reset = false) {
+      const width = capsuleMotionLayer.clientWidth;
+      const height = capsuleMotionLayer.clientHeight;
+      if (!width || !height) return;
+      capsuleBodies.forEach((body, index) => {
+        if (reset || (!body.x && !body.y)) {
+          body.x = capsuleStarts[index][0] * width;
+          body.y = capsuleStarts[index][1] * height;
+          body.vx = 0;
+          body.vy = 0;
+        } else {
+          const size = body.element.offsetWidth;
+          body.x = Math.min(Math.max(0, body.x), Math.max(0, width - size));
+          body.y = Math.min(Math.max(0, body.y), Math.max(0, height - size));
+        }
+      });
+      renderCapsules();
+    }
+
+    function resolveCapsuleCollisions() {
+      for (let i = 0; i < capsuleBodies.length; i += 1) {
+        for (let j = i + 1; j < capsuleBodies.length; j += 1) {
+          const first = capsuleBodies[i];
+          const second = capsuleBodies[j];
+          const radius = first.element.offsetWidth * 0.42;
+          const firstX = first.x + radius;
+          const firstY = first.y + radius;
+          const secondX = second.x + radius;
+          const secondY = second.y + radius;
+          const dx = secondX - firstX;
+          const dy = secondY - firstY;
+          const distance = Math.hypot(dx, dy) || 0.01;
+          const minimum = radius * 2;
+          if (distance >= minimum) continue;
+          const nx = dx / distance;
+          const ny = dy / distance;
+          const overlap = (minimum - distance) * 0.52;
+          first.x -= nx * overlap;
+          first.y -= ny * overlap;
+          second.x += nx * overlap;
+          second.y += ny * overlap;
+          const relative = (second.vx - first.vx) * nx + (second.vy - first.vy) * ny;
+          if (relative < 0) {
+            const impulse = relative * 0.92;
+            first.vx += impulse * nx;
+            first.vy += impulse * ny;
+            second.vx -= impulse * nx;
+            second.vy -= impulse * ny;
+          }
+        }
+      }
+    }
+
+    function animateCapsules(now) {
+      const width = capsuleMotionLayer.clientWidth;
+      const height = capsuleMotionLayer.clientHeight;
+      if (!width || !height) {
+        capsuleAnimationFrame = requestAnimationFrame(animateCapsules);
+        return;
+      }
+      const timeStep = Math.min(1.75, Math.max(0.55, (now - capsuleLastTime) / 16.67));
+      capsuleLastTime = now;
+
+      capsuleBodies.forEach(body => {
+        const size = body.element.offsetWidth;
+        if (capsuleMixing) {
+          body.vy += 0.1 * timeStep;
+          if (Math.random() < 0.035 * timeStep) {
+            body.vx += (Math.random() - 0.5) * 4.2;
+            body.vy += (Math.random() - 0.58) * 4.6;
+          }
+        } else {
+          body.vy += 0.15 * timeStep;
+          body.vx *= Math.pow(0.965, timeStep);
+          body.vy *= Math.pow(0.982, timeStep);
+        }
+
+        body.x += body.vx * timeStep;
+        body.y += body.vy * timeStep;
+        body.rotation += body.vx * 1.9 * timeStep;
+
+        const maxX = Math.max(0, width - size);
+        const maxY = Math.max(0, height - size);
+        if (body.x <= 0 || body.x >= maxX) {
+          body.x = Math.min(maxX, Math.max(0, body.x));
+          body.vx *= -0.88;
+        }
+        if (body.y <= 0 || body.y >= maxY) {
+          body.y = Math.min(maxY, Math.max(0, body.y));
+          body.vy *= -0.84;
+          body.vx += (Math.random() - 0.5) * 0.9;
+        }
+      });
+
+      resolveCapsuleCollisions();
+      renderCapsules();
+
+      if (capsuleMixing || now < capsuleSettleUntil) {
+        capsuleAnimationFrame = requestAnimationFrame(animateCapsules);
+      } else {
+        capsuleAnimationFrame = 0;
+      }
+    }
+
+    function startCapsuleMixing() {
+      motionCapsules.forEach(capsule => capsule.classList.remove("is-exiting"));
+      layoutCapsules(false);
+      capsuleBodies.forEach((body, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        body.vx = direction * (2.2 + Math.random() * 2.8);
+        body.vy = -3.2 - Math.random() * 3.5;
+      });
+      capsuleMixing = true;
+      capsuleSettleUntil = 0;
+      capsuleLastTime = performance.now();
+      if (!capsuleAnimationFrame && !reduceMotion) {
+        capsuleAnimationFrame = requestAnimationFrame(animateCapsules);
+      }
+    }
+
+    function stopCapsuleMixing() {
+      capsuleMixing = false;
+      capsuleSettleUntil = performance.now() + (reduceMotion ? 0 : 720);
+      if (!capsuleAnimationFrame && !reduceMotion) {
+        capsuleLastTime = performance.now();
+        capsuleAnimationFrame = requestAnimationFrame(animateCapsules);
+      }
+    }
+
+    function releaseCapsule() {
+      const candidates = capsuleBodies
+        .slice()
+        .sort((first, second) => second.y - first.y);
+      const selected = candidates[Math.floor(Math.random() * Math.min(4, candidates.length))];
+      selected.element.classList.add("is-exiting");
+    }
+
+    requestAnimationFrame(() => layoutCapsules(true));
+    window.addEventListener("resize", () => layoutCapsules(false));
 
     function setDrawButtonLabel(label) {
       drawButton.innerHTML = `
@@ -3257,6 +3402,7 @@
       clearConfetti();
       drinkScene.classList.remove("is-winning");
       drinkScene.classList.add("is-mixing");
+      startCapsuleMixing();
       drawButton.disabled = true;
       setDrawButtonLabel("喝一杯");
       drinkResult.textContent = "扭蛋正在滚动，今晚的答案马上掉下来。";
@@ -3273,6 +3419,8 @@
 
       const winner = drinks[Math.floor(Math.random() * drinks.length)];
       drinkScene.classList.remove("is-mixing");
+      stopCapsuleMixing();
+      releaseCapsule();
       drawnBall.textContent = winner.name;
       void drawnBall.offsetWidth;
       drawnBallWrap.classList.add("has-result");
