@@ -2358,9 +2358,12 @@
       overscroll-behavior: none;
     }
 
-    body,
-    body.drink-mode {
+    body {
       background: #f8e9de;
+    }
+
+    body.drink-mode {
+      background: #0f0c51 url("assets/drink-night-backdrop-v9.webp") center / cover no-repeat;
     }
 
     .app {
@@ -2384,9 +2387,9 @@
     }
 
     body.drink-mode .floating-sound {
-      border-color: rgba(87, 25, 37, 0.12);
-      background: rgba(255, 250, 242, 0.9);
-      filter: none;
+      border-color: rgba(171, 187, 255, 0.34);
+      background: rgba(31, 24, 108, 0.72);
+      filter: brightness(1.8) saturate(0.72);
     }
 
     .page-viewport {
@@ -2439,7 +2442,7 @@
     }
 
     #drinkPanel {
-      background: #f8e9de;
+      background: #0f0c51 url("assets/drink-night-backdrop-v9.webp") center / cover no-repeat;
     }
 
     .eat-machine.image-eat-scene,
@@ -2588,29 +2591,11 @@
     }
 
     .image-eat-scene .reel-stage {
-      display: grid;
-      grid-template-rows: 17% minmax(0, 83%);
-    }
-
-    .image-eat-scene .reel-headings {
-      position: relative;
-      z-index: 6;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 2.2%;
-      align-items: center;
-      padding: 0 1%;
-      color: #7a2d3f;
-      font-size: clamp(0.62rem, 2.45vw, 0.92rem);
-      font-weight: 950;
-      line-height: 1;
-      text-align: center;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.96);
-      pointer-events: none;
+      display: block;
     }
 
     .image-eat-scene .reels {
-      height: auto;
+      height: 100%;
       min-height: 0;
     }
 
@@ -2672,26 +2657,26 @@
     }
 
     .neon-machine-scene .drink-kicker {
-      color: #a63a75;
+      color: #ff94e4;
       font-size: 0.58rem;
     }
 
     .neon-machine-scene .neon-title {
-      color: #4f275d;
+      color: #fff8ff;
       font-size: clamp(1.12rem, 5vw, 1.42rem);
-      text-shadow: none;
+      text-shadow: 0 3px 16px rgba(7, 4, 50, 0.56);
     }
 
     .neon-machine-scene .neon-subtitle {
       margin-top: 2px;
-      color: #77616d;
+      color: rgba(238, 240, 255, 0.82);
       font-size: clamp(0.6rem, 2.6vw, 0.72rem);
-      text-shadow: none;
+      text-shadow: 0 2px 12px rgba(7, 4, 50, 0.48);
     }
 
     .neon-machine-scene .drink-result-line {
-      color: #60435b;
-      text-shadow: none;
+      color: rgba(238, 240, 255, 0.84);
+      text-shadow: 0 2px 12px rgba(7, 4, 50, 0.48);
     }
 
     .lottery-cabinet.visual-machine {
@@ -2942,7 +2927,7 @@
     }
   </style>
 </head>
-<body data-build="FOOD-REELS-FRONT-LEVER-PAGER-V8-20260730">
+<body data-build="SEAMLESS-REELS-DARK-BACKDROP-V9-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -2958,11 +2943,6 @@
               <h2 class="food-machine-title">今天吃什么</h2>
 
               <div class="reel-stage">
-                <div class="reel-headings" aria-hidden="true">
-                  <span>主食</span>
-                  <span>主菜</span>
-                  <span>蔬菜</span>
-                </div>
                 <div class="reels" id="foodReels"></div>
               </div>
 
@@ -3134,7 +3114,7 @@
       constructor(group) {
         this.group = group;
         this.index = 0;
-        this.virtualIndex = group.items.length * 5;
+        this.virtualIndex = group.items.length * 12;
         this.itemHeight = 120;
         this.busy = false;
         this.dragging = false;
@@ -3161,7 +3141,7 @@
         this.track = column.querySelector(".reel-track");
 
         const repeated = [];
-        for (let copy = 0; copy < 11; copy += 1) {
+        for (let copy = 0; copy < 31; copy += 1) {
           this.group.items.forEach(item => {
             repeated.push(`
               <div class="reel-item" role="option">
@@ -3240,19 +3220,22 @@
       }
 
       normalize() {
-        this.virtualIndex = this.group.items.length * 5 + this.selectedIndex();
+        this.virtualIndex = this.group.items.length * 12 + this.selectedIndex();
         this.render(0);
       }
 
       step(direction) {
         if (this.busy) return;
+        window.clearTimeout(this.normalizeTimer);
         this.virtualIndex += direction;
         this.render();
         this.updateResult();
-        window.setTimeout(() => this.normalize(), 250);
+        this.normalizeTimer = window.setTimeout(() => this.normalize(), 250);
       }
 
       async spinTo(target, loops) {
+        window.clearTimeout(this.normalizeTimer);
+        this.normalize();
         this.busy = true;
         this.column.classList.add("is-rolling");
         const distance = ((target - this.selectedIndex()) + this.group.items.length) % this.group.items.length;
