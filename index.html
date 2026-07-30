@@ -2908,7 +2908,7 @@
     }
   </style>
 </head>
-<body data-build="SLOT-LEVER-REELS-BACKDROP-V5-20260730">
+<body data-build="SLOT-PAGER-LEVER-REELS-V6-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -3346,6 +3346,7 @@
     let pageTouchDeltaX = 0;
     let pageTouchBaseIndex = 0;
     let entryLockActive = true;
+    let pageProgrammaticTarget = null;
 
     function updatePageState(nextIndex) {
       pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
@@ -3367,6 +3368,7 @@
 
     function showPage(nextIndex, animate = true) {
       const targetIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
+      pageProgrammaticTarget = targetIndex;
       updatePageState(targetIndex);
       pageViewport.scrollTo({
         left: targetIndex * pageViewport.clientWidth,
@@ -3380,6 +3382,14 @@
         pageScrollFrame = 0;
         if (pageTouchActive) return;
         const width = Math.max(1, pageViewport.clientWidth);
+        if (pageProgrammaticTarget !== null) {
+          const targetLeft = pageProgrammaticTarget * width;
+          if (Math.abs(pageViewport.scrollLeft - targetLeft) <= 2) {
+            updatePageState(pageProgrammaticTarget);
+            pageProgrammaticTarget = null;
+          }
+          return;
+        }
         updatePageState(Math.round(pageViewport.scrollLeft / width));
       });
     }, { passive: true });
@@ -3387,6 +3397,7 @@
     pageViewport.addEventListener("touchstart", event => {
       if (event.touches.length !== 1 || event.target.closest(".win-modal")) return;
       entryLockActive = false;
+      pageProgrammaticTarget = null;
       const touch = event.touches[0];
       pageTouchActive = true;
       pageTouchHorizontal = false;
@@ -3449,6 +3460,7 @@
     function resetEntryPage() {
       if (!entryLockActive) return;
       pageViewport.classList.remove("is-touching");
+      pageProgrammaticTarget = 0;
       pageViewport.scrollLeft = 0;
       pageViewport.scrollTo({ left: 0, behavior: "auto" });
       updatePageState(0);
