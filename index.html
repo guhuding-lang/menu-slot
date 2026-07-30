@@ -2349,6 +2349,387 @@
       }
     }
 
+    /* Final gesture-first layout: one background layer, larger machines, swipe navigation */
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    body {
+      background: #f6eadf;
+      transition: background-color 420ms ease;
+    }
+
+    body.drink-mode {
+      background: #18105c;
+    }
+
+    .app {
+      width: 100%;
+      height: 100svh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .floating-sound {
+      position: fixed;
+      z-index: 80;
+      top: max(10px, env(safe-area-inset-top));
+      right: max(10px, env(safe-area-inset-right));
+      width: 42px;
+      min-height: 42px;
+      border-color: rgba(87, 25, 37, 0.12);
+      background: rgba(255, 250, 242, 0.88);
+      backdrop-filter: blur(12px);
+    }
+
+    body.drink-mode .floating-sound {
+      border-color: rgba(171, 187, 255, 0.34);
+      background: rgba(31, 24, 108, 0.7);
+      filter: brightness(1.8) saturate(0.7);
+    }
+
+    .page-viewport {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .page-track {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      transform: translate3d(0, 0, 0);
+      transition: transform 430ms cubic-bezier(0.22, 0.76, 0.22, 1);
+      will-change: transform;
+    }
+
+    .page-track.is-dragging {
+      transition: none;
+    }
+
+    .page-panel,
+    .page-panel.is-active {
+      flex: 0 0 100%;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 0;
+      animation: none;
+    }
+
+    .eat-machine.image-eat-scene,
+    .drink-scene.neon-machine-scene {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      margin: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .eat-machine.image-eat-scene {
+      justify-content: center;
+      gap: 4px;
+      padding: 4px;
+    }
+
+    .food-machine-cabinet {
+      width: min(500px, calc(100vw - 8px), calc((100svh - 46px) * 0.6667));
+      border-radius: 24px;
+      filter: drop-shadow(0 15px 18px rgba(122, 67, 72, 0.16));
+    }
+
+    .image-eat-scene .eat-controls {
+      display: none;
+    }
+
+    .food-result-display {
+      position: absolute;
+      z-index: 7;
+      top: 76.05%;
+      left: 17.75%;
+      width: 64%;
+      height: 10.45%;
+      display: grid;
+      place-items: center;
+      padding: 0 8%;
+      overflow: hidden;
+      color: #8f3045;
+      font-size: clamp(0.5rem, 2.45vw, 0.88rem);
+      font-weight: 950;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      text-align: center;
+      text-wrap: balance;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.98);
+    }
+
+    .lever-control {
+      --lever-shift: 0px;
+      position: absolute;
+      z-index: 12;
+      top: 38%;
+      right: 1.2%;
+      width: 15%;
+      height: 33%;
+      border: 0;
+      border-radius: 999px;
+      cursor: ns-resize;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .lever-touch {
+      position: absolute;
+      top: 1%;
+      left: 50%;
+      width: 48%;
+      aspect-ratio: 1;
+      transform: translate(-50%, var(--lever-shift));
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 50%;
+      background: rgba(255, 121, 157, 0.08);
+      box-shadow: 0 0 0 5px rgba(255, 119, 151, 0.12), 0 0 16px rgba(255, 87, 139, 0.2);
+      opacity: 0.52;
+      transition: transform 120ms ease, opacity 160ms ease, box-shadow 160ms ease;
+      pointer-events: none;
+    }
+
+    .lever-control.is-pulling .lever-touch {
+      opacity: 1;
+      box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.15), 0 0 22px rgba(255, 67, 128, 0.44);
+      transition: opacity 120ms ease, box-shadow 120ms ease;
+    }
+
+    .lever-control.is-releasing .lever-touch {
+      transition: transform 300ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+    }
+
+    .image-eat-scene.is-spinning .food-machine-art,
+    .neon-machine-scene.is-mixing .machine-art,
+    .neon-machine-scene.is-mixing .visual-machine .draw-button {
+      animation: none;
+    }
+
+    .reel-column.is-rolling .reel-track {
+      filter: blur(0.45px) saturate(1.12);
+    }
+
+    .food-instruction {
+      min-height: 18px;
+      margin: 0;
+      color: #7b5d59;
+      font-size: clamp(0.57rem, 2.45vw, 0.72rem);
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    .drink-scene.neon-machine-scene {
+      justify-content: center;
+      gap: 4px;
+      padding: 3px 4px 2px;
+    }
+
+    .neon-machine-scene .drink-heading {
+      margin: 0;
+    }
+
+    .neon-machine-scene .drink-kicker {
+      font-size: 0.52rem;
+    }
+
+    .neon-machine-scene .neon-title {
+      font-size: clamp(1.12rem, 5vw, 1.42rem);
+    }
+
+    .neon-machine-scene .neon-subtitle {
+      margin-top: 2px;
+      font-size: clamp(0.6rem, 2.6vw, 0.72rem);
+    }
+
+    .lottery-cabinet.visual-machine {
+      width: min(500px, calc(100vw - 8px), calc((100svh - 104px) * 0.665));
+      border: 0;
+      border-radius: 22px;
+      background: transparent;
+      filter: drop-shadow(0 16px 22px rgba(4, 4, 45, 0.28));
+    }
+
+    .capsule-motion-layer {
+      position: absolute;
+      z-index: 4;
+      top: 31.5%;
+      left: 17.5%;
+      width: 65%;
+      height: 29%;
+      overflow: hidden;
+      border-radius: 18%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease;
+    }
+
+    .motion-capsule {
+      position: absolute;
+      width: 24%;
+      height: auto;
+      opacity: 0.96;
+      transform-origin: 50% 50%;
+      filter: drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34));
+      will-change: transform;
+    }
+
+    .capsule-a { left: 3%; top: 45%; filter: hue-rotate(0deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-b { left: 20%; top: 12%; filter: hue-rotate(48deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-c { left: 38%; top: 50%; filter: hue-rotate(96deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-d { left: 55%; top: 7%; filter: hue-rotate(142deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-e { left: 71%; top: 42%; filter: hue-rotate(205deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+    .capsule-f { left: 30%; top: 67%; filter: hue-rotate(270deg) drop-shadow(0 4px 6px rgba(16, 5, 58, 0.34)); }
+
+    .neon-machine-scene.is-mixing .capsule-motion-layer {
+      opacity: 1;
+    }
+
+    .neon-machine-scene.is-mixing .capsule-a,
+    .neon-machine-scene.is-mixing .capsule-d {
+      animation: capsuleTumbleA 520ms cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+    }
+
+    .neon-machine-scene.is-mixing .capsule-b,
+    .neon-machine-scene.is-mixing .capsule-e {
+      animation: capsuleTumbleB 610ms cubic-bezier(0.36, 0, 0.64, 1) infinite alternate-reverse;
+    }
+
+    .neon-machine-scene.is-mixing .capsule-c,
+    .neon-machine-scene.is-mixing .capsule-f {
+      animation: capsuleTumbleC 470ms cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+    }
+
+    @keyframes capsuleTumbleA {
+      0% { transform: translate3d(-18%, 12%, 0) rotate(-32deg) scale(0.92); }
+      45% { transform: translate3d(38%, -46%, 0) rotate(118deg) scale(1.06); }
+      100% { transform: translate3d(78%, 18%, 0) rotate(244deg) scale(0.96); }
+    }
+
+    @keyframes capsuleTumbleB {
+      0% { transform: translate3d(24%, 52%, 0) rotate(18deg) scale(1.02); }
+      52% { transform: translate3d(-42%, -18%, 0) rotate(-142deg) scale(0.9); }
+      100% { transform: translate3d(52%, -52%, 0) rotate(-286deg) scale(1.08); }
+    }
+
+    @keyframes capsuleTumbleC {
+      0% { transform: translate3d(-46%, -32%, 0) rotate(-64deg) scale(0.96); }
+      48% { transform: translate3d(18%, 48%, 0) rotate(92deg) scale(1.08); }
+      100% { transform: translate3d(58%, -26%, 0) rotate(268deg) scale(0.92); }
+    }
+
+    .visual-machine .drawn-ball-wrap {
+      visibility: hidden;
+    }
+
+    .visual-machine .drawn-ball-wrap.has-result {
+      visibility: visible;
+    }
+
+    .visual-machine .drawn-ball {
+      opacity: 0;
+      transform: translate3d(-54%, -132%, 0) rotate(-420deg) scale(0.58);
+    }
+
+    .visual-machine .drawn-ball-wrap.has-result .drawn-ball.is-dropping {
+      opacity: 1;
+      animation: capsuleRollOut 920ms cubic-bezier(0.16, 0.72, 0.22, 1.16) both;
+    }
+
+    @keyframes capsuleRollOut {
+      0% {
+        opacity: 0;
+        transform: translate3d(-60%, -145%, 0) rotate(-560deg) scale(0.52);
+      }
+      42% {
+        opacity: 1;
+        transform: translate3d(-24%, -62%, 0) rotate(-260deg) scale(0.88);
+      }
+      72% {
+        transform: translate3d(8%, 7%, 0) rotate(28deg) scale(1.06);
+      }
+      86% {
+        transform: translate3d(-4%, -4%, 0) rotate(-10deg) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0) scale(1);
+      }
+    }
+
+    .neon-machine-scene .drink-result-line {
+      min-height: 18px;
+      margin: 0;
+      font-size: clamp(0.57rem, 2.45vw, 0.7rem);
+    }
+
+    @media (max-width: 760px) {
+      .floating-sound {
+        width: 38px;
+        min-height: 38px;
+      }
+
+      .sound-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      .food-machine-cabinet {
+        width: min(390px, calc(100vw - 8px), calc((100svh - 38px) * 0.6667));
+      }
+
+      .lottery-cabinet.visual-machine {
+        width: min(390px, calc(100vw - 8px), calc((100svh - 98px) * 0.665));
+      }
+    }
+
+    @media (max-width: 760px) and (max-height: 720px) {
+      .food-machine-cabinet {
+        width: min(355px, calc(100vw - 8px), calc((100svh - 34px) * 0.6667));
+      }
+
+      .lottery-cabinet.visual-machine {
+        width: min(355px, calc(100vw - 8px), calc((100svh - 90px) * 0.665));
+      }
+
+      .neon-machine-scene .drink-kicker {
+        display: none;
+      }
+
+      .neon-machine-scene .neon-title {
+        font-size: 1.05rem;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -2361,68 +2742,77 @@
     }
   </style>
 </head>
-<body data-build="FOOD-IMAGE-V1-20260730">
+<body data-build="GESTURE-MACHINES-V2-20260730">
   <main class="app">
-    <div class="topbar">
-      <nav class="tabs" role="tablist" aria-label="选择吃什么或喝什么">
-        <button class="tab" id="eatTab" type="button" role="tab" aria-controls="eatPanel" aria-selected="true">吃什么</button>
-        <button class="tab" id="drinkTab" type="button" role="tab" aria-controls="drinkPanel" aria-selected="false">喝什么</button>
-      </nav>
-      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
-        <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
-        <span class="sound-label">音效开启</span>
-      </button>
+    <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
+      <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
+      <span class="sound-label">音效开启</span>
+    </button>
+
+    <div class="page-viewport" id="pageViewport">
+      <div class="page-track" id="pageTrack">
+        <section class="page-panel is-active" id="eatPanel" aria-label="今天吃什么">
+          <div class="eat-machine image-eat-scene" id="eatScene">
+            <div class="food-machine-cabinet" id="foodMachineCabinet">
+              <img class="food-machine-art" src="assets/food-slot-pink-v1.webp" alt="粉蓝配色的立体复古老虎机">
+              <h2 class="food-machine-title">今天吃什么</h2>
+
+              <div class="reel-stage">
+                <div class="reels" id="foodReels"></div>
+              </div>
+
+              <div class="lever-control" id="leverControl" role="button" tabindex="0" aria-label="按住右侧摇杆并向下滑动，启动老虎机">
+                <span class="lever-touch" aria-hidden="true"></span>
+              </div>
+
+              <output class="food-result-display" id="foodMachineResult" aria-live="polite">待开奖</output>
+            </div>
+
+            <p class="food-instruction">按住右侧摇杆向下滑动启动 · 左滑去喝一杯</p>
+            <div class="menu-result visually-hidden" aria-live="polite">
+              <strong>今日菜单</strong>
+              <span class="result-chip" id="stapleResult">杂粮饭</span>
+              <span>·</span>
+              <span class="result-chip" id="mainResult">鸡蛋肉沫</span>
+              <span>·</span>
+              <span class="result-chip" id="vegResult">白灼生菜</span>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="page-panel" id="drinkPanel" aria-label="今晚喝什么" aria-hidden="true">
+          <div class="drink-scene neon-machine-scene" id="drinkScene">
+            <header class="drink-heading">
+              <p class="drink-kicker">NIGHT CAPSULE</p>
+              <h2 class="neon-title">今晚喝什么</h2>
+              <p class="neon-subtitle">按下“喝一杯”，让扭蛋滚出来。</p>
+            </header>
+
+            <div class="lottery-cabinet visual-machine" id="lotteryCabinet">
+              <img class="machine-art" src="assets/gacha-night-v5.webp" alt="紫色霓虹灯光下的立体扭蛋机">
+              <div class="capsule-motion-layer" aria-hidden="true">
+                <img class="motion-capsule capsule-a" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-b" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-c" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-d" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-e" src="assets/capsule-result-v5.png" alt="">
+                <img class="motion-capsule capsule-f" src="assets/capsule-result-v5.png" alt="">
+              </div>
+              <button class="draw-button" id="drawButton" type="button" aria-label="喝一杯，启动扭蛋机">
+                <span>喝一杯</span>
+              </button>
+              <div class="drawn-ball-wrap" id="drawnBallWrap" aria-hidden="true">
+                <span class="chute-label">出蛋口</span>
+                <div class="drawn-ball" id="drawnBall"></div>
+              </div>
+            </div>
+
+            <p class="drink-result-line" id="drinkResult" aria-live="polite">按下“喝一杯”启动 · 右滑返回吃什么</p>
+          </div>
+        </section>
+      </div>
     </div>
-
-    <section class="page-panel is-active" id="eatPanel" role="tabpanel" aria-labelledby="eatTab">
-      <div class="eat-machine image-eat-scene" id="eatScene">
-        <div class="food-machine-cabinet" id="foodMachineCabinet">
-          <img class="food-machine-art" src="assets/food-slot-pink-v1.webp" alt="粉蓝配色的立体复古老虎机">
-          <h2 class="food-machine-title">今天吃什么</h2>
-
-          <div class="reel-stage">
-            <div class="reels" id="foodReels"></div>
-          </div>
-
-          <div class="eat-controls">
-            <button class="primary-button" id="foodSpinButton" type="button">随机生成</button>
-          </div>
-        </div>
-
-        <p class="food-instruction">上下滑动滚轮，或按下“随机生成”。</p>
-        <div class="menu-result" aria-live="polite">
-          <strong>今日菜单</strong>
-          <span class="result-chip" id="stapleResult">杂粮饭</span>
-          <span>·</span>
-          <span class="result-chip" id="mainResult">鸡蛋肉沫</span>
-          <span>·</span>
-          <span class="result-chip" id="vegResult">白灼生菜</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="page-panel" id="drinkPanel" role="tabpanel" aria-labelledby="drinkTab" hidden>
-      <div class="drink-scene neon-machine-scene" id="drinkScene">
-        <header class="drink-heading">
-          <p class="drink-kicker">NIGHT CAPSULE</p>
-          <h2 class="neon-title">今晚喝什么</h2>
-          <p class="neon-subtitle">按下按钮，让今晚的答案滚出来。</p>
-        </header>
-
-        <div class="lottery-cabinet visual-machine" id="lotteryCabinet">
-          <img class="machine-art" src="assets/gacha-night-v5.webp" alt="紫色霓虹灯光下的立体扭蛋机">
-          <button class="draw-button" id="drawButton" type="button" aria-label="喝一杯，启动扭蛋机">
-            <span>喝一杯</span>
-          </button>
-          <div class="drawn-ball-wrap" id="drawnBallWrap" aria-hidden="true">
-            <span class="chute-label">出蛋口</span>
-            <div class="drawn-ball" id="drawnBall"></div>
-          </div>
-        </div>
-
-        <p class="drink-result-line" id="drinkResult" aria-live="polite">按下“喝一杯”，看看今晚喝什么。</p>
-      </div>
-    </section>
   </main>
 
   <div class="win-modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winTitle" aria-hidden="true">
@@ -2556,6 +2946,7 @@
           </div>
         `;
         document.getElementById("foodReels").appendChild(column);
+        this.column = column;
         this.window = column.querySelector(".reel-window");
         this.track = column.querySelector(".reel-track");
 
@@ -2653,6 +3044,7 @@
 
       async spinTo(target, loops) {
         this.busy = true;
+        this.column.classList.add("is-rolling");
         const distance = ((target - this.selectedIndex()) + this.group.items.length) % this.group.items.length;
         const steps = loops * this.group.items.length + distance;
 
@@ -2667,58 +3059,175 @@
         }
 
         this.busy = false;
+        this.column.classList.remove("is-rolling");
         this.normalize();
       }
     }
 
     const foodReels = foodData.map(group => new FoodReel(group));
-    const foodSpinButton = document.getElementById("foodSpinButton");
     const eatScene = document.getElementById("eatScene");
+    const leverControl = document.getElementById("leverControl");
+    const foodMachineResult = document.getElementById("foodMachineResult");
+    let foodSpinning = false;
+    let leverPointerId = null;
+    let leverStartY = 0;
+    let leverDistance = 0;
 
-    foodSpinButton.addEventListener("click", async () => {
-      if (foodReels.some(reel => reel.busy)) return;
+    function currentFoodNames() {
+      return foodReels.map(reel => reel.group.items[reel.selectedIndex()].name);
+    }
+
+    async function spinFood() {
+      if (foodSpinning || foodReels.some(reel => reel.busy)) return;
+      foodSpinning = true;
       initAudio();
-      foodSpinButton.disabled = true;
-      foodSpinButton.textContent = "正在生成…";
+      foodMachineResult.textContent = "转轮滚动中…";
       eatScene.classList.add("is-spinning");
       playStartSound();
 
       const targets = foodReels.map(reel => Math.floor(Math.random() * reel.group.items.length));
       await Promise.all([
-        foodReels[0].spinTo(targets[0], 2),
-        foodReels[1].spinTo(targets[1], 3),
-        foodReels[2].spinTo(targets[2], 4)
+        foodReels[0].spinTo(targets[0], 5),
+        foodReels[1].spinTo(targets[1], 6),
+        foodReels[2].spinTo(targets[2], 7)
       ]);
 
       playSoftWin();
       eatScene.classList.remove("is-spinning");
-      foodSpinButton.textContent = "再来一次";
-      foodSpinButton.disabled = false;
+      foodMachineResult.textContent = currentFoodNames().join(" · ");
+      foodSpinning = false;
+    }
+
+    function resetLever() {
+      leverControl.classList.remove("is-pulling");
+      leverControl.classList.add("is-releasing");
+      leverControl.style.setProperty("--lever-shift", "0px");
+      window.setTimeout(() => leverControl.classList.remove("is-releasing"), 320);
+      leverPointerId = null;
+      leverDistance = 0;
+    }
+
+    leverControl.addEventListener("pointerdown", event => {
+      if (foodSpinning) return;
+      leverPointerId = event.pointerId;
+      leverStartY = event.clientY;
+      leverDistance = 0;
+      leverControl.classList.add("is-pulling");
+      leverControl.setPointerCapture?.(event.pointerId);
+      initAudio();
+      playTick(260, 0.018);
     });
 
-    /* Tabs */
-    const tabs = [...document.querySelectorAll(".tab")];
+    leverControl.addEventListener("pointermove", event => {
+      if (event.pointerId !== leverPointerId) return;
+      const maxPull = Math.max(54, leverControl.clientHeight * 0.55);
+      leverDistance = Math.min(maxPull, Math.max(0, event.clientY - leverStartY));
+      leverControl.style.setProperty("--lever-shift", `${leverDistance}px`);
+      if (leverDistance > maxPull * 0.72 && !leverControl.classList.contains("is-ready")) {
+        leverControl.classList.add("is-ready");
+        playTick(340, 0.024);
+      }
+    });
+
+    leverControl.addEventListener("pointerup", event => {
+      if (event.pointerId !== leverPointerId) return;
+      const threshold = Math.max(46, leverControl.clientHeight * 0.34);
+      const shouldSpin = leverDistance >= threshold;
+      leverControl.classList.remove("is-ready");
+      resetLever();
+      if (shouldSpin) spinFood();
+    });
+
+    leverControl.addEventListener("pointercancel", () => {
+      leverControl.classList.remove("is-ready");
+      resetLever();
+    });
+
+    leverControl.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      leverControl.classList.add("is-pulling");
+      leverControl.style.setProperty("--lever-shift", `${Math.max(52, leverControl.clientHeight * 0.48)}px`);
+      window.setTimeout(() => {
+        resetLever();
+        spinFood();
+      }, reduceMotion ? 1 : 260);
+    });
+
+    /* Horizontal swipe pager */
+    const pageViewport = document.getElementById("pageViewport");
+    const pageTrack = document.getElementById("pageTrack");
     const panels = [...document.querySelectorAll(".page-panel")];
+    let pageIndex = 0;
+    let pagePointerId = null;
+    let pageStartX = 0;
+    let pageStartY = 0;
+    let pageDeltaX = 0;
+    let horizontalDrag = false;
 
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        tabs.forEach(item => item.setAttribute("aria-selected", String(item === tab)));
-        panels.forEach(panel => {
-          const active = panel.id === tab.getAttribute("aria-controls");
-          panel.hidden = !active;
-          panel.classList.toggle("is-active", active);
-        });
-        document.body.classList.toggle("drink-mode", tab.id === "drinkTab");
-        if (tab.id === "eatTab") {
-          requestAnimationFrame(() => {
-            foodReels.forEach(reel => {
-              reel.measure();
-              reel.render(0);
-            });
-          });
-        }
+    function showPage(nextIndex, animate = true) {
+      pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
+      pageTrack.classList.toggle("is-dragging", !animate);
+      pageTrack.style.transform = `translate3d(${-pageIndex * 100}%, 0, 0)`;
+      panels.forEach((panel, index) => {
+        const active = index === pageIndex;
+        panel.classList.toggle("is-active", active);
+        panel.setAttribute("aria-hidden", String(!active));
       });
+      document.body.classList.toggle("drink-mode", pageIndex === 1);
+      if (pageIndex === 0) {
+        requestAnimationFrame(() => {
+          foodReels.forEach(reel => {
+            reel.measure();
+            reel.render(0);
+          });
+        });
+      }
+      if (!animate) requestAnimationFrame(() => pageTrack.classList.remove("is-dragging"));
+    }
+
+    pageViewport.addEventListener("pointerdown", event => {
+      if (event.target.closest("button, .reel-window, .lever-control, .win-modal")) return;
+      pagePointerId = event.pointerId;
+      pageStartX = event.clientX;
+      pageStartY = event.clientY;
+      pageDeltaX = 0;
+      horizontalDrag = false;
+      pageViewport.setPointerCapture?.(event.pointerId);
     });
+
+    pageViewport.addEventListener("pointermove", event => {
+      if (event.pointerId !== pagePointerId) return;
+      const dx = event.clientX - pageStartX;
+      const dy = event.clientY - pageStartY;
+      if (!horizontalDrag && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+        horizontalDrag = true;
+        pageTrack.classList.add("is-dragging");
+      }
+      if (!horizontalDrag) return;
+      pageDeltaX = dx;
+      const blocked = (pageIndex === 0 && dx > 0) || (pageIndex === panels.length - 1 && dx < 0);
+      const resisted = blocked ? dx * 0.22 : dx;
+      pageTrack.style.transform = `translate3d(calc(${-pageIndex * 100}% + ${resisted}px), 0, 0)`;
+    });
+
+    function finishPageSwipe() {
+      if (pagePointerId === null) return;
+      const threshold = Math.min(92, window.innerWidth * 0.18);
+      const direction = Math.abs(pageDeltaX) >= threshold ? (pageDeltaX < 0 ? 1 : -1) : 0;
+      pagePointerId = null;
+      horizontalDrag = false;
+      pageTrack.classList.remove("is-dragging");
+      showPage(pageIndex + direction);
+    }
+
+    pageViewport.addEventListener("pointerup", finishPageSwipe);
+    pageViewport.addEventListener("pointercancel", finishPageSwipe);
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft") showPage(pageIndex - 1);
+      if (event.key === "ArrowRight") showPage(pageIndex + 1);
+    });
+    showPage(0, false);
 
     const drinkScene = document.getElementById("drinkScene");
     const drawButton = document.getElementById("drawButton");
