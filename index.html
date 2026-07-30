@@ -2360,7 +2360,7 @@
 
     body,
     body.drink-mode {
-      background: #18105c;
+      background: #f8e9de;
     }
 
     .app {
@@ -2384,36 +2384,17 @@
     }
 
     body.drink-mode .floating-sound {
-      border-color: rgba(171, 187, 255, 0.34);
-      background: rgba(31, 24, 108, 0.7);
-      filter: brightness(1.8) saturate(0.7);
+      border-color: rgba(87, 25, 37, 0.12);
+      background: rgba(255, 250, 242, 0.9);
+      filter: none;
     }
 
     .page-viewport {
       width: 100%;
       height: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
+      overflow: hidden;
       overscroll-behavior-x: contain;
-      scrollbar-width: none;
       touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .page-viewport::-webkit-scrollbar {
-      display: none;
-    }
-
-    .page-viewport.is-touching {
-      scroll-snap-type: none;
-      scroll-behavior: auto;
-    }
-
-    .page-viewport.is-settling {
-      scroll-snap-type: none;
-      scroll-behavior: auto;
     }
 
     .page-viewport .reel-window {
@@ -2421,22 +2402,27 @@
     }
 
     .page-track {
-      width: 100%;
+      width: 200%;
       height: 100%;
       display: flex;
-      transform: none !important;
-      transition: none;
-      will-change: auto;
+      transform: translate3d(0, 0, 0);
+      transition: transform 420ms cubic-bezier(0.22, 0.72, 0.2, 1);
+      will-change: transform;
     }
 
-    .page-track.is-dragging {
+    .page-track.is-dragging,
+    .page-track.no-transition {
       transition: none;
+    }
+
+    .page-track.is-drink-page {
+      transform: translate3d(-50%, 0, 0);
     }
 
     .page-panel,
     .page-panel.is-active {
-      flex: 0 0 100%;
-      width: 100%;
+      flex: 0 0 50%;
+      width: 50%;
       min-width: 0;
       height: 100%;
       min-height: 0;
@@ -2445,8 +2431,6 @@
       justify-content: center;
       overflow: hidden;
       padding: 0;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
       animation: none;
     }
 
@@ -2455,7 +2439,7 @@
     }
 
     #drinkPanel {
-      background: #18105c;
+      background: #f8e9de;
     }
 
     .eat-machine.image-eat-scene,
@@ -2478,10 +2462,16 @@
     }
 
     .food-machine-cabinet {
-      width: min(500px, calc(100vw - 8px), calc((100svh - 46px) * 0.6667));
+      width: min(525px, calc(100vw - 2px), calc((100svh - 24px) * 0.69));
       overflow: visible;
       border-radius: 0;
+      transform: translateX(-2.2%);
       filter: drop-shadow(0 17px 20px rgba(122, 67, 72, 0.18));
+    }
+
+    .food-machine-title {
+      font-size: clamp(1.08rem, 4.25vw, 1.78rem);
+      letter-spacing: 0.1em;
     }
 
     .image-eat-scene .eat-controls {
@@ -2497,10 +2487,10 @@
       height: 10.45%;
       display: grid;
       place-items: center;
-      padding: 0 8%;
+      padding: 0 3.5%;
       overflow: hidden;
       color: #8f3045;
-      font-size: clamp(0.5rem, 2.45vw, 0.88rem);
+      font-size: clamp(0.72rem, 3.15vw, 1.04rem);
       font-weight: 950;
       line-height: 1.15;
       letter-spacing: 0.02em;
@@ -2511,7 +2501,9 @@
 
     .lever-control {
       --lever-shift: 0px;
-      --lever-angle: 0deg;
+      --lever-drop: 0px;
+      --lever-scale-y: 1;
+      --lever-scale-x: 1;
       position: absolute;
       z-index: 12;
       top: 28.5%;
@@ -2534,8 +2526,11 @@
       height: 88%;
       object-fit: contain;
       object-position: center;
-      transform: rotate(var(--lever-angle));
-      transform-origin: 51% 87%;
+      transform:
+        translate3d(0, var(--lever-drop), 0)
+        scaleX(var(--lever-scale-x))
+        scaleY(var(--lever-scale-y));
+      transform-origin: 51% 88%;
       filter: drop-shadow(0 7px 7px rgba(112, 48, 66, 0.22));
       transition: transform 90ms linear, filter 150ms ease;
       pointer-events: none;
@@ -2592,35 +2587,59 @@
       display: block;
     }
 
+    .image-eat-scene .reel-stage {
+      display: grid;
+      grid-template-rows: 17% minmax(0, 83%);
+    }
+
+    .image-eat-scene .reel-headings {
+      position: relative;
+      z-index: 6;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2.2%;
+      align-items: center;
+      padding: 0 1%;
+      color: #7a2d3f;
+      font-size: clamp(0.62rem, 2.45vw, 0.92rem);
+      font-weight: 950;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.96);
+      pointer-events: none;
+    }
+
+    .image-eat-scene .reels {
+      height: auto;
+      min-height: 0;
+    }
+
     .image-eat-scene .reel-window {
       height: 100%;
     }
 
     .image-eat-scene .reel-item {
-      justify-content: flex-start;
-      gap: clamp(2px, 0.55vw, 4px);
-      padding: 4% 2px 3px;
-    }
-
-    .image-eat-scene .reel-item .reel-label {
-      flex: 0 0 11%;
-      width: 100%;
-      display: grid;
-      place-items: center;
-      color: #7a2d3f;
-      font-size: clamp(0.47rem, 1.8vw, 0.74rem);
-      font-weight: 950;
-      line-height: 1;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(3px, 0.8vw, 6px);
+      padding: 2px;
+      text-align: center;
     }
 
     .image-eat-scene .reel-item .dish-art {
-      width: min(70%, 72px);
+      width: min(82%, 88px);
+      flex: 0 0 auto;
     }
 
     .image-eat-scene .reel-item .dish-name {
       flex: 0 0 auto;
       min-height: 1.25em;
+      width: 100%;
+      font-size: clamp(0.62rem, 2.35vw, 0.9rem);
+      font-weight: 950;
+      text-align: center;
     }
 
     .food-instruction {
@@ -2653,16 +2672,26 @@
     }
 
     .neon-machine-scene .drink-kicker {
-      font-size: 0.52rem;
+      color: #a63a75;
+      font-size: 0.58rem;
     }
 
     .neon-machine-scene .neon-title {
+      color: #4f275d;
       font-size: clamp(1.12rem, 5vw, 1.42rem);
+      text-shadow: none;
     }
 
     .neon-machine-scene .neon-subtitle {
       margin-top: 2px;
+      color: #77616d;
       font-size: clamp(0.6rem, 2.6vw, 0.72rem);
+      text-shadow: none;
+    }
+
+    .neon-machine-scene .drink-result-line {
+      color: #60435b;
+      text-shadow: none;
     }
 
     .lottery-cabinet.visual-machine {
@@ -2875,7 +2904,7 @@
       }
 
       .food-machine-cabinet {
-        width: min(390px, calc(100vw - 8px), calc((100svh - 38px) * 0.6667));
+        width: min(410px, calc(100vw - 2px), calc((100svh - 24px) * 0.69));
       }
 
       .lottery-cabinet.visual-machine {
@@ -2885,7 +2914,7 @@
 
     @media (max-width: 760px) and (max-height: 720px) {
       .food-machine-cabinet {
-        width: min(355px, calc(100vw - 8px), calc((100svh - 34px) * 0.6667));
+        width: min(370px, calc(100vw - 2px), calc((100svh - 20px) * 0.69));
       }
 
       .lottery-cabinet.visual-machine {
@@ -2913,7 +2942,7 @@
     }
   </style>
 </head>
-<body data-build="SLOT-PAGER-LEVER-REELS-V7-20260730">
+<body data-build="FOOD-REELS-FRONT-LEVER-PAGER-V8-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -2929,6 +2958,11 @@
               <h2 class="food-machine-title">今天吃什么</h2>
 
               <div class="reel-stage">
+                <div class="reel-headings" aria-hidden="true">
+                  <span>主食</span>
+                  <span>主菜</span>
+                  <span>蔬菜</span>
+                </div>
                 <div class="reels" id="foodReels"></div>
               </div>
 
@@ -3131,7 +3165,6 @@
           this.group.items.forEach(item => {
             repeated.push(`
               <div class="reel-item" role="option">
-                <div class="reel-label">${this.group.label}</div>
                 <div class="dish-art" style="--dish-bg:${item.color}">
                   <span class="dish-icon" aria-hidden="true">${item.icon}</span>
                 </div>
@@ -3279,7 +3312,9 @@
       leverControl.classList.remove("is-pulling");
       leverControl.classList.add("is-releasing");
       leverControl.style.setProperty("--lever-shift", "0px");
-      leverControl.style.setProperty("--lever-angle", "0deg");
+      leverControl.style.setProperty("--lever-drop", "0px");
+      leverControl.style.setProperty("--lever-scale-y", "1");
+      leverControl.style.setProperty("--lever-scale-x", "1");
       window.setTimeout(() => leverControl.classList.remove("is-releasing"), 320);
       leverPointerId = null;
       leverDistance = 0;
@@ -3301,8 +3336,11 @@
       const maxPull = Math.max(54, leverControl.clientHeight * 0.55);
       leverDistance = Math.min(maxPull, Math.max(0, event.clientY - leverStartY));
       const pullProgress = Math.min(1, leverDistance / maxPull);
-      leverControl.style.setProperty("--lever-shift", `${leverDistance}px`);
-      leverControl.style.setProperty("--lever-angle", `${-36 * pullProgress}deg`);
+      const visualDrop = leverDistance * 0.38;
+      leverControl.style.setProperty("--lever-shift", `${visualDrop}px`);
+      leverControl.style.setProperty("--lever-drop", `${visualDrop}px`);
+      leverControl.style.setProperty("--lever-scale-y", `${1 - pullProgress * 0.34}`);
+      leverControl.style.setProperty("--lever-scale-x", `${1 + pullProgress * 0.08}`);
       if (leverDistance > maxPull * 0.72 && !leverControl.classList.contains("is-ready")) {
         leverControl.classList.add("is-ready");
         playTick(340, 0.024);
@@ -3327,31 +3365,32 @@
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       leverControl.classList.add("is-pulling");
-      leverControl.style.setProperty("--lever-shift", `${Math.max(52, leverControl.clientHeight * 0.48)}px`);
-      leverControl.style.setProperty("--lever-angle", "-36deg");
+      const keyboardPull = Math.max(20, leverControl.clientHeight * 0.18);
+      leverControl.style.setProperty("--lever-shift", `${keyboardPull}px`);
+      leverControl.style.setProperty("--lever-drop", `${keyboardPull}px`);
+      leverControl.style.setProperty("--lever-scale-y", "0.68");
+      leverControl.style.setProperty("--lever-scale-x", "1.08");
       window.setTimeout(() => {
         resetLever();
         spinFood();
       }, reduceMotion ? 1 : 260);
     });
 
-    /* Native horizontal swipe pager with a WeChat touch fallback */
+    /* Controlled transform pager: always starts on food, swipes left to drinks */
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
 
     const pageViewport = document.getElementById("pageViewport");
+    const pageTrack = document.getElementById("pageTrack");
     const panels = [...document.querySelectorAll(".page-panel")];
     let pageIndex = 0;
-    let pageScrollFrame = 0;
     let pageTouchActive = false;
     let pageTouchHorizontal = false;
     let pageTouchStartX = 0;
     let pageTouchStartY = 0;
     let pageTouchDeltaX = 0;
     let pageTouchBaseIndex = 0;
-    let entryLockActive = true;
-    let pageProgrammaticTarget = null;
 
     function updatePageState(nextIndex) {
       pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
@@ -3373,39 +3412,16 @@
 
     function showPage(nextIndex, animate = true) {
       const targetIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
-      pageProgrammaticTarget = targetIndex;
+      pageTrack.classList.toggle("no-transition", !animate);
       updatePageState(targetIndex);
-      pageViewport.classList.add("is-settling");
-      pageViewport.scrollLeft = targetIndex * pageViewport.clientWidth;
-      requestAnimationFrame(() => {
-        updatePageState(targetIndex);
-        pageProgrammaticTarget = null;
-        pageViewport.classList.remove("is-settling");
-      });
+      pageTrack.classList.toggle("is-drink-page", targetIndex === 1);
+      if (!animate) {
+        requestAnimationFrame(() => pageTrack.classList.remove("no-transition"));
+      }
     }
-
-    pageViewport.addEventListener("scroll", () => {
-      if (pageScrollFrame) return;
-      pageScrollFrame = requestAnimationFrame(() => {
-        pageScrollFrame = 0;
-        if (pageTouchActive) return;
-        const width = Math.max(1, pageViewport.clientWidth);
-        if (pageProgrammaticTarget !== null) {
-          const targetLeft = pageProgrammaticTarget * width;
-          if (Math.abs(pageViewport.scrollLeft - targetLeft) <= 2) {
-            updatePageState(pageProgrammaticTarget);
-            pageProgrammaticTarget = null;
-          }
-          return;
-        }
-        updatePageState(Math.round(pageViewport.scrollLeft / width));
-      });
-    }, { passive: true });
 
     pageViewport.addEventListener("touchstart", event => {
       if (event.touches.length !== 1 || event.target.closest(".win-modal")) return;
-      entryLockActive = false;
-      pageProgrammaticTarget = null;
       const touch = event.touches[0];
       pageTouchActive = true;
       pageTouchHorizontal = false;
@@ -3427,10 +3443,13 @@
       if (!pageTouchHorizontal) return;
       event.preventDefault();
       pageTouchDeltaX = dx;
-      const width = Math.max(1, pageViewport.clientWidth);
-      const maxScroll = width * (panels.length - 1);
-      const targetScroll = pageTouchBaseIndex * width - dx;
-      pageViewport.scrollLeft = Math.max(0, Math.min(maxScroll, targetScroll));
+      const resistedDx =
+        (pageTouchBaseIndex === 0 && dx > 0) || (pageTouchBaseIndex === panels.length - 1 && dx < 0)
+          ? dx * 0.22
+          : dx;
+      const baseOffset = pageTouchBaseIndex === 0 ? 0 : -50;
+      pageTrack.classList.add("is-dragging");
+      pageTrack.style.transform = `translate3d(calc(${baseOffset}% + ${resistedDx}px), 0, 0)`;
     }, { passive: false });
 
     function finishTouchPageSwipe(cancelled = false) {
@@ -3443,49 +3462,35 @@
       pageTouchActive = false;
       pageTouchHorizontal = false;
       pageTouchDeltaX = 0;
-      pageViewport.classList.remove("is-touching");
+      pageTrack.classList.remove("is-dragging");
+      pageTrack.style.removeProperty("transform");
       showPage(nextIndex);
     }
 
     pageViewport.addEventListener("touchend", () => finishTouchPageSwipe(false), { passive: true });
     pageViewport.addEventListener("touchcancel", () => finishTouchPageSwipe(true), { passive: true });
 
-    window.addEventListener("resize", () => {
-      pageViewport.scrollTo({ left: pageIndex * pageViewport.clientWidth, behavior: "auto" });
-    });
-
     document.addEventListener("keydown", event => {
       if (event.key === "ArrowLeft") {
-        entryLockActive = false;
         showPage(pageIndex - 1);
       }
       if (event.key === "ArrowRight") {
-        entryLockActive = false;
         showPage(pageIndex + 1);
       }
     });
 
     function resetEntryPage() {
-      if (!entryLockActive) return;
-      pageViewport.classList.remove("is-touching");
-      pageProgrammaticTarget = 0;
-      pageViewport.scrollLeft = 0;
-      pageViewport.scrollTo({ left: 0, behavior: "auto" });
-      updatePageState(0);
+      pageTouchActive = false;
+      pageTouchHorizontal = false;
+      pageTouchDeltaX = 0;
+      pageTrack.classList.remove("is-dragging");
+      pageTrack.style.removeProperty("transform");
+      showPage(0, false);
     }
 
     resetEntryPage();
-    requestAnimationFrame(resetEntryPage);
-    [120, 420, 900, 1600, 2600].forEach(delay => window.setTimeout(resetEntryPage, delay));
     window.addEventListener("load", resetEntryPage, { once: true });
-    window.addEventListener("pageshow", () => {
-      entryLockActive = true;
-      resetEntryPage();
-      [120, 420, 900, 1600].forEach(delay => window.setTimeout(resetEntryPage, delay));
-    });
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) resetEntryPage();
-    });
+    window.addEventListener("pageshow", resetEntryPage);
 
     const drinkScene = document.getElementById("drinkScene");
     const drawButton = document.getElementById("drawButton");
