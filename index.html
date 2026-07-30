@@ -2398,7 +2398,7 @@
       scroll-behavior: smooth;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
-      touch-action: pan-x;
+      touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -2406,8 +2406,13 @@
       display: none;
     }
 
+    .page-viewport.is-touching {
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+    }
+
     .page-viewport .reel-window {
-      touch-action: pan-x;
+      touch-action: pan-y;
     }
 
     .page-track {
@@ -2688,6 +2693,107 @@
       font-size: clamp(0.57rem, 2.45vw, 0.7rem);
     }
 
+    /* Neon capsule winner dialog */
+    .win-modal {
+      z-index: 200;
+      padding: 18px;
+      background: rgba(5, 3, 35, 0.86);
+      backdrop-filter: blur(12px);
+    }
+
+    .win-dialog {
+      width: min(390px, 100%);
+      padding: 30px 22px 24px;
+      border: 2px solid #f27be4;
+      border-radius: 28px;
+      color: #f9f7ff;
+      background: #18105c;
+      box-shadow:
+        0 0 0 6px rgba(86, 96, 232, 0.26),
+        0 0 30px rgba(240, 87, 209, 0.46),
+        0 26px 70px rgba(2, 1, 27, 0.72);
+    }
+
+    .win-dialog::before {
+      inset: 8px;
+      border-color: rgba(120, 225, 255, 0.42);
+      border-radius: 20px;
+    }
+
+    .modal-close {
+      top: 13px;
+      right: 13px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(133, 228, 255, 0.42);
+      color: #fff;
+      background: #2b207c;
+      box-shadow: 0 0 14px rgba(110, 209, 255, 0.22);
+    }
+
+    .modal-close:hover {
+      background: #3a2b95;
+    }
+
+    .modal-close img {
+      filter: brightness(0) invert(1);
+    }
+
+    .win-kicker {
+      margin-bottom: 12px;
+      color: #ff95e8;
+      text-shadow: 0 0 12px rgba(255, 98, 215, 0.44);
+    }
+
+    .win-glass {
+      width: 112px;
+      height: 112px;
+      margin-bottom: 15px;
+      border: 0;
+      background: url("assets/capsule-result-v5.png") center / contain no-repeat;
+      box-shadow:
+        0 0 22px rgba(250, 91, 213, 0.46),
+        0 13px 25px rgba(4, 3, 45, 0.48);
+    }
+
+    .win-glass-icon {
+      width: 54px;
+      height: 54px;
+      filter: brightness(0) invert(1) drop-shadow(0 2px 5px rgba(46, 13, 77, 0.34));
+    }
+
+    .win-dialog h3 {
+      color: #fff8ff;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      font-size: 1.85rem;
+      text-shadow: 0 0 16px rgba(245, 123, 225, 0.36);
+    }
+
+    .win-note {
+      margin-top: 9px;
+      color: rgba(235, 237, 255, 0.78);
+    }
+
+    .modal-button.secondary {
+      border: 1px solid rgba(116, 224, 255, 0.54);
+      color: #f4f9ff;
+      background: #241970;
+      box-shadow: 0 0 13px rgba(91, 188, 255, 0.16);
+    }
+
+    .modal-button.primary {
+      border: 1px solid rgba(255, 191, 237, 0.48);
+      color: #fff;
+      background: #d94f9d;
+      box-shadow:
+        0 7px 18px rgba(8, 5, 55, 0.38),
+        0 0 16px rgba(236, 91, 203, 0.3);
+    }
+
+    .confetti {
+      z-index: 210;
+    }
+
     @media (max-width: 760px) {
       .floating-sound {
         width: 38px;
@@ -2738,7 +2844,7 @@
     }
   </style>
 </head>
-<body data-build="NATIVE-SWIPE-GACHA-PHYSICS-V3-20260730">
+<body data-build="WECHAT-SWIPE-NEON-MODAL-V4-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -3155,11 +3261,21 @@
       }, reduceMotion ? 1 : 260);
     });
 
-    /* Native horizontal swipe pager */
+    /* Native horizontal swipe pager with a WeChat touch fallback */
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
     const pageViewport = document.getElementById("pageViewport");
     const panels = [...document.querySelectorAll(".page-panel")];
     let pageIndex = 0;
     let pageScrollFrame = 0;
+    let pageTouchActive = false;
+    let pageTouchHorizontal = false;
+    let pageTouchStartX = 0;
+    let pageTouchStartY = 0;
+    let pageTouchDeltaX = 0;
+    let pageTouchBaseIndex = 0;
 
     function updatePageState(nextIndex) {
       pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
@@ -3192,10 +3308,57 @@
       if (pageScrollFrame) return;
       pageScrollFrame = requestAnimationFrame(() => {
         pageScrollFrame = 0;
+        if (pageTouchActive) return;
         const width = Math.max(1, pageViewport.clientWidth);
         updatePageState(Math.round(pageViewport.scrollLeft / width));
       });
     }, { passive: true });
+
+    pageViewport.addEventListener("touchstart", event => {
+      if (event.touches.length !== 1 || event.target.closest(".win-modal")) return;
+      const touch = event.touches[0];
+      pageTouchActive = true;
+      pageTouchHorizontal = false;
+      pageTouchStartX = touch.clientX;
+      pageTouchStartY = touch.clientY;
+      pageTouchDeltaX = 0;
+      pageTouchBaseIndex = pageIndex;
+    }, { passive: true });
+
+    pageViewport.addEventListener("touchmove", event => {
+      if (!pageTouchActive || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - pageTouchStartX;
+      const dy = touch.clientY - pageTouchStartY;
+      if (!pageTouchHorizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.08) {
+        pageTouchHorizontal = true;
+        pageViewport.classList.add("is-touching");
+      }
+      if (!pageTouchHorizontal) return;
+      event.preventDefault();
+      pageTouchDeltaX = dx;
+      const width = Math.max(1, pageViewport.clientWidth);
+      const maxScroll = width * (panels.length - 1);
+      const targetScroll = pageTouchBaseIndex * width - dx;
+      pageViewport.scrollLeft = Math.max(0, Math.min(maxScroll, targetScroll));
+    }, { passive: false });
+
+    function finishTouchPageSwipe(cancelled = false) {
+      if (!pageTouchActive) return;
+      const threshold = Math.min(72, Math.max(42, pageViewport.clientWidth * 0.13));
+      let nextIndex = pageTouchBaseIndex;
+      if (!cancelled && pageTouchHorizontal && Math.abs(pageTouchDeltaX) >= threshold) {
+        nextIndex += pageTouchDeltaX < 0 ? 1 : -1;
+      }
+      pageTouchActive = false;
+      pageTouchHorizontal = false;
+      pageTouchDeltaX = 0;
+      pageViewport.classList.remove("is-touching");
+      showPage(nextIndex);
+    }
+
+    pageViewport.addEventListener("touchend", () => finishTouchPageSwipe(false), { passive: true });
+    pageViewport.addEventListener("touchcancel", () => finishTouchPageSwipe(true), { passive: true });
 
     window.addEventListener("resize", () => {
       pageViewport.scrollTo({ left: pageIndex * pageViewport.clientWidth, behavior: "auto" });
@@ -3205,7 +3368,22 @@
       if (event.key === "ArrowLeft") showPage(pageIndex - 1);
       if (event.key === "ArrowRight") showPage(pageIndex + 1);
     });
-    showPage(0, false);
+
+    function resetEntryPage() {
+      pageViewport.classList.remove("is-touching");
+      pageViewport.scrollTo({ left: 0, behavior: "auto" });
+      updatePageState(0);
+    }
+
+    resetEntryPage();
+    requestAnimationFrame(resetEntryPage);
+    window.setTimeout(resetEntryPage, 120);
+    window.setTimeout(resetEntryPage, 420);
+    window.addEventListener("pageshow", () => {
+      resetEntryPage();
+      window.setTimeout(resetEntryPage, 120);
+      window.setTimeout(resetEntryPage, 420);
+    });
 
     const drinkScene = document.getElementById("drinkScene");
     const drawButton = document.getElementById("drawButton");
