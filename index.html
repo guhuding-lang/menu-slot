@@ -1,8 +1,12 @@
 <!DOCTYPE html>
+<!-- MENU SLOT BUILD: 3D-V4-20260730 -->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="theme-color" content="#f2eadf">
   <title>今天吃什么 · 今晚喝什么</title>
   <style>
@@ -59,39 +63,21 @@
       padding: 24px 0 42px;
     }
 
-    .app-header {
-      display: flex;
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 410px) 46px;
       align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 18px;
-      padding: 0 4px;
-    }
-
-    .brand-kicker {
-      margin: 0 0 5px;
-      color: var(--wine);
-      font-size: 0.75rem;
-      font-weight: 900;
-      letter-spacing: 0.16em;
-    }
-
-    .app-title {
-      margin: 0;
-      color: var(--wine-dark);
-      font-family: Georgia, "Noto Serif SC", serif;
-      font-size: 2.1rem;
-      line-height: 1;
-      letter-spacing: 0;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .sound-toggle {
       display: inline-grid;
-      grid-template-columns: 22px auto;
-      align-items: center;
-      gap: 7px;
-      min-height: 42px;
-      padding: 0 14px;
+      place-items: center;
+      width: 46px;
+      min-height: 46px;
+      padding: 0;
       border: 1px solid rgba(87, 25, 37, 0.15);
       border-radius: 999px;
       color: var(--wine-dark);
@@ -105,21 +91,25 @@
     }
 
     .sound-icon {
-      font-size: 1rem;
-      line-height: 1;
+      width: 20px;
+      height: 20px;
+      display: block;
     }
 
     .sound-label {
-      font-size: 0.78rem;
-      font-weight: 800;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
     }
 
     .tabs {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 6px;
-      width: min(410px, 100%);
-      margin: 0 auto 16px;
+      width: 100%;
+      margin: 0;
       padding: 6px;
       border: 1px solid rgba(87, 25, 37, 0.1);
       border-radius: 999px;
@@ -431,431 +421,713 @@
       font-weight: 900;
     }
 
-    /* Night bar lottery */
+    /* Compact capsule machine */
     .drink-scene {
       position: relative;
+      min-height: 650px;
       overflow: hidden;
-      min-height: 690px;
-      padding: 30px 30px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px 24px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.92);
       border-radius: 30px;
-      color: #fff8ed;
+      color: var(--ink);
       background:
-        linear-gradient(rgba(18, 15, 23, 0.18), rgba(18, 15, 23, 0.92)),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 55px),
-        linear-gradient(145deg, #2a2030 0%, #131219 66%, #1d171e 100%);
-      box-shadow: 0 28px 68px rgba(34, 22, 29, 0.35);
+        radial-gradient(circle at 8% 8%, rgba(255, 255, 255, 0.96), transparent 24%),
+        radial-gradient(circle at 91% 14%, rgba(231, 177, 121, 0.2), transparent 25%),
+        linear-gradient(160deg, #fff8ec 0%, #f4e6d6 57%, #ead7c7 100%);
+      box-shadow: var(--shadow), inset 0 1px 0 #fff;
       isolation: isolate;
     }
 
-    .drink-scene::before {
+    .drink-scene::before,
+    .drink-scene::after {
       content: "";
       position: absolute;
-      inset: 0;
       z-index: -1;
-      background:
-        radial-gradient(circle at 22% 16%, rgba(255, 111, 145, 0.16), transparent 26%),
-        radial-gradient(circle at 78% 20%, rgba(117, 230, 221, 0.13), transparent 25%);
-    }
-
-    .bar-shelf {
-      position: absolute;
-      top: 94px;
-      left: 5%;
-      right: 5%;
-      height: 88px;
-      border-bottom: 8px solid #4a3030;
-      opacity: 0.6;
+      border: 1px solid rgba(139, 47, 66, 0.09);
+      border-radius: 50%;
       pointer-events: none;
     }
 
-    .bottle {
-      position: absolute;
-      bottom: 8px;
-      width: 20px;
-      border-radius: 5px 5px 2px 2px;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), var(--bottle-color, #627b65));
-      box-shadow: 0 0 13px var(--bottle-glow, rgba(117, 230, 221, 0.2));
+    .drink-scene::before {
+      width: 240px;
+      height: 240px;
+      top: -148px;
+      left: -88px;
     }
 
-    .bottle::before {
-      content: "";
-      position: absolute;
-      left: 6px;
-      top: -13px;
-      width: 8px;
-      height: 16px;
-      border-radius: 2px 2px 0 0;
-      background: inherit;
+    .drink-scene::after {
+      width: 190px;
+      height: 190px;
+      right: -108px;
+      bottom: -104px;
     }
 
-    .bottle:nth-child(1) { left: 3%; height: 46px; }
-    .bottle:nth-child(2) { left: 10%; height: 60px; --bottle-color: #90513a; }
-    .bottle:nth-child(3) { left: 18%; height: 53px; --bottle-color: #557b83; }
-    .bottle:nth-child(4) { right: 18%; height: 57px; --bottle-color: #925f3b; }
-    .bottle:nth-child(5) { right: 10%; height: 49px; --bottle-color: #607953; }
-    .bottle:nth-child(6) { right: 3%; height: 63px; --bottle-color: #7c4569; }
+    .drink-heading {
+      position: relative;
+      z-index: 4;
+      flex: none;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .drink-kicker {
+      margin: 0 0 3px;
+      color: var(--wine);
+      font-size: 0.66rem;
+      font-weight: 950;
+      letter-spacing: 0.2em;
+    }
 
     .neon-title {
-      position: relative;
-      z-index: 2;
       margin: 0;
-      text-align: center;
-      color: #fff4e8;
+      color: var(--wine-dark);
       font-family: Georgia, "Noto Serif SC", serif;
-      font-size: 2rem;
-      letter-spacing: 0;
-      text-shadow:
-        0 0 6px rgba(255, 111, 145, 0.85),
-        0 0 18px rgba(255, 111, 145, 0.55),
-        0 0 35px rgba(255, 111, 145, 0.28);
+      font-size: 1.82rem;
+      line-height: 1.08;
     }
 
     .neon-subtitle {
-      position: relative;
-      z-index: 2;
-      margin: 7px 0 22px;
-      color: #cfc4cc;
-      text-align: center;
-      font-size: 0.84rem;
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
     }
 
     .lottery-cabinet {
       position: relative;
       z-index: 3;
-      width: min(650px, 100%);
+      width: min(370px, 100%);
+      height: 500px;
+      flex: 1 1 500px;
+      min-height: 430px;
+      max-height: 500px;
+      display: grid;
+      grid-template-rows: minmax(255px, 1fr) 178px;
       margin: 0 auto;
-      padding: 38px 42px 34px;
-      border: 5px solid #6a3d45;
-      border-radius: 28px;
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.13), transparent 18%),
-        linear-gradient(160deg, #a86069, #6f3541 55%, #4a222c);
-      box-shadow:
-        0 22px 48px rgba(0, 0, 0, 0.48),
-        inset 0 0 0 3px rgba(255, 225, 188, 0.13),
-        inset 0 -15px 25px rgba(40, 9, 18, 0.25);
-    }
-
-    .lottery-cabinet::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -29px;
-      width: 74%;
-      height: 28px;
-      transform: translateX(-50%);
-      border-radius: 0 0 14px 14px;
-      background: linear-gradient(#51242e, #30151b);
-      box-shadow: 0 13px 24px rgba(0, 0, 0, 0.35);
+      filter: drop-shadow(0 18px 20px rgba(77, 36, 39, 0.2));
     }
 
     .cabinet-sign {
       position: absolute;
-      top: -19px;
+      top: -8px;
       left: 50%;
-      z-index: 3;
+      z-index: 7;
       transform: translateX(-50%);
-      padding: 8px 23px;
-      border: 2px solid #e6c17e;
+      min-width: 178px;
+      padding: 7px 19px 6px;
+      border: 2px solid #f4d79c;
       border-radius: 999px;
-      color: #ffe9b2;
-      background: #3c1722;
-      box-shadow: 0 0 18px rgba(255, 197, 104, 0.32);
-      font-size: 0.75rem;
+      color: #fff8e8;
+      background: linear-gradient(180deg, #a94359, #7a273b);
+      box-shadow: 0 7px 16px rgba(87, 25, 37, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+      font-size: 0.67rem;
       font-weight: 950;
+      letter-spacing: 0.12em;
+      text-align: center;
       white-space: nowrap;
     }
 
-    .lights {
+    .gacha-globe {
+      position: relative;
+      z-index: 2;
+      min-height: 0;
+      padding: 14px 18px 0;
+      border-radius: 50% 50% 25px 25px / 42% 42% 15px 15px;
+      background: linear-gradient(160deg, #b94e63 0%, #8c3045 70%, #702237 100%);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+        inset 0 -12px 18px rgba(76, 18, 34, 0.22);
+    }
+
+    .gacha-globe::after {
+      content: "";
       position: absolute;
-      z-index: 8;
-      display: flex;
-      justify-content: space-around;
-      pointer-events: none;
-    }
-
-    .lights.horizontal {
-      left: 14px;
-      right: 14px;
-      height: 14px;
-    }
-
-    .lights.top { top: 8px; }
-    .lights.bottom { bottom: 8px; }
-
-    .lights.vertical {
-      top: 22px;
-      bottom: 22px;
-      width: 14px;
-      flex-direction: column;
-    }
-
-    .lights.left { left: 8px; }
-    .lights.right { right: 8px; }
-
-    .bulb {
-      width: 9px;
-      height: 9px;
-      flex: none;
+      z-index: 4;
+      left: 13%;
+      right: 13%;
+      bottom: -8px;
+      height: 27px;
+      border: 3px solid #f2c98b;
       border-radius: 50%;
-      background: #7d5858;
-      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), 0 0 0 2px rgba(45, 14, 21, 0.2);
-    }
-
-    .drink-scene.is-mixing .bulb {
-      animation: chaseLight 480ms infinite;
-      animation-delay: calc(var(--i) * -38ms);
-    }
-
-    .drink-scene.is-winning .bulb {
-      animation: winLight 240ms infinite alternate;
-      animation-delay: calc(var(--i) * -24ms);
-    }
-
-    @keyframes chaseLight {
-      0%, 42%, 100% {
-        background: #775354;
-        box-shadow: 0 0 0 2px rgba(45, 14, 21, 0.2);
-      }
-      48%, 75% {
-        background: #fff0a8;
-        box-shadow: 0 0 7px #ffd05b, 0 0 15px rgba(255, 173, 73, 0.9);
-      }
-    }
-
-    @keyframes winLight {
-      from {
-        background: #fff3ad;
-        box-shadow: 0 0 8px #ffd56c, 0 0 18px rgba(255, 111, 145, 0.85);
-      }
-      to {
-        background: #78eee5;
-        box-shadow: 0 0 9px #75e6dd, 0 0 20px rgba(117, 230, 221, 0.85);
-      }
+      background: linear-gradient(180deg, #a94359, #78253a);
+      box-shadow: 0 6px 10px rgba(77, 28, 37, 0.24);
     }
 
     .dome {
       position: relative;
-      height: 310px;
+      height: 100%;
       overflow: hidden;
-      border: 4px solid rgba(255, 234, 210, 0.78);
-      border-radius: 48% 48% 31% 31% / 44% 44% 23% 23%;
+      border: 4px solid #f1d9b4;
+      border-radius: 50% 50% 30% 30% / 48% 48% 22% 22%;
       background:
-        linear-gradient(110deg, rgba(255, 255, 255, 0.24) 0 8%, transparent 9% 73%, rgba(255, 255, 255, 0.08) 74% 81%, transparent 82%),
-        radial-gradient(circle at 50% 105%, rgba(255, 111, 145, 0.23), transparent 48%),
-        rgba(33, 30, 42, 0.62);
+        linear-gradient(112deg, rgba(255, 255, 255, 0.46) 0 7%, transparent 8% 72%, rgba(255, 255, 255, 0.18) 73% 79%, transparent 80%),
+        radial-gradient(circle at 50% 104%, rgba(143, 85, 115, 0.19), transparent 51%),
+        linear-gradient(180deg, rgba(225, 243, 239, 0.93), rgba(226, 214, 219, 0.92));
       box-shadow:
-        inset 0 0 45px rgba(0, 0, 0, 0.32),
-        inset 0 0 0 6px rgba(255, 255, 255, 0.06),
-        0 0 18px rgba(255, 198, 133, 0.18);
+        inset 0 0 30px rgba(87, 25, 37, 0.12),
+        inset 0 0 0 5px rgba(255, 255, 255, 0.34);
       backdrop-filter: blur(3px);
     }
 
-    .dome::after {
+    .dome::before {
       content: "";
       position: absolute;
+      z-index: 1;
       left: 10%;
       right: 10%;
-      bottom: 15px;
-      height: 24px;
+      bottom: 8px;
+      height: 25px;
       border-radius: 50%;
-      background: rgba(12, 10, 16, 0.35);
-      filter: blur(7px);
+      background: rgba(87, 25, 37, 0.14);
+      filter: blur(6px);
     }
 
     .lottery-ball {
-      --x: 0px;
-      --y: 0px;
       --delay: 0ms;
+      --left: 50%;
+      --top: 50%;
+      --swing-x: 18px;
+      --lift: 38px;
       position: absolute;
       z-index: 2;
-      left: calc(50% - 43px);
-      top: calc(50% - 43px);
-      width: 86px;
-      height: 86px;
+      left: var(--left);
+      top: var(--top);
+      width: 72px;
+      height: 72px;
       display: grid;
       place-items: center;
-      padding: 9px;
-      transform: translate(var(--x), var(--y));
-      border: 3px solid rgba(255, 255, 255, 0.65);
+      padding: 14px 7px 7px;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border: 3px solid rgba(255, 255, 255, 0.82);
       border-radius: 50%;
-      color: #352726;
+      color: #433233;
       background:
-        radial-gradient(circle at 31% 25%, rgba(255, 255, 255, 0.95) 0 8%, transparent 9%),
-        linear-gradient(145deg, var(--ball-light), var(--ball-dark));
+        radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.96) 0 7%, transparent 8%),
+        linear-gradient(180deg, var(--ball-light) 0 48%, rgba(255, 255, 255, 0.76) 49% 54%, var(--ball-dark) 55% 100%);
       box-shadow:
-        inset -8px -10px 14px rgba(65, 32, 30, 0.14),
-        0 9px 13px rgba(0, 0, 0, 0.3);
+        inset -7px -8px 12px rgba(69, 32, 36, 0.14),
+        0 7px 11px rgba(64, 33, 37, 0.2);
       text-align: center;
-      font-size: 0.76rem;
+      font-size: 0.63rem;
       font-weight: 950;
-      line-height: 1.15;
-      transition: transform 500ms cubic-bezier(0.2, 0.72, 0.25, 1), opacity 180ms ease;
+      line-height: 1.12;
+      transition: left 280ms ease, top 280ms ease, opacity 180ms ease;
     }
 
     .lottery-ball::after {
       content: attr(data-number);
       position: absolute;
-      top: 6px;
-      right: 9px;
-      width: 18px;
-      height: 18px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      color: rgba(53, 39, 38, 0.65);
-      background: rgba(255, 255, 255, 0.45);
-      font-size: 0.62rem;
+      top: 7px;
+      right: 8px;
+      color: rgba(67, 50, 51, 0.52);
+      font-size: 0.52rem;
+      font-weight: 900;
     }
 
     .drink-scene.is-mixing .lottery-ball {
-      animation: ballMix 700ms cubic-bezier(0.36, 0, 0.64, 1) infinite alternate;
+      animation: ballMix 540ms cubic-bezier(0.36, 0, 0.64, 1) infinite alternate;
       animation-delay: var(--delay);
     }
 
     @keyframes ballMix {
       0% {
-        transform: translate(var(--x), var(--y)) rotate(-12deg) scale(0.96);
+        transform: translate(-50%, -50%) translateX(calc(var(--swing-x) * -1)) rotate(-18deg) scale(0.96);
       }
-      45% {
-        transform: translate(
-          calc(var(--x) + var(--swing-x)),
-          calc(var(--y) - var(--lift))
-        ) rotate(25deg) scale(1.04);
+      48% {
+        transform: translate(-50%, -50%) translate(var(--swing-x), calc(var(--lift) * -1)) rotate(28deg) scale(1.04);
       }
       100% {
-        transform: translate(
-          calc(var(--x) - var(--swing-x)),
-          calc(var(--y) + 24px)
-        ) rotate(66deg) scale(0.98);
+        transform: translate(-50%, -50%) translate(calc(var(--swing-x) * -0.45), 16px) rotate(62deg) scale(0.98);
       }
     }
 
-    .machine-neck {
+    .gacha-base {
       position: relative;
-      width: 94px;
-      height: 55px;
-      margin: -1px auto 0;
-      border: 3px solid #b98575;
-      border-top: 0;
-      border-radius: 0 0 20px 20px;
-      background: linear-gradient(90deg, #4b202a, #8c4b56 50%, #4b202a);
-      box-shadow: inset 0 -8px 10px rgba(0, 0, 0, 0.22);
-    }
-
-    .drawn-ball-wrap {
-      position: relative;
-      z-index: 4;
-      width: 152px;
-      height: 112px;
-      margin: -7px auto 0;
+      z-index: 1;
       display: grid;
-      place-items: center;
-      border: 3px solid #c4947c;
-      border-radius: 17px;
-      background: linear-gradient(180deg, #391b22, #211016);
-      box-shadow: inset 0 12px 18px rgba(0, 0, 0, 0.35), 0 9px 20px rgba(0, 0, 0, 0.28);
-    }
-
-    .drawn-ball {
-      width: 78px;
-      height: 78px;
-      display: grid;
-      place-items: center;
-      padding: 8px;
-      border: 3px solid rgba(255, 255, 255, 0.72);
-      border-radius: 50%;
-      color: #342827;
-      background:
-        radial-gradient(circle at 31% 25%, rgba(255, 255, 255, 0.95) 0 8%, transparent 9%),
-        linear-gradient(145deg, #f6df8a, #d68b67);
-      box-shadow: inset -8px -10px 13px rgba(65, 32, 30, 0.13), 0 8px 16px rgba(0, 0, 0, 0.35);
-      font-size: 0.75rem;
-      font-weight: 950;
-      line-height: 1.15;
-      text-align: center;
-    }
-
-    .drawn-ball.is-dropping {
-      animation: ballDrop 720ms cubic-bezier(0.18, 0.76, 0.24, 1.22) both;
-    }
-
-    @keyframes ballDrop {
-      0% { opacity: 0; transform: translateY(-125px) scale(0.56) rotate(-120deg); }
-      68% { opacity: 1; transform: translateY(7px) scale(1.08) rotate(12deg); }
-      100% { transform: translateY(0) scale(1) rotate(0); }
-    }
-
-    .drink-control {
-      position: relative;
-      z-index: 5;
-      display: flex;
-      flex-direction: column;
+      grid-template-columns: 0.9fr 1.1fr;
       align-items: center;
-      gap: 11px;
-      margin-top: 42px;
+      gap: 16px;
+      margin: -2px 16px 0;
+      padding: 31px 20px 18px;
+      border: 3px solid #74283a;
+      border-radius: 22px 22px 34px 34px;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.26), transparent 28%),
+        linear-gradient(155deg, #c4586c 0%, #9a384f 56%, #7b273d 100%);
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 230, 194, 0.14),
+        inset 0 -15px 20px rgba(80, 18, 34, 0.2);
+    }
+
+    .gacha-base::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      bottom: -12px;
+      height: 17px;
+      border-radius: 0 0 15px 15px;
+      background: #642036;
+      box-shadow: 0 8px 12px rgba(70, 25, 34, 0.2);
     }
 
     .draw-button {
-      min-width: 210px;
-      min-height: 61px;
-      padding: 0 30px;
-      border: 2px solid #ffd58a;
-      border-radius: 999px;
-      color: #fff6e8;
+      position: relative;
+      width: 104px;
+      height: 104px;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 2px;
+      padding: 0;
+      border: 7px solid #f3d5a2;
+      border-radius: 50%;
+      color: #fffaf1;
       background:
-        radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.25), transparent 24%),
-        linear-gradient(180deg, #d4526c, #922e48 62%, #5c1a2e);
+        radial-gradient(circle at 33% 25%, rgba(255, 255, 255, 0.4) 0 7%, transparent 8%),
+        linear-gradient(145deg, #a83b55, #6f2037);
       box-shadow:
-        0 8px 0 #3b1020,
-        0 0 18px rgba(255, 111, 145, 0.36),
-        0 16px 28px rgba(0, 0, 0, 0.34),
-        inset 0 2px 1px rgba(255, 255, 255, 0.28);
-      font-size: 1.06rem;
+        0 7px 0 #4d1428,
+        0 11px 18px rgba(70, 20, 37, 0.28),
+        inset 0 -8px 12px rgba(69, 16, 34, 0.2);
+      font-size: 0.81rem;
       font-weight: 950;
+      line-height: 1.05;
       cursor: pointer;
-      transition: transform 120ms ease, filter 180ms ease;
+      transition: transform 120ms ease, filter 180ms ease, box-shadow 120ms ease;
+    }
+
+    .knob-arrow {
+      display: block;
+      font-family: Arial, sans-serif;
+      font-size: 1.6rem;
+      line-height: 1;
     }
 
     .draw-button:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.07);
+      transform: translateY(-2px) rotate(-2deg);
+      filter: brightness(1.05);
     }
 
     .draw-button:active {
-      transform: translateY(6px);
-      box-shadow: 0 2px 0 #3b1020, 0 0 16px rgba(255, 111, 145, 0.3);
+      transform: translateY(5px) rotate(6deg);
+      box-shadow: 0 2px 0 #4d1428, 0 6px 11px rgba(70, 20, 37, 0.24);
     }
 
     .draw-button:disabled {
       cursor: wait;
-      filter: saturate(0.68);
+      filter: saturate(0.72);
+    }
+
+    .drink-scene.is-mixing .draw-button {
+      animation: knobTurn 620ms ease-in-out infinite;
+    }
+
+    @keyframes knobTurn {
+      0%, 100% { transform: rotate(0); }
+      50% { transform: rotate(22deg); }
+    }
+
+    .drawn-ball-wrap {
+      position: relative;
+      width: 130px;
+      height: 92px;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 4px solid #edc98f;
+      border-radius: 14px 14px 26px 26px;
+      background: linear-gradient(180deg, #4b1d2b, #251019);
+      box-shadow: inset 0 10px 16px rgba(0, 0, 0, 0.35), 0 7px 13px rgba(69, 20, 34, 0.24);
+    }
+
+    .chute-label {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 241, 218, 0.58);
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      transition: opacity 180ms ease;
+    }
+
+    .drawn-ball-wrap.has-result .chute-label {
+      opacity: 0;
+    }
+
+    .drawn-ball {
+      width: 72px;
+      height: 72px;
+      display: grid;
+      place-items: center;
+      padding: 12px 7px 7px;
+      border: 3px solid rgba(255, 255, 255, 0.82);
+      border-radius: 50%;
+      color: #3e2e2e;
+      background:
+        radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.96) 0 7%, transparent 8%),
+        linear-gradient(180deg, #f6df8a 0 48%, rgba(255, 255, 255, 0.78) 49% 54%, #d68b67 55% 100%);
+      box-shadow: inset -7px -8px 11px rgba(65, 32, 30, 0.13), 0 7px 13px rgba(0, 0, 0, 0.32);
+      font-size: 0.64rem;
+      font-weight: 950;
+      line-height: 1.1;
+      text-align: center;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .drawn-ball-wrap.has-result .drawn-ball {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .drawn-ball.is-dropping {
+      animation: ballDrop 660ms cubic-bezier(0.18, 0.76, 0.24, 1.22) both;
+    }
+
+    @keyframes ballDrop {
+      0% { opacity: 0; transform: translateY(-105px) scale(0.55) rotate(-110deg); }
+      68% { opacity: 1; transform: translateY(6px) scale(1.06) rotate(10deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
     }
 
     .drink-result-line {
-      min-height: 24px;
-      margin: 0;
-      color: #d7cbd2;
-      font-size: 0.82rem;
+      position: relative;
+      z-index: 4;
+      flex: none;
+      min-height: 22px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
       text-align: center;
     }
 
     .drink-result-line strong {
-      color: #ffe3a5;
+      color: var(--wine-dark);
     }
 
-    .bar-counter {
+    /* 3D vintage capsule machine */
+    .lottery-cabinet {
+      width: min(340px, 100%);
+      height: 500px;
+      flex: 0 1 500px;
+      min-height: 450px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      filter:
+        drop-shadow(0 20px 15px rgba(71, 27, 35, 0.2))
+        drop-shadow(0 5px 4px rgba(71, 27, 35, 0.14));
+      perspective: 900px;
+    }
+
+    .cabinet-sign {
+      display: none;
+    }
+
+    .machine-top {
       position: absolute;
-      z-index: 1;
-      left: -2%;
-      right: -2%;
-      bottom: -2px;
-      height: 74px;
-      border-top: 9px solid #67413a;
+      z-index: 8;
+      top: 0;
+      left: 50%;
+      width: 206px;
+      height: 39px;
+      transform: translateX(-50%);
+      border: 2px solid #8a694d;
+      border-radius: 50%;
       background:
-        linear-gradient(90deg, transparent 0 7%, rgba(255, 255, 255, 0.04) 7% 7.5%, transparent 7.5% 19%),
-        linear-gradient(#402a28, #211719);
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+        linear-gradient(90deg, #6f4a34 0%, #f2d5a1 18%, #9d7553 48%, #f6dfad 76%, #765039 100%);
+      box-shadow:
+        inset 0 5px 7px rgba(255, 255, 255, 0.55),
+        inset 0 -7px 8px rgba(76, 42, 29, 0.26),
+        0 7px 8px rgba(84, 49, 40, 0.2);
+    }
+
+    .machine-top::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -16px;
+      width: 45px;
+      height: 27px;
+      transform: translateX(-50%);
+      border: 2px solid #8a694d;
+      border-radius: 50% 50% 38% 38%;
+      background:
+        radial-gradient(circle at 36% 24%, rgba(255, 255, 255, 0.62) 0 9%, transparent 10%),
+        linear-gradient(145deg, #f5dda9, #9c704c 68%, #704731);
+      box-shadow: 0 5px 7px rgba(74, 42, 31, 0.24);
+    }
+
+    .machine-top::after {
+      content: "";
+      position: absolute;
+      inset: 5px 18px 9px;
+      border-radius: 50%;
+      border-top: 2px solid rgba(255, 255, 255, 0.62);
+    }
+
+    .gacha-globe {
+      position: relative;
+      z-index: 4;
+      width: 300px;
+      height: 300px;
+      min-height: 300px;
+      flex: none;
+      margin-top: 15px;
+      padding: 18px;
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .gacha-globe::after {
+      content: "";
+      position: absolute;
+      z-index: 7;
+      left: 9px;
+      right: 9px;
+      bottom: -3px;
+      height: 35px;
+      border: 2px solid #876347;
+      border-radius: 50%;
+      background:
+        linear-gradient(90deg, #6c4632 0%, #f3d9a9 16%, #9b7353 49%, #f7e3ba 78%, #6c4936 100%);
+      box-shadow:
+        inset 0 6px 7px rgba(255, 255, 255, 0.48),
+        inset 0 -8px 8px rgba(70, 38, 29, 0.24),
+        0 7px 8px rgba(84, 49, 40, 0.22);
+    }
+
+    .dome {
+      width: 100%;
+      height: 100%;
+      border: 5px solid rgba(128, 94, 72, 0.7);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 23%, rgba(255, 255, 255, 0.78) 0 4%, transparent 5%),
+        radial-gradient(circle at 68% 68%, rgba(116, 74, 100, 0.18), transparent 45%),
+        linear-gradient(112deg, rgba(255, 255, 255, 0.48) 0 8%, transparent 9% 70%, rgba(255, 255, 255, 0.22) 71% 77%, transparent 78%),
+        linear-gradient(180deg, rgba(243, 249, 244, 0.92), rgba(222, 208, 214, 0.88));
+      box-shadow:
+        inset 14px 8px 24px rgba(255, 255, 255, 0.58),
+        inset -16px -14px 28px rgba(95, 53, 71, 0.18),
+        inset 0 0 0 4px rgba(255, 255, 255, 0.46),
+        0 7px 12px rgba(80, 46, 48, 0.18);
+      backdrop-filter: blur(2px);
+    }
+
+    .dome::before {
+      left: 12%;
+      right: 12%;
+      bottom: 17px;
+      height: 30px;
+      background: rgba(80, 42, 57, 0.17);
+      filter: blur(7px);
+    }
+
+    .dome::after {
+      content: "";
+      position: absolute;
+      z-index: 5;
+      top: 13%;
+      left: 15%;
+      width: 20%;
+      height: 47%;
+      transform: rotate(19deg);
+      border-radius: 50%;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.04));
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .lottery-ball {
+      border-color: rgba(255, 255, 255, 0.9);
+      box-shadow:
+        inset 8px 7px 11px rgba(255, 255, 255, 0.38),
+        inset -9px -10px 13px rgba(69, 32, 36, 0.19),
+        0 8px 12px rgba(64, 33, 37, 0.24);
+    }
+
+    .gacha-base {
+      position: relative;
+      z-index: 2;
+      width: 258px;
+      min-height: 196px;
+      flex: 1 0 196px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 7px;
+      margin: -5px 0 0;
+      padding: 36px 25px 14px;
+      border: 3px solid #6d2739;
+      border-radius: 24px 24px 45px 45px;
+      background:
+        radial-gradient(circle at 24% 13%, rgba(255, 255, 255, 0.34), transparent 24%),
+        linear-gradient(90deg, rgba(86, 22, 42, 0.32), transparent 15% 82%, rgba(77, 17, 36, 0.34)),
+        linear-gradient(150deg, #d8677b 0%, #b3465e 34%, #8d2f48 70%, #6d2139 100%);
+      box-shadow:
+        inset 5px 0 7px rgba(255, 255, 255, 0.18),
+        inset -9px -7px 15px rgba(62, 10, 30, 0.28),
+        inset 0 -19px 24px rgba(68, 14, 31, 0.2),
+        0 12px 17px rgba(67, 26, 35, 0.22);
+      transform: perspective(640px) rotateX(1deg);
+    }
+
+    .gacha-base::before {
+      content: "";
+      position: absolute;
+      z-index: 5;
+      top: -18px;
+      left: -7px;
+      right: -7px;
+      height: 39px;
+      border: 2px solid #876347;
+      border-radius: 50%;
+      background:
+        linear-gradient(90deg, #684532 0%, #f3dab0 16%, #a67b58 49%, #f6e4bc 78%, #6c4936 100%);
+      box-shadow:
+        inset 0 7px 7px rgba(255, 255, 255, 0.48),
+        inset 0 -8px 8px rgba(70, 38, 29, 0.25),
+        0 7px 8px rgba(76, 42, 36, 0.22);
+    }
+
+    .gacha-base::after {
+      left: 12%;
+      right: 12%;
+      bottom: -12px;
+      height: 22px;
+      border: 2px solid #581729;
+      border-radius: 0 0 19px 19px;
+      background: linear-gradient(180deg, #76233d, #451124);
+      box-shadow: 0 9px 11px rgba(64, 20, 31, 0.24);
+    }
+
+    .machine-brand {
+      position: absolute;
+      z-index: 6;
+      top: 21px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 244, 222, 0.88);
+      font-family: Georgia, serif;
+      font-size: 0.52rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      white-space: nowrap;
+      text-shadow: 0 1px 1px rgba(70, 18, 34, 0.35);
+    }
+
+    .draw-button {
+      position: relative;
+      z-index: 6;
+      width: 89px;
+      height: 78px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      padding: 0 9px;
+      border: 7px solid #d5b079;
+      border-radius: 44%;
+      color: #fffaf1;
+      background:
+        radial-gradient(circle at 31% 23%, rgba(255, 255, 255, 0.52) 0 7%, transparent 8%),
+        linear-gradient(145deg, #b94d64, #7d273f 68%, #59172c);
+      box-shadow:
+        0 8px 0 #431024,
+        0 12px 16px rgba(62, 15, 32, 0.3),
+        inset 5px 5px 9px rgba(255, 255, 255, 0.16),
+        inset -7px -9px 11px rgba(55, 7, 25, 0.24);
+      font-size: 0.77rem;
+      font-weight: 950;
+      line-height: 1.08;
+    }
+
+    .draw-button::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      z-index: -1;
+      border: 3px solid #8f6749;
+      border-radius: 28%;
+      background:
+        linear-gradient(135deg, #f4dfb5, #967052 50%, #e8c990 74%, #745039);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.28),
+        0 5px 8px rgba(70, 28, 34, 0.22);
+    }
+
+    .knob-arrow {
+      display: none;
+    }
+
+    .draw-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .draw-button:active {
+      transform: translateY(5px);
+    }
+
+    .drink-scene.is-mixing .draw-button {
+      animation: buttonPulse 460ms ease-in-out infinite alternate;
+    }
+
+    @keyframes buttonPulse {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(3px) scale(0.97); }
+    }
+
+    .drawn-ball-wrap {
+      position: relative;
+      z-index: 6;
+      width: 114px;
+      height: 57px;
+      flex: none;
+      overflow: hidden;
+      border: 5px solid #d4ad75;
+      border-radius: 12px 12px 25px 25px;
+      background:
+        linear-gradient(110deg, rgba(255, 255, 255, 0.09), transparent 28%),
+        linear-gradient(180deg, #431323, #1f0911);
+      box-shadow:
+        inset 0 11px 14px rgba(0, 0, 0, 0.42),
+        0 6px 8px rgba(61, 15, 29, 0.26);
+    }
+
+    .chute-label {
+      font-size: 0.62rem;
+    }
+
+    .drawn-ball {
+      width: 49px;
+      height: 49px;
+      padding: 9px 4px 4px;
+      border-width: 2px;
+      font-size: 0.45rem;
+    }
+
+    .drink-scene.is-winning .machine-top,
+    .drink-scene.is-winning .gacha-globe::after,
+    .drink-scene.is-winning .gacha-base::before {
+      animation: metalGleam 820ms ease-out 1;
+    }
+
+    @keyframes metalGleam {
+      0%, 100% { filter: brightness(1); }
+      45% { filter: brightness(1.42); }
     }
 
     /* Winner modal */
@@ -926,6 +1198,13 @@
       cursor: pointer;
     }
 
+    .modal-close img {
+      width: 17px;
+      height: 17px;
+      display: block;
+      margin: auto;
+    }
+
     .modal-close:hover {
       background: #fff;
     }
@@ -955,6 +1234,13 @@
         linear-gradient(145deg, #ae4058, #5f1b2d);
       box-shadow: 0 13px 25px rgba(87, 25, 37, 0.22), inset 0 -10px 18px rgba(41, 7, 16, 0.2);
       font-size: 3.5rem;
+    }
+
+    .win-glass-icon {
+      width: 62px;
+      height: 62px;
+      display: block;
+      filter: brightness(0) invert(1);
     }
 
     .win-dialog h3 {
@@ -1026,29 +1312,52 @@
     @media (max-width: 760px) {
       .app {
         width: min(100% - 18px, 1120px);
-        padding-top: 13px;
+        padding: 10px 0 12px;
       }
 
-      .app-header {
-        align-items: flex-start;
+      .topbar {
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 8px;
+        margin-bottom: 10px;
       }
 
-      .app-title {
-        font-size: 1.65rem;
+      .tabs {
+        padding: 5px;
+      }
+
+      .tab {
+        min-height: 42px;
       }
 
       .sound-toggle {
-        grid-template-columns: 20px;
-        min-width: 42px;
-        padding: 0 10px;
+        width: 44px;
+        min-height: 44px;
       }
 
-      .sound-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
+      body:not(.drink-mode) {
+        min-height: 100svh;
+      }
+
+      body:not(.drink-mode) .app {
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body:not(.drink-mode) .topbar {
+        flex: none;
+      }
+
+      body:not(.drink-mode) #eatPanel.is-active {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        padding: clamp(24px, 7vh, 72px) 0 clamp(12px, 3vh, 30px);
+      }
+
+      body:not(.drink-mode) .eat-machine {
+        width: 100%;
       }
 
       .eat-machine,
@@ -1142,46 +1451,143 @@
         font-size: 0.75rem;
       }
 
-      .drink-scene {
-        min-height: 645px;
-        padding: 24px 10px 34px;
+      body.drink-mode {
+        height: 100svh;
+        overflow: hidden;
       }
 
-      .bar-shelf {
-        top: 76px;
+      body.drink-mode .app {
+        height: 100svh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body.drink-mode .topbar {
+        flex: none;
+      }
+
+      body.drink-mode .page-panel.is-active {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .drink-scene {
+        height: 100%;
+        min-height: 0;
+        padding: 12px 10px 10px;
+      }
+
+      .drink-heading {
+        margin-bottom: 8px;
+      }
+
+      .drink-kicker {
+        margin-bottom: 2px;
+        font-size: 0.57rem;
+      }
+
+      .neon-title {
+        font-size: 1.42rem;
+      }
+
+      .neon-subtitle {
+        margin-top: 3px;
+        font-size: 0.72rem;
       }
 
       .lottery-cabinet {
-        width: calc(100% - 8px);
-        padding: 34px 25px 28px;
-        border-width: 4px;
+        width: min(304px, calc(100% - 4px));
+        height: 457px;
+        min-height: 420px;
+        max-height: 457px;
+        flex: 0 1 457px;
+        display: flex;
+      }
+
+      .machine-top {
+        width: 180px;
+        height: 34px;
+      }
+
+      .machine-top::before {
+        top: -14px;
+        width: 39px;
+        height: 24px;
+      }
+
+      .gacha-globe {
+        width: 270px;
+        height: 270px;
+        min-height: 270px;
+        margin-top: 14px;
+        padding: 16px;
+      }
+
+      .gacha-globe::after {
+        left: 8px;
+        right: 8px;
+        height: 31px;
       }
 
       .dome {
-        height: 285px;
+        border-width: 4px;
       }
 
       .lottery-ball {
-        left: calc(50% - 36px);
-        top: calc(50% - 36px);
-        width: 72px;
-        height: 72px;
-        font-size: 0.66rem;
+        width: 58px;
+        height: 58px;
+        padding: 11px 5px 5px;
+        font-size: 0.51rem;
       }
 
-      .drawn-ball-wrap {
-        width: 138px;
-        height: 104px;
+      .lottery-ball::after {
+        top: 5px;
+        right: 6px;
+        font-size: 0.46rem;
       }
 
-      .drawn-ball {
-        width: 72px;
-        height: 72px;
+      .gacha-base {
+        width: 232px;
+        min-height: 180px;
+        flex: 1 0 180px;
+        gap: 6px;
+        margin: -7px 0 0;
+        padding: 31px 18px 12px;
+        border-radius: 21px 21px 40px 40px;
+      }
+
+      .machine-brand {
+        top: 18px;
+        font-size: 0.47rem;
+      }
+
+      .draw-button {
+        width: 77px;
+        height: 68px;
+        border-width: 6px;
         font-size: 0.68rem;
       }
 
-      .drink-control {
-        margin-top: 38px;
+      .draw-button::after {
+        inset: -10px;
+      }
+
+      .drawn-ball-wrap {
+        width: 101px;
+        height: 52px;
+        border-width: 4px;
+      }
+
+      .drawn-ball {
+        width: 46px;
+        height: 46px;
+        font-size: 0.42rem;
+      }
+
+      .drink-result-line {
+        min-height: 20px;
+        margin-top: 8px;
+        font-size: 0.7rem;
       }
 
       .win-dialog {
@@ -1211,10 +1617,735 @@
       .reel-item {
         height: 166px;
       }
+    }
+
+    @media (max-width: 760px) and (max-height: 720px) {
+      .app {
+        padding-top: 6px;
+        padding-bottom: 7px;
+      }
+
+      .topbar {
+        margin-bottom: 6px;
+      }
+
+      .tabs {
+        padding: 4px;
+      }
+
+      .tab,
+      .sound-toggle {
+        min-height: 38px;
+        height: 38px;
+      }
+
+      .drink-scene {
+        padding: 8px 8px 6px;
+      }
+
+      .drink-heading {
+        margin-bottom: 5px;
+      }
+
+      .drink-kicker {
+        display: none;
+      }
+
+      .neon-title {
+        font-size: 1.22rem;
+      }
+
+      .neon-subtitle {
+        margin-top: 2px;
+        font-size: 0.66rem;
+      }
 
       .lottery-cabinet {
-        padding-left: 20px;
-        padding-right: 20px;
+        width: min(270px, calc(100% - 10px));
+        height: 395px;
+        min-height: 372px;
+        max-height: 395px;
+        flex: 0 1 395px;
+      }
+
+      .machine-top {
+        width: 156px;
+        height: 29px;
+      }
+
+      .machine-top::before {
+        top: -12px;
+        width: 34px;
+        height: 21px;
+      }
+
+      .gacha-globe {
+        width: 235px;
+        height: 235px;
+        min-height: 235px;
+        margin-top: 12px;
+        padding: 14px;
+      }
+
+      .gacha-globe::after {
+        height: 27px;
+      }
+
+      .lottery-ball {
+        width: 49px;
+        height: 49px;
+        padding: 9px 4px 4px;
+        border-width: 2px;
+        font-size: 0.43rem;
+      }
+
+      .gacha-base {
+        width: 204px;
+        min-height: 155px;
+        flex: 1 0 155px;
+        gap: 5px;
+        margin: -7px 0 0;
+        padding: 26px 14px 8px;
+        border-radius: 18px 18px 32px 32px;
+      }
+
+      .gacha-base::before {
+        top: -15px;
+        height: 32px;
+      }
+
+      .machine-brand {
+        top: 15px;
+        font-size: 0.41rem;
+      }
+
+      .draw-button {
+        width: 62px;
+        height: 55px;
+        border-width: 5px;
+        font-size: 0.62rem;
+      }
+
+      .draw-button::after {
+        inset: -8px;
+        border-width: 2px;
+      }
+
+      .drawn-ball-wrap {
+        width: 88px;
+        height: 44px;
+        border-width: 3px;
+      }
+
+      .drawn-ball {
+        width: 40px;
+        height: 40px;
+        padding: 8px 3px 3px;
+        border-width: 2px;
+        font-size: 0.38rem;
+      }
+
+      .drink-result-line {
+        margin-top: 4px;
+        font-size: 0.64rem;
+      }
+    }
+
+    /* Selected concept 5: image-led neon 3D capsule machine */
+    body.drink-mode {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(68, 45, 190, 0.34), transparent 38%),
+        linear-gradient(180deg, #160f56 0%, #24156c 52%, #32156e 100%);
+    }
+
+    .drink-scene.neon-machine-scene {
+      justify-content: center;
+      gap: 8px;
+      padding: 18px 18px 14px;
+      border-color: rgba(141, 164, 255, 0.42);
+      color: #fff;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(87, 86, 244, 0.34), transparent 31%),
+        radial-gradient(circle at 88% 88%, rgba(218, 67, 255, 0.2), transparent 34%),
+        linear-gradient(155deg, #111052 0%, #1e176f 49%, #381672 100%);
+      box-shadow:
+        0 22px 48px rgba(8, 7, 54, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+
+    .drink-scene.neon-machine-scene::before,
+    .drink-scene.neon-machine-scene::after {
+      display: none;
+    }
+
+    .neon-machine-scene .drink-heading {
+      z-index: 6;
+      flex: none;
+      margin: 0;
+      text-shadow: 0 3px 16px rgba(7, 4, 50, 0.56);
+    }
+
+    .neon-machine-scene .drink-kicker {
+      color: #ff94e4;
+    }
+
+    .neon-machine-scene .neon-title {
+      color: #fff8ff;
+      font-family: inherit;
+      font-weight: 950;
+      letter-spacing: 0.02em;
+    }
+
+    .neon-machine-scene .neon-subtitle,
+    .neon-machine-scene .drink-result-line {
+      color: rgba(238, 240, 255, 0.8);
+    }
+
+    .neon-machine-scene .drink-result-line {
+      min-height: 20px;
+      margin: 0;
+      text-shadow: 0 2px 8px rgba(7, 4, 50, 0.5);
+    }
+
+    .neon-machine-scene .drink-result-line strong {
+      color: #ffd4f4;
+    }
+
+    .lottery-cabinet.visual-machine {
+      position: relative;
+      z-index: 3;
+      width: min(350px, 100%);
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      aspect-ratio: 1023 / 1537;
+      flex: none;
+      display: block;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(173, 189, 255, 0.18);
+      border-radius: 26px;
+      background: #171462;
+      filter:
+        drop-shadow(0 24px 28px rgba(4, 4, 45, 0.34))
+        drop-shadow(0 0 18px rgba(112, 95, 255, 0.2));
+      perspective: none;
+    }
+
+    .machine-art {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .visual-machine .draw-button {
+      position: absolute;
+      z-index: 5;
+      top: 67.1%;
+      left: 15.7%;
+      width: 35.1%;
+      height: 12%;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 22%;
+      color: #fff;
+      background: transparent;
+      box-shadow: none;
+      font-size: clamp(0.78rem, 3.8vw, 1.03rem);
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-shadow:
+        0 2px 4px rgba(72, 19, 80, 0.62),
+        0 0 12px rgba(255, 255, 255, 0.34);
+      cursor: pointer;
+      transform: none;
+      filter: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .visual-machine .draw-button::after {
+      display: none;
+    }
+
+    .visual-machine .draw-button:hover {
+      transform: translateY(-1px) scale(1.025);
+      filter: brightness(1.1);
+    }
+
+    .visual-machine .draw-button:active {
+      transform: translateY(2px) scale(0.97);
+      box-shadow: none;
+    }
+
+    .visual-machine .draw-button:focus-visible {
+      outline: 3px solid #8ef3ff;
+      outline-offset: -5px;
+    }
+
+    .visual-machine .draw-button:disabled {
+      cursor: wait;
+      opacity: 0.82;
+    }
+
+    .visual-machine .drawn-ball-wrap {
+      position: absolute;
+      z-index: 6;
+      top: 74.5%;
+      left: 62%;
+      width: 22%;
+      height: 12%;
+      display: grid;
+      place-items: end center;
+      overflow: visible;
+      padding-bottom: 7%;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .visual-machine .chute-label {
+      display: none;
+    }
+
+    .visual-machine .drawn-ball {
+      width: 72%;
+      height: auto;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      padding: 14% 8% 6%;
+      border: 0;
+      border-radius: 50%;
+      color: #511d51;
+      background: url("assets/capsule-result-v5.png") center / contain no-repeat;
+      box-shadow: 0 8px 12px rgba(18, 5, 54, 0.34);
+      font-size: clamp(0.42rem, 2.1vw, 0.62rem);
+      font-weight: 950;
+      line-height: 1.05;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+    }
+
+    .neon-machine-scene.is-mixing .machine-art {
+      animation: machineShake 410ms ease-in-out infinite alternate;
+    }
+
+    .neon-machine-scene.is-mixing .visual-machine .draw-button {
+      animation: neonButtonPulse 420ms ease-in-out infinite alternate;
+    }
+
+    .neon-machine-scene.is-winning .visual-machine {
+      animation: neonMachineWin 850ms ease-out 1;
+    }
+
+    @keyframes machineShake {
+      from { transform: translate3d(-1px, 0, 0) rotate(-0.22deg); }
+      to { transform: translate3d(1px, -1px, 0) rotate(0.22deg); }
+    }
+
+    @keyframes neonButtonPulse {
+      from { transform: scale(0.98); filter: brightness(0.94); }
+      to { transform: scale(1.035); filter: brightness(1.18); }
+    }
+
+    @keyframes neonMachineWin {
+      0%, 100% { filter: drop-shadow(0 24px 28px rgba(4, 4, 45, 0.34)); }
+      46% { filter: drop-shadow(0 0 32px rgba(255, 105, 224, 0.78)) brightness(1.12); }
+    }
+
+    @media (max-width: 760px) {
+      .drink-scene.neon-machine-scene {
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 9px 9px;
+      }
+
+      .neon-machine-scene .drink-heading {
+        margin: 0;
+      }
+
+      .lottery-cabinet.visual-machine {
+        width: min(330px, calc(100% - 4px), calc((100svh - 190px) * 0.665));
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        flex: none;
+        border-radius: 22px;
+      }
+
+      .neon-machine-scene .drink-result-line {
+        margin: 0;
+      }
+    }
+
+    @media (max-width: 760px) and (max-height: 720px) {
+      .drink-scene.neon-machine-scene {
+        padding: 7px;
+      }
+
+      .neon-machine-scene .drink-heading {
+        margin: 0;
+      }
+
+      .neon-machine-scene .drink-kicker {
+        display: block;
+        font-size: 0.5rem;
+      }
+
+      .neon-machine-scene .neon-title {
+        font-size: 1.12rem;
+      }
+
+      .neon-machine-scene .neon-subtitle {
+        font-size: 0.62rem;
+      }
+
+      .lottery-cabinet.visual-machine {
+        width: min(305px, calc(100% - 8px), calc((100svh - 174px) * 0.665));
+        height: auto;
+        min-height: 0;
+        max-height: none;
+      }
+    }
+
+    /* Selected eat concept 1: image-led glossy 3D slot machine */
+    body:not(.drink-mode) {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(123, 184, 239, 0.16), transparent 34%),
+        radial-gradient(circle at 78% 68%, rgba(255, 143, 170, 0.15), transparent 34%),
+        linear-gradient(145deg, #fff9f1 0%, #f3e7dc 100%);
+    }
+
+    .eat-machine.image-eat-scene {
+      width: min(760px, 100%);
+      min-height: 650px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 0 auto;
+      padding: 16px 18px 14px;
+      overflow: hidden;
+      border-color: rgba(255, 255, 255, 0.94);
+      background:
+        radial-gradient(circle at 14% 9%, rgba(255, 255, 255, 0.96), transparent 25%),
+        radial-gradient(circle at 88% 88%, rgba(126, 187, 240, 0.13), transparent 30%),
+        linear-gradient(155deg, #fffaf3 0%, #f6e9df 100%);
+      box-shadow:
+        0 22px 52px rgba(123, 72, 73, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.96);
+    }
+
+    .eat-machine.image-eat-scene::before {
+      display: none;
+    }
+
+    .food-machine-cabinet {
+      position: relative;
+      width: min(500px, 100%);
+      aspect-ratio: 2 / 3;
+      flex: none;
+      overflow: hidden;
+      border-radius: 28px;
+      filter: drop-shadow(0 22px 24px rgba(122, 67, 72, 0.18));
+      isolation: isolate;
+    }
+
+    .food-machine-art {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .food-machine-title {
+      position: absolute;
+      z-index: 4;
+      top: 17.75%;
+      left: 29.4%;
+      width: 40.8%;
+      height: 6.8%;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      color: #fff9f3;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      font-size: clamp(0.98rem, 3.5vw, 1.55rem);
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-align: center;
+      text-shadow:
+        0 2px 4px rgba(116, 25, 41, 0.6),
+        0 0 12px rgba(255, 255, 255, 0.26);
+      pointer-events: none;
+    }
+
+    .image-eat-scene .reel-stage {
+      position: absolute;
+      z-index: 3;
+      top: 35.15%;
+      left: 18.75%;
+      width: 61.1%;
+      height: 27.25%;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 5%;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .image-eat-scene .reels {
+      width: 100%;
+      height: 100%;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2.2%;
+    }
+
+    .image-eat-scene .reel-column {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 18% minmax(0, 82%);
+    }
+
+    .image-eat-scene .reel-label {
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0 2px;
+      border-radius: 0;
+      color: #7a2d3f;
+      background: transparent;
+      font-size: clamp(0.48rem, 1.8vw, 0.76rem);
+      font-weight: 950;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .image-eat-scene .reel-window {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .image-eat-scene .reel-window::before,
+    .image-eat-scene .reel-window::after {
+      z-index: 4;
+      height: 18%;
+    }
+
+    .image-eat-scene .reel-window::before {
+      background: linear-gradient(rgba(255, 247, 237, 0.76), rgba(255, 247, 237, 0));
+    }
+
+    .image-eat-scene .reel-window::after {
+      background: linear-gradient(to top, rgba(245, 227, 208, 0.72), rgba(245, 227, 208, 0));
+    }
+
+    .image-eat-scene .reel-item {
+      height: var(--reel-item-height, 120px);
+      gap: clamp(2px, 0.7vw, 5px);
+      padding: 3px 2px;
+    }
+
+    .image-eat-scene .dish-art {
+      width: min(76%, 76px);
+      height: auto;
+      aspect-ratio: 1;
+      border-width: 1px;
+      box-shadow:
+        0 6px 11px rgba(109, 67, 52, 0.18),
+        inset 0 -5px 10px rgba(107, 75, 57, 0.07);
+    }
+
+    .image-eat-scene .dish-art::before {
+      inset: 12%;
+      border-width: 3px;
+    }
+
+    .image-eat-scene .dish-icon {
+      font-size: clamp(1.45rem, 7vw, 3rem);
+      filter: drop-shadow(0 3px 3px rgba(72, 43, 28, 0.15));
+    }
+
+    .image-eat-scene .dish-name {
+      color: #5d2a35;
+      font-size: clamp(0.52rem, 2vw, 0.82rem);
+      line-height: 1.12;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86);
+    }
+
+    .image-eat-scene .reel-arrow {
+      display: none;
+    }
+
+    .image-eat-scene .eat-controls {
+      position: absolute;
+      z-index: 5;
+      top: 76.05%;
+      left: 17.75%;
+      width: 64%;
+      height: 10.45%;
+      margin: 0;
+    }
+
+    .image-eat-scene .primary-button {
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 28%;
+      color: #8f3045;
+      background: transparent;
+      box-shadow: none;
+      font-size: clamp(0.82rem, 3.3vw, 1.28rem);
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.96);
+      transform: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .image-eat-scene .primary-button:hover {
+      background: rgba(255, 159, 181, 0.13);
+      transform: scale(1.015);
+    }
+
+    .image-eat-scene .primary-button:active {
+      background: rgba(219, 91, 121, 0.18);
+      box-shadow: inset 0 4px 9px rgba(129, 54, 61, 0.12);
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .image-eat-scene .primary-button:focus-visible {
+      outline: 3px solid #5d9bd0;
+      outline-offset: -7px;
+    }
+
+    .image-eat-scene .primary-button:disabled {
+      opacity: 0.74;
+    }
+
+    .image-eat-scene.is-spinning .food-machine-art {
+      animation: foodMachineShake 380ms ease-in-out infinite alternate;
+    }
+
+    @keyframes foodMachineShake {
+      from { transform: translate3d(-1px, 0, 0) rotate(-0.15deg); }
+      to { transform: translate3d(1px, -1px, 0) rotate(0.15deg); }
+    }
+
+    .food-instruction {
+      margin: 0;
+      color: #8a6e69;
+      font-size: 0.72rem;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .image-eat-scene .menu-result {
+      min-height: 22px;
+      margin: 0;
+      gap: 5px;
+      color: #846b66;
+      font-size: 0.72rem;
+      line-height: 1.25;
+    }
+
+    .image-eat-scene .menu-result strong {
+      color: #8b2f42;
+    }
+
+    .image-eat-scene .result-chip {
+      padding: 0;
+      border: 0;
+      color: #5d2a35;
+      background: transparent;
+      box-shadow: none;
+      font-weight: 950;
+    }
+
+    @media (max-width: 760px) {
+      body:not(.drink-mode) {
+        height: 100svh;
+        overflow: hidden;
+      }
+
+      body:not(.drink-mode) .app {
+        height: 100svh;
+        min-height: 0;
+      }
+
+      body:not(.drink-mode) #eatPanel.is-active {
+        align-items: stretch;
+        padding: 0;
+      }
+
+      body:not(.drink-mode) .eat-machine.image-eat-scene {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        gap: 3px;
+        padding: 7px 7px 6px;
+        border-radius: 22px;
+      }
+
+      .food-machine-cabinet {
+        width: min(340px, calc(100% - 2px), calc((100svh - 120px) * 0.6667));
+        border-radius: 21px;
+      }
+
+      .image-eat-scene .menu-result {
+        flex-wrap: nowrap;
+        min-height: 18px;
+        gap: 4px;
+        padding: 0;
+        font-size: clamp(0.56rem, 2.55vw, 0.69rem);
+        white-space: nowrap;
+      }
+
+      .food-instruction {
+        font-size: clamp(0.55rem, 2.45vw, 0.68rem);
+      }
+    }
+
+    @media (max-width: 760px) and (max-height: 720px) {
+      body:not(.drink-mode) .eat-machine.image-eat-scene {
+        padding: 4px 6px 3px;
+      }
+
+      .food-machine-cabinet {
+        width: min(315px, calc(100% - 4px), calc((100svh - 105px) * 0.6667));
+      }
+
+      .image-eat-scene .menu-result {
+        min-height: 16px;
       }
     }
 
@@ -1230,101 +2361,84 @@
     }
   </style>
 </head>
-<body>
+<body data-build="FOOD-IMAGE-V1-20260730">
   <main class="app">
-    <header class="app-header">
-      <div>
-        <p class="brand-kicker">DAILY CHOICE CLUB</p>
-        <h1 class="app-title">今天选点什么</h1>
-      </div>
+    <div class="topbar">
+      <nav class="tabs" role="tablist" aria-label="选择吃什么或喝什么">
+        <button class="tab" id="eatTab" type="button" role="tab" aria-controls="eatPanel" aria-selected="true">吃什么</button>
+        <button class="tab" id="drinkTab" type="button" role="tab" aria-controls="drinkPanel" aria-selected="false">喝什么</button>
+      </nav>
       <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
-        <span class="sound-icon" aria-hidden="true">🔊</span>
+        <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
         <span class="sound-label">音效开启</span>
       </button>
-    </header>
-
-    <nav class="tabs" role="tablist" aria-label="选择吃什么或喝什么">
-      <button class="tab" id="eatTab" type="button" role="tab" aria-controls="eatPanel" aria-selected="true">吃什么</button>
-      <button class="tab" id="drinkTab" type="button" role="tab" aria-controls="drinkPanel" aria-selected="false">喝什么</button>
-    </nav>
+    </div>
 
     <section class="page-panel is-active" id="eatPanel" role="tabpanel" aria-labelledby="eatTab">
-      <div class="eat-machine">
-        <header class="section-heading">
-          <div>
-            <h2>今天吃什么</h2>
-            <p>上下滑动自由选择，或让三个滚轮替你决定。</p>
+      <div class="eat-machine image-eat-scene" id="eatScene">
+        <div class="food-machine-cabinet" id="foodMachineCabinet">
+          <img class="food-machine-art" src="assets/food-slot-pink-v1.webp" alt="粉蓝配色的立体复古老虎机">
+          <h2 class="food-machine-title">今天吃什么</h2>
+
+          <div class="reel-stage">
+            <div class="reels" id="foodReels"></div>
           </div>
-          <span class="mini-badge">一餐 · 三选</span>
-        </header>
 
-        <div class="reel-stage">
-          <div class="reels" id="foodReels"></div>
+          <div class="eat-controls">
+            <button class="primary-button" id="foodSpinButton" type="button">随机生成</button>
+          </div>
         </div>
 
-        <div class="eat-controls">
-          <button class="primary-button" id="foodSpinButton" type="button">随机生成</button>
-        </div>
-
+        <p class="food-instruction">上下滑动滚轮，或按下“随机生成”。</p>
         <div class="menu-result" aria-live="polite">
-          <strong>当前菜单</strong>
+          <strong>今日菜单</strong>
           <span class="result-chip" id="stapleResult">杂粮饭</span>
-          <span>+</span>
+          <span>·</span>
           <span class="result-chip" id="mainResult">鸡蛋肉沫</span>
-          <span>+</span>
+          <span>·</span>
           <span class="result-chip" id="vegResult">白灼生菜</span>
         </div>
       </div>
     </section>
 
     <section class="page-panel" id="drinkPanel" role="tabpanel" aria-labelledby="drinkTab" hidden>
-      <div class="drink-scene" id="drinkScene">
-        <div class="bar-shelf" aria-hidden="true">
-          <i class="bottle"></i>
-          <i class="bottle"></i>
-          <i class="bottle"></i>
-          <i class="bottle"></i>
-          <i class="bottle"></i>
-          <i class="bottle"></i>
-        </div>
+      <div class="drink-scene neon-machine-scene" id="drinkScene">
+        <header class="drink-heading">
+          <p class="drink-kicker">NIGHT CAPSULE</p>
+          <h2 class="neon-title">今晚喝什么</h2>
+          <p class="neon-subtitle">按下按钮，让今晚的答案滚出来。</p>
+        </header>
 
-        <h2 class="neon-title">今晚喝什么</h2>
-        <p class="neon-subtitle">按下按钮，让夜晚交给一点运气。</p>
-
-        <div class="lottery-cabinet" id="lotteryCabinet">
-          <div class="cabinet-sign">LUCKY NIGHT DRAW</div>
-          <div class="lights horizontal top" aria-hidden="true"></div>
-          <div class="lights horizontal bottom" aria-hidden="true"></div>
-          <div class="lights vertical left" aria-hidden="true"></div>
-          <div class="lights vertical right" aria-hidden="true"></div>
-
-          <div class="dome" id="lotteryDome" aria-label="酒类小球抽奖机"></div>
-          <div class="machine-neck" aria-hidden="true"></div>
-          <div class="drawn-ball-wrap">
-            <div class="drawn-ball" id="drawnBall">待开奖</div>
+        <div class="lottery-cabinet visual-machine" id="lotteryCabinet">
+          <img class="machine-art" src="assets/gacha-night-v5.webp" alt="紫色霓虹灯光下的立体扭蛋机">
+          <button class="draw-button" id="drawButton" type="button" aria-label="喝一杯，启动扭蛋机">
+            <span>喝一杯</span>
+          </button>
+          <div class="drawn-ball-wrap" id="drawnBallWrap" aria-hidden="true">
+            <span class="chute-label">出蛋口</span>
+            <div class="drawn-ball" id="drawnBall"></div>
           </div>
         </div>
 
-        <div class="drink-control">
-          <button class="draw-button" id="drawButton" type="button">立即开喝</button>
-          <p class="drink-result-line" id="drinkResult" aria-live="polite">今晚的第一杯，还在抽奖机里。</p>
-        </div>
-
-        <div class="bar-counter" aria-hidden="true"></div>
+        <p class="drink-result-line" id="drinkResult" aria-live="polite">按下“喝一杯”，看看今晚喝什么。</p>
       </div>
     </section>
   </main>
 
   <div class="win-modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winTitle" aria-hidden="true">
     <div class="win-dialog">
-      <button class="modal-close" id="modalClose" type="button" aria-label="关闭中奖弹窗">×</button>
+      <button class="modal-close" id="modalClose" type="button" aria-label="关闭中奖弹窗">
+        <img src="assets/close.svg" alt="" aria-hidden="true">
+      </button>
       <p class="win-kicker">TONIGHT'S WINNER</p>
-      <div class="win-glass" id="winGlass" aria-hidden="true">🍺</div>
+      <div class="win-glass" id="winGlass" aria-hidden="true">
+        <img class="win-glass-icon" id="winGlassIcon" src="assets/drink-beer.svg" alt="">
+      </div>
       <h3 id="winTitle">啤酒</h3>
       <p class="win-note" id="winNote">轻松开场，冰镇之后更适合今晚。</p>
       <div class="modal-actions">
         <button class="modal-button secondary" id="acceptDrink" type="button">就喝这个</button>
-        <button class="modal-button primary" id="drawAgain" type="button">再抽一次</button>
+        <button class="modal-button primary" id="drawAgain" type="button">再喝一杯</button>
       </div>
     </div>
   </div>
@@ -1370,42 +2484,42 @@
     const drinks = [
       {
         name: "啤酒",
-        icon: "🍺",
+        icon: "assets/drink-beer.svg",
         note: "轻松开场，冰镇之后更适合今晚。",
         light: "#f8dc75",
         dark: "#d99b3f"
       },
       {
         name: "金汤力",
-        icon: "🍸",
+        icon: "assets/drink-martini.svg",
         note: "清爽、微苦、带一点柑橘香，适合慢慢进入状态。",
         light: "#d9f5d6",
         dark: "#8cc6a5"
       },
       {
         name: "自由古巴",
-        icon: "🥃",
+        icon: "assets/drink-brandy.svg",
         note: "朗姆、可乐与青柠的组合，今晚走轻松热闹路线。",
         light: "#d7a36b",
         dark: "#9a5845"
       },
       {
         name: "长岛冰茶",
-        icon: "🍹",
+        icon: "assets/drink-martini.svg",
         note: "看起来温和，实际酒精度不低，记得放慢速度。",
         light: "#efc982",
         dark: "#bd7c5b"
       },
       {
         name: "威士忌纯饮",
-        icon: "🥃",
+        icon: "assets/drink-brandy.svg",
         note: "不加修饰，让木桶香和余味成为今晚的主角。",
         light: "#d49254",
         dark: "#8f4938"
       },
       {
         name: "白酒纯饮",
-        icon: "🍶",
+        icon: "assets/drink-wine.svg",
         note: "小杯慢饮，配点下酒菜，也别忘了补水。",
         light: "#e4d6f0",
         dark: "#a494bc"
@@ -1420,10 +2534,11 @@
         this.group = group;
         this.index = 0;
         this.virtualIndex = group.items.length * 5;
-        this.itemHeight = window.innerWidth <= 390 ? 166 : window.innerWidth <= 760 ? 178 : 218;
+        this.itemHeight = 120;
         this.busy = false;
         this.dragging = false;
         this.build();
+        this.measure();
         this.bind();
         this.render(0);
         this.updateResult();
@@ -1497,7 +2612,7 @@
           this.dragging = false;
         });
         window.addEventListener("resize", () => {
-          this.itemHeight = window.innerWidth <= 390 ? 166 : window.innerWidth <= 760 ? 178 : 218;
+          this.measure();
           this.render(0);
         });
       }
@@ -1505,6 +2620,12 @@
       selectedIndex() {
         const length = this.group.items.length;
         return ((this.virtualIndex % length) + length) % length;
+      }
+
+      measure() {
+        const measured = this.window.getBoundingClientRect().height;
+        if (measured > 20) this.itemHeight = measured;
+        this.track.style.setProperty("--reel-item-height", `${this.itemHeight}px`);
       }
 
       render(duration = 220) {
@@ -1552,12 +2673,14 @@
 
     const foodReels = foodData.map(group => new FoodReel(group));
     const foodSpinButton = document.getElementById("foodSpinButton");
+    const eatScene = document.getElementById("eatScene");
 
     foodSpinButton.addEventListener("click", async () => {
       if (foodReels.some(reel => reel.busy)) return;
       initAudio();
       foodSpinButton.disabled = true;
       foodSpinButton.textContent = "正在生成…";
+      eatScene.classList.add("is-spinning");
       playStartSound();
 
       const targets = foodReels.map(reel => Math.floor(Math.random() * reel.group.items.length));
@@ -1568,6 +2691,7 @@
       ]);
 
       playSoftWin();
+      eatScene.classList.remove("is-spinning");
       foodSpinButton.textContent = "再来一次";
       foodSpinButton.disabled = false;
     });
@@ -1584,65 +2708,37 @@
           panel.hidden = !active;
           panel.classList.toggle("is-active", active);
         });
+        document.body.classList.toggle("drink-mode", tab.id === "drinkTab");
+        if (tab.id === "eatTab") {
+          requestAnimationFrame(() => {
+            foodReels.forEach(reel => {
+              reel.measure();
+              reel.render(0);
+            });
+          });
+        }
       });
     });
-
-    /* Lights and lottery balls */
-    document.querySelectorAll(".lights").forEach((row, rowIndex) => {
-      const count = row.classList.contains("horizontal") ? 12 : 8;
-      for (let i = 0; i < count; i += 1) {
-        const bulb = document.createElement("span");
-        bulb.className = "bulb";
-        bulb.style.setProperty("--i", String(i + rowIndex * 4));
-        row.appendChild(bulb);
-      }
-    });
-
-    const dome = document.getElementById("lotteryDome");
-    const desktopPositions = [
-      [-146, 70], [-70, 84], [18, 80], [98, 64], [-115, 0], [-28, 10]
-    ];
-    const mobilePositions = [
-      [-102, 75], [-42, 85], [24, 80], [80, 65], [-75, 5], [-10, 12]
-    ];
-
-    drinks.forEach((drink, index) => {
-      const ball = document.createElement("div");
-      ball.className = "lottery-ball";
-      ball.dataset.number = String(index + 1).padStart(2, "0");
-      ball.dataset.index = String(index);
-      ball.textContent = drink.name;
-      ball.style.setProperty("--ball-light", drink.light);
-      ball.style.setProperty("--ball-dark", drink.dark);
-      ball.style.setProperty("--delay", `${index * -95}ms`);
-      ball.style.setProperty("--swing-x", `${index % 2 === 0 ? 48 : -48}px`);
-      ball.style.setProperty("--lift", `${58 + index * 4}px`);
-      dome.appendChild(ball);
-    });
-
-    function positionBalls() {
-      const positions = window.innerWidth <= 760 ? mobilePositions : desktopPositions;
-      dome.querySelectorAll(".lottery-ball").forEach((ball, index) => {
-        ball.style.setProperty("--x", `${positions[index][0]}px`);
-        ball.style.setProperty("--y", `${positions[index][1]}px`);
-      });
-    }
-
-    positionBalls();
-    window.addEventListener("resize", positionBalls);
 
     const drinkScene = document.getElementById("drinkScene");
     const drawButton = document.getElementById("drawButton");
     const drawnBall = document.getElementById("drawnBall");
+    const drawnBallWrap = document.getElementById("drawnBallWrap");
     const drinkResult = document.getElementById("drinkResult");
     const winModal = document.getElementById("winModal");
     const winTitle = document.getElementById("winTitle");
     const winNote = document.getElementById("winNote");
-    const winGlass = document.getElementById("winGlass");
+    const winGlassIcon = document.getElementById("winGlassIcon");
     const modalClose = document.getElementById("modalClose");
     const acceptDrink = document.getElementById("acceptDrink");
     const drawAgain = document.getElementById("drawAgain");
     let drawing = false;
+
+    function setDrawButtonLabel(label) {
+      drawButton.innerHTML = `
+        <span>${label}</span>
+      `;
+    }
 
     async function drawDrink() {
       if (drawing) return;
@@ -1653,17 +2749,15 @@
       drinkScene.classList.remove("is-winning");
       drinkScene.classList.add("is-mixing");
       drawButton.disabled = true;
-      drawButton.textContent = "小球搅动中…";
-      drinkResult.textContent = "灯光亮起，今晚的答案正在靠近。";
+      setDrawButtonLabel("喝一杯");
+      drinkResult.textContent = "扭蛋正在滚动，今晚的答案马上掉下来。";
+      drawnBallWrap.classList.remove("has-result");
       drawnBall.classList.remove("is-dropping");
-      drawnBall.textContent = "开奖中";
+      drawnBall.textContent = "";
       playStartSound();
 
       const rounds = reduceMotion ? 4 : 18;
       for (let i = 0; i < rounds; i += 1) {
-        const preview = drinks[Math.floor(Math.random() * drinks.length)];
-        drawnBall.textContent = preview.name;
-        drawnBall.style.background = `radial-gradient(circle at 31% 25%, rgba(255,255,255,.95) 0 8%, transparent 9%), linear-gradient(145deg, ${preview.light}, ${preview.dark})`;
         playTick(450 + i * 19, 0.028);
         await wait(reduceMotion ? 15 : 90 + i * 7);
       }
@@ -1671,18 +2765,18 @@
       const winner = drinks[Math.floor(Math.random() * drinks.length)];
       drinkScene.classList.remove("is-mixing");
       drawnBall.textContent = winner.name;
-      drawnBall.style.background = `radial-gradient(circle at 31% 25%, rgba(255,255,255,.95) 0 8%, transparent 9%), linear-gradient(145deg, ${winner.light}, ${winner.dark})`;
       void drawnBall.offsetWidth;
+      drawnBallWrap.classList.add("has-result");
       drawnBall.classList.add("is-dropping");
-      await wait(reduceMotion ? 20 : 760);
+      await wait(reduceMotion ? 20 : 680);
 
       drinkScene.classList.add("is-winning");
       drinkResult.innerHTML = `今晚抽中：<strong>${winner.name}</strong>`;
-      drawButton.textContent = "再抽一次";
+      setDrawButtonLabel("喝一杯");
       drawButton.disabled = false;
       playWinSound();
       createConfetti();
-      await wait(reduceMotion ? 30 : 330);
+      await wait(reduceMotion ? 30 : 520);
       openModal(winner);
       drawing = false;
 
@@ -1696,7 +2790,7 @@
     function openModal(winner) {
       winTitle.textContent = winner.name;
       winNote.textContent = winner.note;
-      winGlass.textContent = winner.icon;
+      winGlassIcon.src = winner.icon;
       winModal.classList.add("is-open");
       winModal.setAttribute("aria-hidden", "false");
       modalClose.focus();
@@ -1797,7 +2891,9 @@
     soundToggle.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
       soundToggle.setAttribute("aria-pressed", String(soundEnabled));
-      soundToggle.querySelector(".sound-icon").textContent = soundEnabled ? "🔊" : "🔇";
+      soundToggle.querySelector(".sound-icon").src = soundEnabled
+        ? "assets/speaker-high.svg"
+        : "assets/speaker-slash.svg";
       soundToggle.querySelector(".sound-label").textContent = soundEnabled ? "音效开启" : "音效关闭";
       soundToggle.title = soundEnabled ? "关闭音效" : "开启音效";
       if (soundEnabled) {

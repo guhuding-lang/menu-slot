@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.playwright-browsers/
+.playwright-runtime/
+.playwright-runtime-121/
+.tmp-playwright/
+.tmp-playwright-qa/
+.tmp-playwright-121/
