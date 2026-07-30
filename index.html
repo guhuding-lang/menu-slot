@@ -2446,7 +2446,7 @@
     }
 
     #eatPanel {
-      background: #f6eadf;
+      background: #f8e9de url("assets/food-slot-backdrop-v5.webp") center / cover no-repeat;
     }
 
     #drinkPanel {
@@ -2474,8 +2474,9 @@
 
     .food-machine-cabinet {
       width: min(500px, calc(100vw - 8px), calc((100svh - 46px) * 0.6667));
-      border-radius: 24px;
-      filter: drop-shadow(0 15px 18px rgba(122, 67, 72, 0.16));
+      overflow: visible;
+      border-radius: 0;
+      filter: drop-shadow(0 17px 20px rgba(122, 67, 72, 0.18));
     }
 
     .image-eat-scene .eat-controls {
@@ -2505,12 +2506,13 @@
 
     .lever-control {
       --lever-shift: 0px;
+      --lever-angle: 0deg;
       position: absolute;
       z-index: 12;
-      top: 38%;
-      right: 1.2%;
-      width: 15%;
-      height: 33%;
+      top: 28.5%;
+      right: -4.5%;
+      width: 21%;
+      height: 43%;
       border: 0;
       border-radius: 999px;
       cursor: ns-resize;
@@ -2518,13 +2520,32 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    .lever-art {
+      position: absolute;
+      z-index: 2;
+      top: 4%;
+      right: 16%;
+      width: 55%;
+      height: 88%;
+      object-fit: contain;
+      object-position: center;
+      transform: rotate(var(--lever-angle));
+      transform-origin: 51% 87%;
+      filter: drop-shadow(0 7px 7px rgba(112, 48, 66, 0.22));
+      transition: transform 90ms linear, filter 150ms ease;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
     .lever-touch {
       position: absolute;
-      top: 1%;
-      left: 50%;
+      z-index: 3;
+      top: 4%;
+      right: 19%;
       width: 48%;
       aspect-ratio: 1;
-      transform: translate(-50%, var(--lever-shift));
+      transform: translateY(var(--lever-shift));
       border: 2px solid rgba(255, 255, 255, 0.72);
       border-radius: 50%;
       background: rgba(255, 121, 157, 0.08);
@@ -2540,8 +2561,16 @@
       transition: opacity 120ms ease, box-shadow 120ms ease;
     }
 
+    .lever-control.is-pulling .lever-art {
+      filter: drop-shadow(0 10px 10px rgba(112, 48, 66, 0.3)) saturate(1.06);
+    }
+
     .lever-control.is-releasing .lever-touch {
       transition: transform 300ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
+    }
+
+    .lever-control.is-releasing .lever-art {
+      transition: transform 360ms cubic-bezier(0.18, 0.88, 0.24, 1.18);
     }
 
     .image-eat-scene.is-spinning .food-machine-art,
@@ -2551,7 +2580,42 @@
     }
 
     .reel-column.is-rolling .reel-track {
-      filter: blur(0.45px) saturate(1.12);
+      filter: blur(0.8px) saturate(1.14);
+    }
+
+    .image-eat-scene .reel-column {
+      display: block;
+    }
+
+    .image-eat-scene .reel-window {
+      height: 100%;
+    }
+
+    .image-eat-scene .reel-item {
+      justify-content: flex-start;
+      gap: clamp(2px, 0.55vw, 4px);
+      padding: 4% 2px 3px;
+    }
+
+    .image-eat-scene .reel-item .reel-label {
+      flex: 0 0 11%;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      color: #7a2d3f;
+      font-size: clamp(0.47rem, 1.8vw, 0.74rem);
+      font-weight: 950;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
+    }
+
+    .image-eat-scene .reel-item .dish-art {
+      width: min(70%, 72px);
+    }
+
+    .image-eat-scene .reel-item .dish-name {
+      flex: 0 0 auto;
+      min-height: 1.25em;
     }
 
     .food-instruction {
@@ -2844,7 +2908,7 @@
     }
   </style>
 </head>
-<body data-build="WECHAT-SWIPE-NEON-MODAL-V4-20260730">
+<body data-build="SLOT-LEVER-REELS-BACKDROP-V5-20260730">
   <main class="app">
     <button class="sound-toggle floating-sound" id="soundToggle" type="button" aria-pressed="true" title="关闭音效">
       <img class="sound-icon" src="assets/speaker-high.svg" alt="" aria-hidden="true">
@@ -2856,7 +2920,7 @@
         <section class="page-panel is-active" id="eatPanel" aria-label="今天吃什么">
           <div class="eat-machine image-eat-scene" id="eatScene">
             <div class="food-machine-cabinet" id="foodMachineCabinet">
-              <img class="food-machine-art" src="assets/food-slot-pink-v1.webp" alt="粉蓝配色的立体复古老虎机">
+              <img class="food-machine-art" src="assets/food-slot-transparent-v5.webp" alt="粉蓝配色的立体复古老虎机">
               <h2 class="food-machine-title">今天吃什么</h2>
 
               <div class="reel-stage">
@@ -2864,6 +2928,7 @@
               </div>
 
               <div class="lever-control" id="leverControl" role="button" tabindex="0" aria-label="按住右侧摇杆并向下滑动，启动老虎机">
+                <img class="lever-art" src="assets/food-lever-trim-v5.webp" alt="" aria-hidden="true">
                 <span class="lever-touch" aria-hidden="true"></span>
               </div>
 
@@ -3045,7 +3110,6 @@
         const column = document.createElement("section");
         column.className = "reel-column";
         column.innerHTML = `
-          <div class="reel-label">${this.group.label}</div>
           <div class="reel-window" tabindex="0" role="listbox" aria-label="${this.group.label}，可上下滑动选择">
             <button class="reel-arrow up" type="button" aria-label="${this.group.label}上一项">▲</button>
             <button class="reel-arrow down" type="button" aria-label="${this.group.label}下一项">▼</button>
@@ -3062,6 +3126,7 @@
           this.group.items.forEach(item => {
             repeated.push(`
               <div class="reel-item" role="option">
+                <div class="reel-label">${this.group.label}</div>
                 <div class="dish-art" style="--dish-bg:${item.color}">
                   <span class="dish-icon" aria-hidden="true">${item.icon}</span>
                 </div>
@@ -3209,6 +3274,7 @@
       leverControl.classList.remove("is-pulling");
       leverControl.classList.add("is-releasing");
       leverControl.style.setProperty("--lever-shift", "0px");
+      leverControl.style.setProperty("--lever-angle", "0deg");
       window.setTimeout(() => leverControl.classList.remove("is-releasing"), 320);
       leverPointerId = null;
       leverDistance = 0;
@@ -3229,7 +3295,9 @@
       if (event.pointerId !== leverPointerId) return;
       const maxPull = Math.max(54, leverControl.clientHeight * 0.55);
       leverDistance = Math.min(maxPull, Math.max(0, event.clientY - leverStartY));
+      const pullProgress = Math.min(1, leverDistance / maxPull);
       leverControl.style.setProperty("--lever-shift", `${leverDistance}px`);
+      leverControl.style.setProperty("--lever-angle", `${-36 * pullProgress}deg`);
       if (leverDistance > maxPull * 0.72 && !leverControl.classList.contains("is-ready")) {
         leverControl.classList.add("is-ready");
         playTick(340, 0.024);
@@ -3255,6 +3323,7 @@
       event.preventDefault();
       leverControl.classList.add("is-pulling");
       leverControl.style.setProperty("--lever-shift", `${Math.max(52, leverControl.clientHeight * 0.48)}px`);
+      leverControl.style.setProperty("--lever-angle", "-36deg");
       window.setTimeout(() => {
         resetLever();
         spinFood();
@@ -3276,6 +3345,7 @@
     let pageTouchStartY = 0;
     let pageTouchDeltaX = 0;
     let pageTouchBaseIndex = 0;
+    let entryLockActive = true;
 
     function updatePageState(nextIndex) {
       pageIndex = Math.max(0, Math.min(panels.length - 1, nextIndex));
@@ -3316,6 +3386,7 @@
 
     pageViewport.addEventListener("touchstart", event => {
       if (event.touches.length !== 1 || event.target.closest(".win-modal")) return;
+      entryLockActive = false;
       const touch = event.touches[0];
       pageTouchActive = true;
       pageTouchHorizontal = false;
@@ -3365,24 +3436,35 @@
     });
 
     document.addEventListener("keydown", event => {
-      if (event.key === "ArrowLeft") showPage(pageIndex - 1);
-      if (event.key === "ArrowRight") showPage(pageIndex + 1);
+      if (event.key === "ArrowLeft") {
+        entryLockActive = false;
+        showPage(pageIndex - 1);
+      }
+      if (event.key === "ArrowRight") {
+        entryLockActive = false;
+        showPage(pageIndex + 1);
+      }
     });
 
     function resetEntryPage() {
+      if (!entryLockActive) return;
       pageViewport.classList.remove("is-touching");
+      pageViewport.scrollLeft = 0;
       pageViewport.scrollTo({ left: 0, behavior: "auto" });
       updatePageState(0);
     }
 
     resetEntryPage();
     requestAnimationFrame(resetEntryPage);
-    window.setTimeout(resetEntryPage, 120);
-    window.setTimeout(resetEntryPage, 420);
+    [120, 420, 900, 1600, 2600].forEach(delay => window.setTimeout(resetEntryPage, delay));
+    window.addEventListener("load", resetEntryPage, { once: true });
     window.addEventListener("pageshow", () => {
+      entryLockActive = true;
       resetEntryPage();
-      window.setTimeout(resetEntryPage, 120);
-      window.setTimeout(resetEntryPage, 420);
+      [120, 420, 900, 1600].forEach(delay => window.setTimeout(resetEntryPage, delay));
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) resetEntryPage();
     });
 
     const drinkScene = document.getElementById("drinkScene");
