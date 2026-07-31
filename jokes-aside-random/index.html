@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#140d08" />
+  <meta name="description" content="《不开玩笑》播客随机收听机：拉动复古老虎机，随机发现一期节目。" />
+  <title>不开玩笑 · 随机收听机</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="studio" aria-label="不开玩笑随机收听机">
+      <div class="ambient"></div>
+      <div class="on-air">ON AIR</div>
+
+      <div class="machine">
+        <div class="owl-dj" aria-hidden="true">
+          <div class="headphone-band"></div>
+          <div class="earpad left"></div>
+          <div class="earpad right"></div>
+          <div class="owl-head">
+            <div class="owl-ear left"></div>
+            <div class="owl-ear right"></div>
+            <div class="owl-eye left"></div>
+            <div class="owl-eye right"></div>
+            <div class="owl-beak"></div>
+          </div>
+          <div class="owl-foot left"></div>
+          <div class="owl-foot right"></div>
+        </div>
+
+        <header class="marquee">
+          <div class="bulbs"></div>
+          <div class="title">不开玩笑</div>
+          <div class="subtitle">随机收听机</div>
+        </header>
+
+        <section class="reel-cabinet" aria-label="三位数字滚轮">
+          <div class="reels" id="reels">
+            <div class="reel-window" aria-label="百位数字"><div class="reel-strip"></div></div>
+            <div class="reel-window" aria-label="十位数字"><div class="reel-strip"></div></div>
+            <div class="reel-window" aria-label="个位数字"><div class="reel-strip"></div></div>
+          </div>
+          <div class="status">
+            <span id="statusText">等待开播</span>
+            <strong id="episodeDisplay">EP.---</strong>
+          </div>
+        </section>
+
+        <section class="control-deck">
+          <div class="control-row">
+            <button class="small-button" id="historyButton" type="button">最近抽取</button>
+            <button class="spin-button" id="spinButton" type="button">开始收听</button>
+            <button class="small-button" id="specialButton" type="button">彩蛋节目</button>
+          </div>
+          <button class="handle" id="handleButton" type="button" aria-label="拉动老虎机摇杆">
+            <span class="handle-knob"></span>
+            <span class="handle-shaft"></span>
+            <span class="handle-base"></span>
+          </button>
+        </section>
+
+        <div class="speaker-strip" aria-hidden="true">
+          <span class="speaker"></span>
+          <span class="slogan">PODCAST · RANDOM · LISTENING</span>
+          <span class="speaker"></span>
+        </div>
+      </div>
+
+      <div class="machine-feet" aria-hidden="true"><span></span><span></span></div>
+      <div class="hint">点击金色按钮或拉动摇杆，随机发现 001—251 期节目</div>
+    </section>
+  </main>
+
+  <section class="modal" id="resultModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <article class="ticket">
+      <button class="close" id="closeModal" type="button" aria-label="关闭">×</button>
+      <div class="ticket-eyebrow"><span class="mini-owl">◉</span> 本次随机收听</div>
+      <div class="result-number"><small id="resultLabel">第</small><strong id="resultEpisode">001</strong><small>期</small></div>
+      <h2 class="result-title" id="resultTitle"></h2>
+      <p class="result-hosts" id="resultHosts"></p>
+      <div class="meta">
+        <div class="meta-item"><span>发布时间</span><strong id="resultDate">—</strong></div>
+        <div class="meta-item"><span>节目时长</span><strong id="resultDuration">—</strong></div>
+        <div class="meta-item"><span>播放量</span><strong id="resultPlays">—</strong></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="again" id="againButton" type="button">再抽一期</button>
+        <a class="listen" id="listenLink" href="#" target="_blank" rel="noopener noreferrer">去小宇宙收听</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="drawer" id="historyDrawer" aria-hidden="true">
+    <aside class="drawer-panel">
+      <header class="drawer-head">
+        <h2>最近抽取</h2>
+        <button class="drawer-close" id="closeDrawer" type="button">×</button>
+      </header>
+      <div class="history-list" id="historyList"></div>
+    </aside>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./episodes.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
