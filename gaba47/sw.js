@@ -1,4 +1,4 @@
-const CACHE = 'gaba47-v1'
+const CACHE = 'gaba47-v2'
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
