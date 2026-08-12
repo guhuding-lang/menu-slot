@@ -403,7 +403,7 @@
       50% { transform: translateX(3px); opacity: .9; }
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 900px) {
       body {
         background:
           radial-gradient(100vw 72vh at 28% 48%, rgba(23,70,98,.2), transparent 70%),
@@ -479,7 +479,7 @@
       .guide-card { width: 104px; border-radius: 23px; }
     }
 
-    @media (max-height: 680px) and (max-width: 760px) {
+    @media (max-height: 680px) and (max-width: 900px) {
       .hero-copy { bottom: max(38px, calc(env(safe-area-inset-bottom) + 32px)); }
       .hero-copy p { display: none; }
       .active-title { margin-top: 8px; }
@@ -607,7 +607,7 @@
       let moved = false;
       let wheelLock = false;
 
-      const isMobile = () => matchMedia('(max-width: 760px)').matches;
+      const isMobile = () => matchMedia('(max-width: 900px)').matches;
       const mod = (value, base) => ((value % base) + base) % base;
       const circularDiff = (index, position) => {
         let diff = mod(index - position + total / 2, total) - total / 2;
