@@ -1,0 +1,17 @@
+{
+  "name": "嘎巴47",
+  "short_name": "嘎巴47",
+  "description": "属于47群的健身打卡局",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f1ea",
+  "theme_color": "#f3f1ea",
+  "icons": [
+    {
+      "src": "./assets/mascot-dumbbell.webp",
+      "sizes": "1024x1024",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
