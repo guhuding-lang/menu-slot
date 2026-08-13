@@ -4,12 +4,18 @@
   "description": "属于47群的健身打卡局",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f3f1ea",
-  "theme_color": "#f3f1ea",
+  "background_color": "#090a0b",
+  "theme_color": "#090a0b",
   "icons": [
     {
-      "src": "./assets/mascot-dumbbell.webp",
-      "sizes": "1024x1024",
+      "src": "./assets/app-icon-192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/app-icon-512.webp",
+      "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any maskable"
     }

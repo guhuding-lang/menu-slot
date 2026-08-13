@@ -1,5 +1,14 @@
-const CACHE = 'gaba47-v5'
-const APP_SHELL = ['./index.html', './manifest.webmanifest']
+const CACHE = 'gaba47-v7'
+const APP_SHELL = [
+  './index.html',
+  './manifest.webmanifest',
+  './app.css?v=2',
+  './app.js?v=2',
+  './assets/phosphor/phosphor.css',
+  './assets/phosphor/Phosphor-Regular.woff2',
+  './assets/app-icon-192.webp',
+  './assets/app-icon-512.webp',
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)))
