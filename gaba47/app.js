@@ -16,6 +16,7 @@ const state = {
   toast: "",
   toastTimer: null,
   checkinForm: {
+    date: localDateKey(),
     type: "力量",
     parts: ["胸", "三头"],
     duration: 60,
@@ -219,6 +220,7 @@ async function createService() {
           duration_minutes: input.duration,
           note: input.note,
           photo_url: photoPath,
+          created_at: input.createdAt,
         }),
       });
     },
@@ -469,6 +471,16 @@ function profilePage() {
 
 function checkinPage() {
   const form = state.checkinForm;
+  const recentDates = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - index);
+    return {
+      key: localDateKey(date),
+      day: index === 0 ? "今天" : new Intl.DateTimeFormat("zh-CN", { weekday: "short" }).format(date),
+      label: `${date.getMonth() + 1}/${date.getDate()}`,
+    };
+  });
   return `<main class="page page-checkin">
     <header class="checkin-header">
       <div class="form-head">
@@ -477,6 +489,12 @@ function checkinPage() {
       </div>
     </header>
     ${connectionNotice()}
+    <section class="form-section date-section">
+      <div class="form-section-title"><h2>打卡日期</h2><span>支持近一周补打卡</span></div>
+      <div class="date-picker" aria-label="选择打卡日期">
+        ${recentDates.map((item) => `<button class="date-button ${form.date === item.key ? "is-selected" : ""}" data-date="${item.key}" aria-pressed="${form.date === item.key}"><strong>${item.day}</strong><span>${item.label}</span></button>`).join("")}
+      </div>
+    </section>
     <section class="form-section">
       <h2>训练类型</h2>
       <div class="type-grid">${trainingTypes.map(([type, iconName]) => `<button class="type-button ${form.type === type ? "is-selected" : ""}" data-type="${type}">${icon(iconName)}<span>${type}</span></button>`).join("")}</div>
@@ -521,7 +539,7 @@ function joinPage(error = "") {
 }
 
 function loadingPage() {
-  return `<div class="app-shell"><div class="loading-page"><div><div class="loading-mark"></div><strong>正在同步真实数据</strong><span>不会加载虚拟记录</span></div></div></div>`;
+  return `<div class="app-shell"><div class="loading-page"><div><div class="loading-mark"></div><strong>等待嘎巴</strong></div></div></div>`;
 }
 
 function render() {
@@ -594,6 +612,13 @@ app.addEventListener("click", async (event) => {
     return;
   }
 
+  const dateButton = event.target.closest("[data-date]");
+  if (dateButton) {
+    state.checkinForm.date = dateButton.dataset.date;
+    render();
+    return;
+  }
+
   const partButton = event.target.closest("[data-part]");
   if (partButton) {
     const part = partButton.dataset.part;
@@ -644,14 +669,18 @@ app.addEventListener("click", async (event) => {
   if (action === "submit-checkin" && state.service && !state.checkinForm.submitting) {
     state.checkinForm.submitting = true;
     const note = state.checkinForm.note.trim();
+    const selectedDate = state.checkinForm.date;
+    const [year, month, day] = selectedDate.split("-").map(Number);
+    const now = new Date();
+    const createdAt = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
     render();
     try {
-      await state.service.createCheckin({ ...state.checkinForm, note });
+      await state.service.createCheckin({ ...state.checkinForm, note, createdAt });
       if (state.checkinForm.photoUrl) URL.revokeObjectURL(state.checkinForm.photoUrl);
-      state.checkinForm = { type: "力量", parts: ["胸", "三头"], duration: 60, photo: null, photoUrl: "", uploadStatus: "", note: "", submitting: false };
+      state.checkinForm = { date: localDateKey(), type: "力量", parts: ["胸", "三头"], duration: 60, photo: null, photoUrl: "", uploadStatus: "", note: "", submitting: false };
       await loadData();
       state.route = "home";
-      showToast("打卡成功，今天没白过");
+      showToast(selectedDate === localDateKey() ? "打卡成功，今天没白过" : "补打卡成功，记录已经归位");
     } catch (error) {
       console.error(error);
       state.checkinForm.submitting = false;

@@ -435,6 +435,36 @@ img { display: block; max-width: 100%; }
 .form-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
 .form-section { padding: 22px 0; border-top: 1px solid var(--line); }
 .form-section h2 { margin: 0 0 15px; font-size: 17px; }
+.form-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.form-section-title span { color: var(--muted); font-size: 12px; }
+.date-section { padding-top: 0; border-top: 0; }
+.date-picker {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 64px;
+  gap: 8px;
+  margin-right: -20px;
+  padding: 1px 20px 5px 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.date-picker::-webkit-scrollbar { display: none; }
+.date-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 66px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  scroll-snap-align: start;
+}
+.date-button strong { font-size: 13px; }
+.date-button span { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.date-button.is-selected { border-color: var(--acid); color: #090a0b; background: var(--acid); }
+.date-button.is-selected span { color: rgba(9, 10, 11, .66); }
 .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .type-button,
 .part-button {

@@ -39,4 +39,12 @@ The source and implementation were rendered together in one browser viewport. Bo
 
 - P3: when real group activity becomes dense, recheck long nickname truncation and photo crops using actual production records.
 
+## Follow-up validation — near-week make-up check-ins
+
+- Added seven date choices: today plus the previous six calendar days.
+- Verified selecting a past date changes `aria-pressed` and the acid-green selected state, while training type and duration controls continue to work.
+- The selected local date is converted to an ISO timestamp and written to `checkins.created_at`, so feed order, calendar, monthly totals, and rankings use the make-up date.
+- Replaced the loading message with the single line “等待嘎巴”.
+- Browser QA found no application errors or horizontal page overflow.
+
 final result: passed
