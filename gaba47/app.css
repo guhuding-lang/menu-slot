@@ -301,10 +301,7 @@ textarea:focus, .field-label input:focus, .join-form input:focus { box-shadow: 0
 
 .join-page { width: min(100%, 560px); min-height: 100dvh; margin: 0 auto; padding: max(25px, env(safe-area-inset-top)) 20px calc(28px + var(--safe-bottom)); background: #fff; }
 .join-mark { margin: 0; font-size: 25px; letter-spacing: -.06em; }
-.join-copy { margin: 13dvh 0 34px; padding: 22px; border: 2px solid var(--ink); border-radius: 28px; background: var(--lime); box-shadow: 6px 6px 0 var(--ink); }
-.join-copy h1 { margin: 0; font-size: clamp(48px, 14vw, 68px); line-height: .94; letter-spacing: -.08em; }
-.join-copy p { margin: 16px 0 0; color: #272723; }
-.join-form { display: grid; gap: 15px; }
+.join-form { display: grid; gap: 15px; margin-top: clamp(220px, 40dvh, 500px); }
 .join-form label span { display: block; margin: 0 0 7px; color: var(--muted); font-size: 10px; }
 .join-form input { height: 54px; padding: 0 14px; }
 .form-error { margin: -3px 0 0; color: var(--danger); font-size: 11px; }
