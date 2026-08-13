@@ -475,10 +475,8 @@ async function connect() {
         state.identityIssue = { localId: cachedUser.id, sessionId: service.userId };
         state.user = null;
       } else {
-        await service.ensureProfile(cachedUser.name);
-        state.user = { ...cachedUser, id: service.userId };
-        writeJSON(USER_KEY, state.user);
-        await loadData();
+        localStorage.removeItem(USER_KEY);
+        state.user = null;
       }
     } else state.user = null;
     state.connection = "ready";
