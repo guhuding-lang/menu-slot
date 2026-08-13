@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
 const SESSION_KEY = "gaba47-supabase-session-v1";
-const USER_KEY = "gaba47-user-v1";
+const USER_KEY = "gaba47-user-v2";
 const PREVIEW_MODE = new URLSearchParams(location.search).get("preview") === "1";
 const GROUP_CODE = "47GYM";
 
@@ -135,7 +135,9 @@ async function createService() {
     signedCache.delete(path);
   };
   const uploadObject = async (file, prefix) => {
-    const path = `${userId}/${prefix}-${Date.now()}.webp`;
+    const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[file.type] || "webp";
+    const nonce = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+    const path = `${userId}/${prefix}-${Date.now()}-${nonce}.${extension}`;
     await api(`/storage/v1/object/checkin-photos/${encodePath(path)}`, {
       method: "POST", headers: { "Content-Type": file.type || "image/webp", "x-upsert": "false" }, body: file,
     });
@@ -216,22 +218,25 @@ async function createService() {
       if (input.originalPhotoPath) await deleteObject(input.originalPhotoPath).catch(() => {});
     },
     async updateProfile(input) {
-      let avatarPath = input.currentAvatarPath || null;
+      const previousPath = input.currentAvatarPath || null;
+      let avatarPath = previousPath;
+      let uploadedPath = null;
+      if ((input.avatar || input.removeAvatar) && !supportsAvatar) throw new Error("请先运行数据库升级脚本，再修改头像");
       if (input.avatar) {
-        if (!supportsAvatar) throw new Error("请先运行数据库升级脚本，再上传头像");
-        const nextPath = await uploadObject(input.avatar, "avatar");
-        if (avatarPath) await deleteObject(avatarPath).catch(() => {});
-        avatarPath = nextPath;
-      } else if (input.removeAvatar && avatarPath) {
-        if (!supportsAvatar) throw new Error("请先运行数据库升级脚本，再修改头像");
-        await deleteObject(avatarPath).catch(() => {});
-        avatarPath = null;
-      }
+        uploadedPath = await uploadObject(input.avatar, "avatar");
+        avatarPath = uploadedPath;
+      } else if (input.removeAvatar) avatarPath = null;
       const payload = { display_name: input.name };
       if (supportsAvatar) payload.avatar_url = avatarPath;
-      await api(`/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(payload),
-      });
+      try {
+        await api(`/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
+          method: "PATCH", headers: { "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(payload),
+        });
+      } catch (error) {
+        if (uploadedPath) await deleteObject(uploadedPath).catch(() => {});
+        throw error;
+      }
+      if (previousPath && previousPath !== avatarPath) await deleteObject(previousPath).catch(() => {});
       return { avatarPath, avatarUrl: avatarPath ? await signPath(avatarPath) : null };
     },
     async toggleLike(id) {
@@ -242,16 +247,33 @@ async function createService() {
 
 async function compressImage(file, maxBytes = 500 * 1024) {
   if (!file.type.startsWith("image/")) throw new Error("请选择图片文件");
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
+  let source;
+  let sourceUrl = "";
+  try {
+    if ("createImageBitmap" in window) source = await createImageBitmap(file);
+  } catch (error) { console.warn("系统图片解码不可用，改用兼容模式", error); }
+  if (!source) {
+    sourceUrl = URL.createObjectURL(file);
+    source = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("这张图片无法读取，请换一张再试"));
+      image.src = sourceUrl;
+    });
+  }
+  const width = source.width || source.naturalWidth;
+  const height = source.height || source.naturalHeight;
+  const scale = Math.min(1, 1400 / Math.max(width, height));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
   const ctx = canvas.getContext("2d", { alpha: false });
-  ctx.fillStyle = "#111214";
+  if (!ctx) throw new Error("当前浏览器无法处理图片，请换一张再试");
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+  source.close?.();
+  if (sourceUrl) URL.revokeObjectURL(sourceUrl);
   const toBlob = (quality) => new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("图片压缩失败")), "image/webp", quality));
   let quality = 0.82;
   let blob = await toBlob(quality);
@@ -357,20 +379,20 @@ function activityCard(item) {
 function homePage() {
   const members = memberStats();
   const me = currentMember(members) || { weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, streak: 0, dates: new Set() };
-  return `<main class="page page-home">${header()}<h2 class="home-title"><i></i>今晚，动哪儿？</h2>${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div><button class="glow-button" data-route="checkin">去打卡 ${icon("arrow-right")}</button></section><section class="feed-section"><div class="section-heading"><h2>群友动态</h2><span>${state.checkins.length ? `${state.checkins.length} 条记录` : "等待第一卡"}</span></div><div class="feed-list">${state.checkins.length ? state.checkins.slice(0, 20).map(activityCard).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
+  return `<main class="page page-home">${header()}<h2 class="home-title">今天你练了吗？</h2>${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月分钟</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div><button class="glow-button" data-route="checkin">去打卡 ${icon("arrow-right")}</button></section><section class="feed-section"><div class="section-heading"><h2>动态</h2><span>${state.checkins.length ? `${state.checkins.length} 条记录` : "等待第一卡"}</span></div><div class="feed-list">${state.checkins.length ? state.checkins.slice(0, 20).map(activityCard).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
 }
 
 function rankingPage() {
   const members = memberStats();
   const myIndex = members.findIndex((member) => member.id === state.user?.id);
   const total = members.reduce((sum, member) => sum + member.weeklyCount, 0);
-  return `<main class="page">${header("排行榜")}<h2 class="page-title">这周谁最能扛</h2><p class="page-subtitle">按本周训练次数排序，次数相同时比较累计时长。</p>${connectionNotice()}<section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内本周</span><strong>${total}<small>次</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 && member.weeklyCount > 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span>${avatarMarkup(member, "member-avatar")}<div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.totalMinutes} 分钟</small></div><div class="rank-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>本周还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
+  return `<main class="page page-ranking">${header("排行榜")}${connectionNotice()}<section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内本周</span><strong>${total}<small>次</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 && member.weeklyCount > 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span>${avatarMarkup(member, "member-avatar")}<div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.totalMinutes} 分钟</small></div><div class="rank-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>本周还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
 function membersPage() {
   const members = memberStats();
   const weeklyTotal = members.reduce((sum, member) => sum + member.weeklyCount, 0);
-  return `<main class="page">${header("47群友")}<h2 class="page-title">人齐了<br />就差你练</h2><section class="members-hero"><div><span>群友</span><strong>${members.length}<small>人</small></strong></div><div><span>本周训练</span><strong>${weeklyTotal}<small>次</small></strong></div></section>${connectionNotice()}<section class="member-list">${members.length ? members.map((member) => `<article class="member-row">${avatarMarkup(member, "member-avatar")}<div class="member-copy"><strong>${escapeHTML(member.name)}</strong><small>连续 ${member.streak} 天</small></div><div class="member-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("users-three")}<strong>还没有群友加入</strong><p>成员加入后会显示在这里。</p></div>`}</section></main>`;
+  return `<main class="page page-members">${header("47群友")}<section class="members-hero"><div><span>群友</span><strong>${members.length}<small>人</small></strong></div><div><span>本周训练</span><strong>${weeklyTotal}<small>次</small></strong></div></section>${connectionNotice()}<section class="member-list">${members.length ? members.map((member) => `<article class="member-row">${avatarMarkup(member, "member-avatar")}<div class="member-copy"><strong>${escapeHTML(member.name)}</strong><small>连续 ${member.streak} 天</small></div><div class="member-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("users-three")}<strong>还没有群友加入</strong><p>成员加入后会显示在这里。</p></div>`}</section></main>`;
 }
 
 function profileEditorModal() {

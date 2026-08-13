@@ -7,6 +7,42 @@ alter table public.profiles
 
 grant select, insert, update, delete on public.checkins to authenticated;
 
+-- 确保头像和训练照片所需的私有存储桶及权限完整存在。
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'checkin-photos',
+  'checkin-photos',
+  false,
+  1048576,
+  array['image/webp', 'image/jpeg', 'image/png']
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "members upload own photos" on storage.objects;
+drop policy if exists "members read checkin photos" on storage.objects;
+drop policy if exists "members delete own photos" on storage.objects;
+
+create policy "members upload own photos"
+on storage.objects for insert to authenticated
+with check (
+  bucket_id = 'checkin-photos'
+  and (storage.foldername(name))[1] = (select auth.uid())::text
+);
+
+create policy "members read checkin photos"
+on storage.objects for select to authenticated
+using (bucket_id = 'checkin-photos');
+
+create policy "members delete own photos"
+on storage.objects for delete to authenticated
+using (
+  bucket_id = 'checkin-photos'
+  and (storage.foldername(name))[1] = (select auth.uid())::text
+);
+
 drop policy if exists "users update own checkins" on public.checkins;
 create policy "users update own checkins"
 on public.checkins for update to authenticated
