@@ -6,6 +6,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null check (char_length(display_name) between 1 and 20),
+  avatar_url text,
   group_code text not null default '47GYM',
   created_at timestamptz not null default now()
 );
@@ -38,7 +39,7 @@ alter table public.likes enable row level security;
 
 revoke all on public.profiles, public.checkins, public.likes from anon, authenticated;
 grant select, insert, update on public.profiles to authenticated;
-grant select, insert, delete on public.checkins to authenticated;
+grant select, insert, update, delete on public.checkins to authenticated;
 grant select, insert, delete on public.likes to authenticated;
 
 drop policy if exists "group members can read profiles" on public.profiles;
@@ -47,6 +48,7 @@ drop policy if exists "users update own profile" on public.profiles;
 drop policy if exists "group members can read checkins" on public.checkins;
 drop policy if exists "users create own checkins" on public.checkins;
 drop policy if exists "users delete own checkins" on public.checkins;
+drop policy if exists "users update own checkins" on public.checkins;
 drop policy if exists "group members can read likes" on public.likes;
 drop policy if exists "users add own likes" on public.likes;
 drop policy if exists "users remove own likes" on public.likes;
@@ -73,6 +75,11 @@ with check ((select auth.uid()) = user_id);
 create policy "users delete own checkins"
 on public.checkins for delete to authenticated
 using ((select auth.uid()) = user_id);
+
+create policy "users update own checkins"
+on public.checkins for update to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 create policy "group members can read likes"
 on public.likes for select to authenticated using (true);
@@ -154,7 +161,10 @@ select
   c.id,
   c.user_id,
   p.display_name,
+  p.avatar_url,
   c.training_type,
+  c.body_parts,
+  c.duration_minutes,
   case
     when array_length(c.body_parts, 1) > 0
       then array_to_string(c.body_parts, ' + ') || ' · ' || c.duration_minutes || '分钟'
@@ -168,7 +178,7 @@ select
 from public.checkins c
 join public.profiles p on p.id = c.user_id
 left join public.likes l on l.checkin_id = c.id
-group by c.id, p.display_name;
+group by c.id, p.display_name, p.avatar_url;
 
 revoke all on public.checkins_feed from public, anon;
 grant select on public.checkins_feed to authenticated;
