@@ -422,7 +422,7 @@ function checkinPage() {
 }
 
 function joinPage(error = "") {
-  return `<main class="join-page"><h1 class="join-mark">嘎巴47</h1><section class="join-copy"><h1>今天练了吗？</h1></section><form class="join-form" id="join-form"><label><span>群邀请码</span><input name="code" placeholder="请输入群邀请码" value="" autocomplete="off" autocapitalize="characters" /></label><label><span>你的昵称</span><input name="name" placeholder="群友认得出的名字" maxlength="20" autocomplete="nickname" /></label>${error ? `<p class="form-error">${escapeHTML(error)}</p>` : ""}<button class="primary-button" type="submit">进入嘎巴47 ${icon("arrow-right")}</button><p class="privacy-note">${icon("lock-simple")} 47群专属</p></form></main>`;
+  return `<main class="join-page"><h1 class="join-mark">嘎巴47</h1><form class="join-form" id="join-form"><label><span>群邀请码</span><input name="code" placeholder="请输入群邀请码" value="" autocomplete="off" autocapitalize="characters" /></label><label><span>你的昵称</span><input name="name" placeholder="群友认得出的名字" maxlength="20" autocomplete="nickname" /></label>${error ? `<p class="form-error">${escapeHTML(error)}</p>` : ""}<button class="primary-button" type="submit">进入嘎巴47 ${icon("arrow-right")}</button><p class="privacy-note">${icon("lock-simple")} 47群专属</p></form></main>`;
 }
 
 function identityIssuePage() {
