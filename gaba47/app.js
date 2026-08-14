@@ -37,6 +37,12 @@ function isUUID(value) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab
 function escapeHTML(value = "") { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 function icon(name, extra = "") { return `<i class="ph ph-${name} ${extra}" aria-hidden="true"></i>`; }
 function initials(name = "47") { return [...String(name).trim()].slice(0, 1).join("") || "47"; }
+function cleanDisplayName(name = "") {
+  const value = String(name);
+  const normalized = typeof value.normalize === "function" ? value.normalize("NFKC") : value;
+  return normalized.trim().replace(/\s+/g, " ");
+}
+function displayNameKey(name = "") { return cleanDisplayName(name).toLocaleLowerCase("zh-CN"); }
 function localDateKey(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -308,13 +314,26 @@ function memberStats() {
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
   const map = new Map();
+  const ensureMember = ({ id = "", name = "", avatarUrl = null } = {}) => {
+    const displayName = cleanDisplayName(name) || "47";
+    const nameKey = displayNameKey(displayName) || `id:${id}`;
+    if (!map.has(nameKey)) {
+      map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set() });
+    }
+    const member = map.get(nameKey);
+    if (id) member.profileIds.add(id);
+    if (id === state.user?.id) {
+      member.id = id;
+      member.name = cleanDisplayName(state.user?.name) || displayName;
+      if (avatarUrl) member.avatarUrl = avatarUrl;
+    } else if (!member.avatarUrl && avatarUrl) member.avatarUrl = avatarUrl;
+    return member;
+  };
   for (const profile of state.profiles) {
-    map.set(profile.id, { id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set() });
+    ensureMember({ id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null });
   }
   for (const item of state.checkins) {
-    const id = item.userId || item.name;
-    if (!map.has(id)) map.set(id, { id, name: item.name, avatarUrl: item.avatarUrl, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set() });
-    const member = map.get(id);
+    const member = ensureMember({ id: item.userId, name: item.name, avatarUrl: item.avatarUrl });
     const created = new Date(item.createdAt);
     const minutes = parseMinutes(item);
     if (!Number.isNaN(created.getTime())) {
@@ -336,7 +355,11 @@ function memberStats() {
   return [...map.values()].sort((a, b) => b.weeklyCount - a.weeklyCount || b.totalMinutes - a.totalMinutes || a.name.localeCompare(b.name, "zh-CN"));
 }
 
-function currentMember(members = memberStats()) { return members.find((member) => member.id === state.user?.id) || null; }
+function isCurrentMember(member) {
+  if (!member || !state.user) return false;
+  return member.profileIds?.has(state.user.id) || member.nameKey === displayNameKey(state.user.name);
+}
+function currentMember(members = memberStats()) { return members.find(isCurrentMember) || null; }
 function recentDateOptions() {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
@@ -385,7 +408,7 @@ function homePage() {
 
 function rankingPage() {
   const members = memberStats();
-  const myIndex = members.findIndex((member) => member.id === state.user?.id);
+  const myIndex = members.findIndex(isCurrentMember);
   const total = members.reduce((sum, member) => sum + member.weeklyCount, 0);
   return `<main class="page page-ranking">${header("排行榜")}${connectionNotice()}<section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内本周</span><strong>${total}<small>次</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 && member.weeklyCount > 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span>${avatarMarkup(member, "member-avatar")}<div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.totalMinutes} 分钟</small></div><div class="rank-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>本周还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
