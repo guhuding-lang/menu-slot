@@ -12,6 +12,12 @@
   const escapeHTML = (value = "") => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
   const icon = (name) => `<i class="ph ph-${name}" aria-hidden="true"></i>`;
   const initials = (name = "47") => [...String(name).trim()].slice(0, 1).join("") || "47";
+  const cleanDisplayName = (name = "") => {
+    const value = String(name);
+    const normalized = typeof value.normalize === "function" ? value.normalize("NFKC") : value;
+    return normalized.trim().replace(/\s+/g, " ");
+  };
+  const displayNameKey = (name = "") => cleanDisplayName(name).toLocaleLowerCase("zh-CN");
   const localDateKey = (value = new Date()) => {
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return "";
@@ -98,13 +104,22 @@
     weekStart.setHours(0, 0, 0, 0);
     weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
     const map = new Map();
+    const ensureMember = ({ id = "", name = "", avatarUrl = null } = {}) => {
+      const displayName = cleanDisplayName(name) || "47";
+      const nameKey = displayNameKey(displayName) || `id:${id}`;
+      if (!map.has(nameKey)) {
+        map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set(), lastCheckinAt: null, lastDateKey: "", trainedToday: false, daysSinceLast: null });
+      }
+      const member = map.get(nameKey);
+      if (id) member.profileIds.add(id);
+      if (!member.avatarUrl && avatarUrl) member.avatarUrl = avatarUrl;
+      return member;
+    };
     for (const profile of profiles) {
-      map.set(profile.id, { id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set(), lastCheckinAt: null, lastDateKey: "", trainedToday: false, daysSinceLast: null });
+      ensureMember({ id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null });
     }
     for (const item of checkins) {
-      const id = item.userId || item.name;
-      if (!map.has(id)) map.set(id, { id, name: item.name, avatarUrl: item.avatarUrl, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set(), lastCheckinAt: null, lastDateKey: "", trainedToday: false, daysSinceLast: null });
-      const member = map.get(id);
+      const member = ensureMember({ id: item.userId, name: item.name, avatarUrl: item.avatarUrl });
       const created = new Date(item.createdAt);
       const minutes = parseMinutes(item);
       if (!Number.isNaN(created.getTime())) {
