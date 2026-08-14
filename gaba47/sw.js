@@ -5,6 +5,7 @@ const APP_SHELL = [
   './app.css?v=9',
   './photo-fix.js?v=1',
   './app.js?v=10',
+  './members-page.js?v=1',
   './assets/phosphor/phosphor.css',
   './assets/phosphor/Phosphor-Regular.woff2',
   './assets/app-icon-192.webp',
