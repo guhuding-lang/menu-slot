@@ -1,10 +1,10 @@
-const CACHE = 'gaba47-v15'
+const CACHE = 'gaba47-v16'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
-  './app.css?v=8',
+  './app.css?v=9',
   './photo-fix.js?v=1',
-  './app.js?v=9',
+  './app.js?v=10',
   './assets/phosphor/phosphor.css',
   './assets/phosphor/Phosphor-Regular.woff2',
   './assets/app-icon-192.webp',
@@ -40,17 +40,13 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  const url = new URL(event.request.url)
+  if (url.origin !== location.origin || !url.pathname.includes('/gaba47/')) return
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response.ok && new URL(event.request.url).origin === self.location.origin) {
-            caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()))
-          }
-          return response
-        })
-        .catch(() => cached)
-      return cached || network
-    }),
+    caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()))
+      return response
+    })),
   )
 })
