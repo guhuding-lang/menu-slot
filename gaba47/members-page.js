@@ -73,7 +73,7 @@
     try { profiles = await api("/rest/v1/profiles?select=id,display_name,avatar_url,created_at&order=created_at.asc"); }
     catch (error) { profiles = await api("/rest/v1/profiles?select=id,display_name,created_at&order=created_at.asc"); }
     profiles = await Promise.all((profiles || []).map(async (profile) => ({ ...profile, avatar_url_signed: await signPath(profile.avatar_url) })));
-    const rawCheckins = await api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=200");
+    const rawCheckins = await api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=1000");
     const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
     const checkins = (rawCheckins || []).map((item) => {
       const profile = profileMap.get(item.user_id);
