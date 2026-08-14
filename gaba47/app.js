@@ -6,6 +6,7 @@ const PREVIEW_MODE = new URLSearchParams(location.search).get("preview") === "1"
 const GROUP_CODE = "47GYM";
 
 const app = document.querySelector("#app");
+const initialUser = PREVIEW_MODE ? { id: "preview", name: "阿飞不累", avatarPath: null, avatarUrl: null } : readJSON(USER_KEY);
 const trainingTypes = [
   ["力量", "barbell"], ["跑步", "person-simple-run"], ["骑行", "bicycle"],
   ["游泳", "waves"], ["拉伸", "person-simple-tai-chi"], ["其他", "dots-three"],
@@ -22,8 +23,8 @@ const emptyCheckinForm = () => ({
 });
 
 const state = {
-  user: PREVIEW_MODE ? { id: "preview", name: "阿飞不累", avatarPath: null, avatarUrl: null } : readJSON(USER_KEY),
-  service: null, route: "home", checkins: [], profiles: [], booting: !PREVIEW_MODE, loading: false,
+  user: initialUser,
+  service: null, route: "home", checkins: [], profiles: [], booting: !PREVIEW_MODE && !initialUser, loading: false,
   connection: PREVIEW_MODE ? "preview" : "idle", identityIssue: null, toast: "", toastTimer: null,
   checkinForm: emptyCheckinForm(),
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
@@ -175,16 +176,16 @@ async function createService() {
     },
     async listData() {
       const [data, rawProfiles] = await Promise.all([
-        api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=200"), fetchProfiles(),
+        api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=80"), fetchProfiles(),
       ]);
       const profiles = await Promise.all((rawProfiles || []).map(async (profile) => ({ ...profile, avatar_url_signed: await signPath(profile.avatar_url) })));
       const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
-      const checkins = await Promise.all((data || []).map(async (item) => {
+      const checkins = await Promise.all((data || []).map(async (item, index) => {
         const profile = profileMap.get(item.user_id);
         return {
           id: item.id, userId: item.user_id, name: item.display_name, avatarUrl: profile?.avatar_url_signed || null,
           createdAt: item.created_at, type: item.training_type, details: item.details, parts: item.body_parts || undefined,
-          duration: item.duration_minutes || undefined, note: item.note, photoPath: item.photo_url, photo: await signPath(item.photo_url),
+          duration: item.duration_minutes || undefined, note: item.note, photoPath: item.photo_url, photo: index < 20 ? await signPath(item.photo_url) : null,
           likes: Number(item.likes_count || 0), liked: Boolean(item.liked_by_me),
         };
       }));
