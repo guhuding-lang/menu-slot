@@ -201,6 +201,191 @@ img { display: block; max-width: 100%; }
 .rank-score strong, .member-score strong { display: block; font-size: 22px; }
 .rank-score span, .member-score span { color: var(--muted); font-size: 9px; }
 
+.page-members { padding-bottom: calc(132px + var(--safe-bottom)); }
+.members-section { margin-top: 24px; }
+.page-members .members-section:first-of-type { margin-top: 4px; }
+.dot-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -.05em;
+  font-weight: 900;
+}
+.dot-heading::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--lime);
+}
+.attendance-card {
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-xl);
+  background: var(--lime);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.attendance-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 23px 18px 18px;
+}
+.attendance-metrics > div {
+  min-width: 0;
+  padding: 0 14px;
+  border-left: 1px solid rgba(9, 9, 9, .24);
+}
+.attendance-metrics > div:first-child { padding-left: 0; border-left: 0; }
+.attendance-metrics > div:last-child { padding-right: 0; }
+.attendance-metrics span {
+  display: block;
+  color: #242421;
+  font-size: 12px;
+  font-weight: 800;
+}
+.attendance-metrics strong {
+  display: flex;
+  align-items: baseline;
+  margin-top: 12px;
+  font-size: clamp(37px, 11vw, 56px);
+  line-height: .95;
+  letter-spacing: -.08em;
+  font-variant-numeric: tabular-nums;
+}
+.attendance-metrics small {
+  margin-left: 4px;
+  font-size: 12px;
+  letter-spacing: 0;
+  font-weight: 800;
+}
+.attendance-card p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 18px;
+  padding: 14px 0 17px;
+  border-top: 1.5px dashed rgba(9, 9, 9, .22);
+  font-size: 13px;
+  font-weight: 800;
+}
+.attendance-card p i { font-size: 18px; }
+.status-stack {
+  display: grid;
+  gap: 12px;
+}
+.status-card {
+  padding: 16px 16px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.status-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.status-card-head h3 {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -.05em;
+}
+.status-card-head > span {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: #eeeeea;
+  font-size: 11px;
+  font-weight: 900;
+}
+.status-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #eeeeea;
+}
+.status-icon i { font-size: 18px; }
+.status-online .status-icon, .status-online .status-card-head > span { background: var(--lime); }
+.status-stable .status-icon, .status-stable .status-card-head > span { background: #ffe23b; }
+.status-flat .status-icon, .status-flat .status-card-head > span { background: #e4e4df; }
+.status-member-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+.status-member {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.status-member .member-avatar {
+  width: 46px;
+  height: 46px;
+  font-size: 15px;
+}
+.status-member-copy {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+.status-member-copy strong {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.status-member-copy small {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.25;
+}
+.status-empty {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.member-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.member-help i { font-size: 17px; }
+
 .profile-card { padding: 0; }
 .profile-head { display: flex; align-items: center; gap: 13px; padding-bottom: 22px; }
 .profile-avatar { width: 72px; height: 72px; border: 2px solid var(--ink); font-size: 24px; }
