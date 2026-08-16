@@ -1,11 +1,10 @@
-const CACHE = 'gaba47-v18'
+const CACHE = 'gaba47-v19'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
-  './app.css?v=10',
+  './app.css?v=11',
   './photo-fix.js?v=1',
-  './app.js?v=12',
-  './members-page-v2.js?v=2',
+  './app.js?v=13',
   './assets/phosphor/phosphor.css',
   './assets/phosphor/Phosphor-Regular.woff2',
   './assets/app-icon-192.webp',
