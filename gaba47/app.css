@@ -67,6 +67,51 @@ img { display: block; max-width: 100%; }
 }
 .header-avatar { width: 38px; height: 38px; }
 .has-image img { width: 100%; height: 100%; object-fit: cover; }
+.page-home .app-header { margin-bottom: 18px; }
+.home-shortcuts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 9px;
+  margin: 0 0 26px;
+}
+.home-shortcut {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 70px;
+  padding: 8px 13px 8px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.shortcut-listen { background: #fff7e8; }
+.shortcut-coffee { background: #edf8ff; }
+.home-shortcut > i:first-child {
+  flex: 0 0 auto;
+  margin-right: 9px;
+  font-size: 38px;
+  line-height: 1;
+}
+.home-shortcut strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+.home-shortcut > i:last-child {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: 7px;
+  font-size: 17px;
+}
+.home-shortcut:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.home-shortcut:focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
 .home-title {
   max-width: 420px;
   margin: 0 0 24px;
@@ -499,6 +544,11 @@ button:focus-visible, label:focus-within { outline: 3px solid var(--lime); outli
 }
 @media (max-width: 370px) {
   .page { padding-left: 14px; padding-right: 14px; }
+  .home-shortcuts { gap: 7px; margin-bottom: 22px; }
+  .home-shortcut { min-height: 62px; padding: 7px 9px 7px 8px; box-shadow: 2px 2px 0 var(--ink); }
+  .home-shortcut > i:first-child { margin-right: 6px; font-size: 31px; }
+  .home-shortcut strong { font-size: 11.5px; }
+  .home-shortcut > i:last-child { padding-left: 4px; font-size: 14px; }
   .home-title { font-size: 40px; }
   .weekly-card { padding-left: 14px; padding-right: 14px; }
   .metric-grid strong { font-size: 31px; }
