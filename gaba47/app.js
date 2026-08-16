@@ -12,9 +12,10 @@ const trainingTypes = [
   ["游泳", "waves"], ["拉伸", "person-simple-tai-chi"], ["其他", "dots-three"],
 ];
 const bodyParts = ["胸", "背", "肩", "腿", "二头", "三头", "核心"];
+const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
   ["home", "今日", "house"], ["ranking", "排行", "trophy"], ["checkin", "去打卡", "lightning"],
-  ["members", "群友", "users-three"], ["profile", "我的", "user"],
+  ["tools", "工具", "toolbox"], ["profile", "我的", "user"],
 ];
 
 const emptyCheckinForm = () => ({
@@ -29,6 +30,7 @@ const state = {
   checkinForm: emptyCheckinForm(),
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
   deleteConfirm: false,
+  tools: { diceIndex: null, diceRolling: false },
 };
 
 function readJSON(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
@@ -413,10 +415,10 @@ function rankingPage() {
   return `<main class="page page-ranking">${header("排行榜")}${connectionNotice()}<section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内本周</span><strong>${total}<small>次</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 && member.weeklyCount > 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span>${avatarMarkup(member, "member-avatar")}<div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.totalMinutes} 分钟</small></div><div class="rank-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>本周还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
-function membersPage() {
-  const members = memberStats();
-  const weeklyTotal = members.reduce((sum, member) => sum + member.weeklyCount, 0);
-  return `<main class="page page-members">${header("47群友")}<section class="members-hero"><div><span>群友</span><strong>${members.length}<small>人</small></strong></div><div><span>本周训练</span><strong>${weeklyTotal}<small>次</small></strong></div></section>${connectionNotice()}<section class="member-list">${members.length ? members.map((member) => `<article class="member-row">${avatarMarkup(member, "member-avatar")}<div class="member-copy"><strong>${escapeHTML(member.name)}</strong><small>连续 ${member.streak} 天</small></div><div class="member-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("users-three")}<strong>还没有群友加入</strong><p>成员加入后会显示在这里。</p></div>`}</section></main>`;
+function toolsPage() {
+  const result = state.tools.diceIndex === null ? "等你掷骰子" : diceExercises[state.tools.diceIndex];
+  const cubeClass = state.tools.diceIndex === null ? "show-face-0" : `show-face-${state.tools.diceIndex}`;
+  return `<main class="page page-tools">${header("工具")}<section class="tool-card dice-tool"><div class="tool-heading"><span class="tool-number">01</span><div><h2>掷骰子随机运动</h2><p>胸、背、臀腿、肩、手臂、核心，交给骰子。</p></div></div><div class="dice-layout"><div class="dice-stage" aria-hidden="true"><div class="exercise-dice ${cubeClass} ${state.tools.diceRolling ? "is-rolling" : ""}">${diceExercises.map((exercise, index) => `<span class="dice-face face-${index}">${exercise}</span>`).join("")}</div></div><div class="dice-result" aria-live="polite"><span>今天练</span><strong>${escapeHTML(result)}</strong></div></div><button class="tool-action" data-action="roll-dice" ${state.tools.diceRolling ? "disabled" : ""}>${icon("dice-six")}<span>${state.tools.diceRolling ? "正在掷…" : "掷一下"}</span>${icon("arrow-clockwise")}</button></section><section class="tool-card heart-tool"><div class="tool-heading"><span class="tool-number">02</span><div><h2>最佳燃脂心率</h2><p>按最大心率的 60%–70% 估算参考区间。</p></div></div><div class="tool-input-row"><label class="tool-field"><span>年龄</span><span class="input-with-unit"><input id="age-input" type="number" min="12" max="100" inputmode="numeric" placeholder="例如 30" /><em>岁</em></span></label><button class="calculate-button" data-action="calculate-heart">计算</button></div><div class="tool-output" id="heart-output" aria-live="polite"><span>参考燃脂心率</span><strong>—</strong><small>次 / 分钟</small></div><p class="tool-formula">公式：（220 − 年龄）× 60%～70%</p></section><section class="tool-card bmi-tool"><div class="tool-heading"><span class="tool-number">03</span><div><h2>BMI 计算</h2><p>输入身高和体重，看看现在处在哪个区间。</p></div></div><div class="bmi-fields"><label class="tool-field"><span>身高</span><span class="input-with-unit"><input id="height-input" type="number" min="100" max="230" inputmode="decimal" placeholder="例如 170" /><em>cm</em></span></label><label class="tool-field"><span>体重</span><span class="input-with-unit"><input id="weight-input" type="number" min="25" max="300" step="0.1" inputmode="decimal" placeholder="例如 65" /><em>kg</em></span></label></div><button class="calculate-button bmi-calculate" data-action="calculate-bmi">计算 BMI</button><div class="tool-output bmi-output" id="bmi-output" aria-live="polite"><span>你的 BMI</span><strong>—</strong><small>等待计算</small></div><p class="tool-formula">BMI ＝ 体重（kg）÷ 身高²（m²）</p></section><p class="tools-note">心率和 BMI 仅作日常运动参考；如有心脏疾病、正在服药或运动不适，请先咨询专业医生。</p></main>`;
 }
 
 function profileEditorModal() {
@@ -458,7 +460,7 @@ function render() {
   if (state.booting) { app.innerHTML = loadingPage(); return; }
   if (state.identityIssue) { app.innerHTML = identityIssuePage(); return; }
   if (!state.user) { app.innerHTML = joinPage(); return; }
-  const pages = { home: homePage, ranking: rankingPage, members: membersPage, profile: profilePage, checkin: checkinPage };
+  const pages = { home: homePage, ranking: rankingPage, tools: toolsPage, profile: profilePage, checkin: checkinPage };
   const page = (pages[state.route] || homePage)();
   app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
 }
@@ -569,6 +571,41 @@ app.addEventListener("click", async (event) => {
   const actionButton = event.target.closest("[data-action]");
   if (!actionButton) return;
   const action = actionButton.dataset.action;
+  if (action === "roll-dice" && !state.tools.diceRolling) {
+    state.tools.diceRolling = true;
+    const previous = state.tools.diceIndex;
+    let next = Math.floor(Math.random() * diceExercises.length);
+    if (diceExercises.length > 1 && next === previous) next = (next + 1 + Math.floor(Math.random() * (diceExercises.length - 1))) % diceExercises.length;
+    render();
+    setTimeout(() => { state.tools.diceIndex = next; state.tools.diceRolling = false; render(); }, 900);
+    return;
+  }
+  if (action === "calculate-heart") {
+    const age = Number(document.querySelector("#age-input")?.value);
+    const output = document.querySelector("#heart-output");
+    if (!output) return;
+    if (!Number.isFinite(age) || age < 12 || age > 100) {
+      output.innerHTML = `<span>参考燃脂心率</span><strong>—</strong><small>请输入 12～100 岁</small>`;
+      return;
+    }
+    const maximum = 220 - age;
+    output.innerHTML = `<span>参考燃脂心率</span><strong>${Math.round(maximum * 0.6)}–${Math.round(maximum * 0.7)}</strong><small>次 / 分钟</small>`;
+    return;
+  }
+  if (action === "calculate-bmi") {
+    const height = Number(document.querySelector("#height-input")?.value);
+    const weight = Number(document.querySelector("#weight-input")?.value);
+    const output = document.querySelector("#bmi-output");
+    if (!output) return;
+    if (!Number.isFinite(height) || height < 100 || height > 230 || !Number.isFinite(weight) || weight < 25 || weight > 300) {
+      output.innerHTML = `<span>你的 BMI</span><strong>—</strong><small>请检查身高和体重</small>`;
+      return;
+    }
+    const bmi = weight / ((height / 100) ** 2);
+    const category = bmi < 18.5 ? "体重偏低" : bmi < 24 ? "正常范围" : bmi < 28 ? "超重" : "肥胖";
+    output.innerHTML = `<span>你的 BMI</span><strong>${bmi.toFixed(1)}</strong><small>${category}</small>`;
+    return;
+  }
   if (action === "retry") { state.booting = !state.user; await connect(); if (state.connection === "ready" && state.user) showToast("已经重新连上云端"); return; }
   if (action === "open-profile-editor") { state.profileEditor = { open: true, name: state.user?.name || "", avatar: null, avatarUrl: state.user?.avatarUrl || "", removeAvatar: false, status: "", saving: false }; render(); return; }
   if (action === "close-profile-editor") { if (state.profileEditor.avatar && state.profileEditor.avatarUrl) URL.revokeObjectURL(state.profileEditor.avatarUrl); state.profileEditor.open = false; render(); return; }
