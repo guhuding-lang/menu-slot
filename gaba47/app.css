@@ -431,6 +431,134 @@ img { display: block; max-width: 100%; }
 }
 .member-help i { font-size: 17px; }
 
+.page-tools { padding-bottom: calc(132px + var(--safe-bottom)); }
+.page-tools .app-header { margin-bottom: 20px; }
+.tool-card {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-xl);
+  background: #fff;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.dice-tool { background: var(--lime); }
+.heart-tool { background: #fff1c9; }
+.bmi-tool { background: #edf8ff; }
+.tool-heading { display: flex; align-items: flex-start; gap: 12px; }
+.tool-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+.tool-heading > div { min-width: 0; }
+.tool-heading h2 { margin: 1px 0 5px; font-size: 20px; line-height: 1.15; letter-spacing: -.05em; }
+.tool-heading p { margin: 0; color: #4f4f4a; font-size: 11px; line-height: 1.5; }
+.dice-layout { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 15px; min-height: 150px; margin: 16px 0 13px; }
+.dice-stage { display: grid; place-items: center; height: 136px; perspective: 650px; }
+.exercise-dice {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .8, .2, 1);
+}
+.dice-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: inset 0 0 0 5px var(--lime-soft);
+  font-size: 18px;
+  font-weight: 900;
+  backface-visibility: hidden;
+}
+.face-0 { transform: translateZ(52px); }
+.face-1 { transform: rotateY(180deg) translateZ(52px); }
+.face-2 { transform: rotateY(90deg) translateZ(52px); }
+.face-3 { transform: rotateY(-90deg) translateZ(52px); }
+.face-4 { transform: rotateX(90deg) translateZ(52px); }
+.face-5 { transform: rotateX(-90deg) translateZ(52px); }
+.exercise-dice.show-face-0 { transform: rotateX(-12deg) rotateY(-18deg); }
+.exercise-dice.show-face-1 { transform: rotateX(-12deg) rotateY(162deg); }
+.exercise-dice.show-face-2 { transform: rotateX(-12deg) rotateY(-108deg); }
+.exercise-dice.show-face-3 { transform: rotateX(-12deg) rotateY(72deg); }
+.exercise-dice.show-face-4 { transform: rotateX(-102deg) rotateY(-10deg); }
+.exercise-dice.show-face-5 { transform: rotateX(78deg) rotateY(10deg); }
+.exercise-dice.is-rolling { animation: dice-roll .9s cubic-bezier(.22, .62, .32, 1); }
+.dice-result { min-width: 0; }
+.dice-result span { display: block; color: #343430; font-size: 11px; font-weight: 800; }
+.dice-result strong { display: block; margin-top: 7px; font-size: clamp(28px, 8vw, 42px); line-height: 1.05; letter-spacing: -.07em; }
+.tool-action {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  color: #fff;
+  background: var(--ink);
+  font-size: 15px;
+  font-weight: 900;
+}
+.tool-action i { font-size: 20px; }
+.tool-action i:last-child { justify-self: end; }
+.tool-action:disabled { opacity: .62; cursor: wait; }
+.tool-input-row { display: grid; grid-template-columns: 1fr 92px; align-items: end; gap: 10px; margin-top: 20px; }
+.tool-field { display: grid; gap: 7px; }
+.tool-field > span:first-child { color: #4f4f4a; font-size: 10px; font-weight: 700; }
+.input-with-unit { position: relative; display: block; }
+.input-with-unit input {
+  width: 100%;
+  height: 52px;
+  padding: 0 48px 0 13px;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  outline: 0;
+  color: var(--ink);
+  background: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+.input-with-unit input:focus { box-shadow: 0 0 0 3px var(--lime); }
+.input-with-unit em { position: absolute; top: 50%; right: 13px; transform: translateY(-50%); color: var(--muted); font-size: 10px; font-style: normal; }
+.calculate-button { min-height: 52px; padding: 0 16px; border: 1.5px solid var(--ink); border-radius: 14px; color: #fff; background: var(--ink); font-size: 12px; font-weight: 900; }
+.tool-output {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  background: #fff;
+}
+.tool-output span { grid-column: 1 / -1; margin-bottom: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.tool-output strong { font-size: clamp(35px, 10vw, 50px); line-height: 1; letter-spacing: -.07em; font-variant-numeric: tabular-nums; }
+.tool-output small { padding-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.tool-formula { margin: 10px 2px 0; color: #5d5d58; font-size: 9px; line-height: 1.5; }
+.bmi-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.bmi-calculate { width: 100%; margin-top: 10px; }
+.bmi-output small { padding: 5px 10px; border: 1px solid var(--ink); border-radius: 999px; color: var(--ink); background: var(--lime); }
+.tools-note { margin: 24px 6px 0; color: var(--muted); font-size: 9px; line-height: 1.6; text-align: center; }
+@keyframes dice-roll {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  45% { transform: rotateX(330deg) rotateY(510deg) rotateZ(90deg) scale(1.08); }
+  100% { transform: rotateX(720deg) rotateY(1080deg) rotateZ(180deg); }
+}
+
 .profile-card { padding: 0; }
 .profile-head { display: flex; align-items: center; gap: 13px; padding-bottom: 22px; }
 .profile-avatar { width: 72px; height: 72px; border: 2px solid var(--ink); font-size: 24px; }
@@ -556,6 +684,16 @@ button:focus-visible, label:focus-within { outline: 3px solid var(--lime); outli
   .week-bars { gap: 4px; }
   .week-day i { width: 25px; height: 25px; }
   .type-grid { gap: 6px; }
+  .tool-card { padding: 15px; }
+  .dice-layout { grid-template-columns: 116px minmax(0, 1fr); gap: 10px; }
+  .exercise-dice { width: 92px; height: 92px; }
+  .face-0 { transform: translateZ(46px); }
+  .face-1 { transform: rotateY(180deg) translateZ(46px); }
+  .face-2 { transform: rotateY(90deg) translateZ(46px); }
+  .face-3 { transform: rotateY(-90deg) translateZ(46px); }
+  .face-4 { transform: rotateX(90deg) translateZ(46px); }
+  .face-5 { transform: rotateX(-90deg) translateZ(46px); }
+  .tool-heading h2 { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
