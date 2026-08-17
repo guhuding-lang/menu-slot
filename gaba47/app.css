@@ -240,7 +240,7 @@ img { display: block; max-width: 100%; }
 .report-modal > header h2 { margin: 0; font-size: 19px; letter-spacing: -.04em; }
 .report-close { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; color: #fff; background: var(--ink); font-size: 18px; }
 .report-canvas-wrap { overflow: auto; padding: 16px 22px; overscroll-behavior: contain; }
-.report-canvas-wrap canvas { display: block; width: 100%; height: auto; border: 1px solid var(--ink); background: #fff; box-shadow: 7px 7px 0 var(--ink); }
+.report-canvas-wrap canvas, .report-canvas-wrap img { display: block; width: 100%; height: auto; border: 1px solid var(--ink); background: #fff; box-shadow: 7px 7px 0 var(--ink); }
 .report-modal-actions { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 12px 16px calc(12px + var(--safe-bottom)); border-top: 1.5px solid var(--ink); background: #fff; }
 .report-modal-actions p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.45; }
 .report-modal-actions button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 46px; padding: 0 17px; border: 2px solid var(--ink); border-radius: 999px; color: var(--ink); background: var(--lime); box-shadow: 3px 3px 0 var(--ink); font-size: 12px; font-weight: 900; }
