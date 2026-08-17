@@ -622,6 +622,15 @@ function paintReportCanvases() {
     const report = reports.get(canvas.dataset.reportCanvas);
     if (report) drawReportPoster(canvas, report);
   });
+  document.querySelectorAll("img[data-report-image]").forEach((image) => {
+    const report = reports.get(image.dataset.reportImage);
+    if (!report) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1920;
+    drawReportPoster(canvas, report);
+    image.src = canvas.toDataURL("image/png");
+  });
 }
 function saveReportImage(report) {
   const canvas = document.createElement("canvas");
@@ -648,7 +657,7 @@ function reportCard(report) {
 }
 function reportModal(report) {
   if (!report) return "";
-  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas></div><div class="report-modal-actions"><p>点击保存图片；若系统拦截下载，也可直接截图。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
+  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><img data-report-image="${escapeHTML(report.id)}" alt="${escapeHTML(report.reportName)}高清海报" /></div><div class="report-modal-actions"><p>长按海报可保存；普通浏览器也可点右侧按钮。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
 }
 
 function activityCard(item) {
