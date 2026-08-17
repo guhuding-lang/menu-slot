@@ -30,6 +30,7 @@ const state = {
   checkinForm: emptyCheckinForm(),
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
   deleteConfirm: false,
+  reportModal: null,
   tools: { diceIndex: null, diceRolling: false },
 };
 
@@ -184,7 +185,7 @@ async function createService() {
     },
     async listData() {
       const [data, rawProfiles] = await Promise.all([
-        api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=80"), fetchProfiles(),
+        api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=1000"), fetchProfiles(),
       ]);
       const profiles = await Promise.all((rawProfiles || []).map(async (profile) => ({ ...profile, avatar_url_signed: await signPath(profile.avatar_url) })));
       const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -293,6 +294,11 @@ async function compressImage(file, maxBytes = 500 * 1024) {
 function previewData() {
   const now = new Date();
   const ago = (hours) => new Date(now.getTime() - hours * 3600000).toISOString();
+  const weekStart = new Date(now);
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  const previousWeek = (day, hour = 18) => new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7 + day, hour).toISOString();
+  const previousMonth = (day, hour = 18) => new Date(now.getFullYear(), now.getMonth() - 1, day, hour).toISOString();
   state.profiles = [
     { id: "preview", display_name: "阿飞不累", avatar_url_signed: null, created_at: ago(720) },
     { id: "friend-1", display_name: "小鹿同学", avatar_url_signed: null, created_at: ago(700) },
@@ -300,8 +306,15 @@ function previewData() {
   ];
   state.checkins = [
     { id: "p1", userId: "friend-1", name: "小鹿同学", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
-    { id: "p2", userId: "preview", name: "阿飞不累", createdAt: ago(18), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
-    { id: "p3", userId: "preview", name: "阿飞不累", createdAt: ago(66), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p2", userId: "preview", name: "阿飞不累", createdAt: previousWeek(6, 20), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
+    { id: "p3", userId: "preview", name: "阿飞不累", createdAt: previousWeek(4), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p4", userId: "friend-1", name: "小鹿同学", createdAt: previousWeek(3), type: "力量", details: "臀腿 · 55分钟", parts: ["腿"], duration: 55, note: "", likes: 4, liked: false, photo: null, photoPath: null },
+    { id: "p5", userId: "friend-2", name: "老周", createdAt: previousWeek(2), type: "骑行", details: "骑行 · 72分钟", parts: [], duration: 72, note: "风有点大，还是骑完了。", likes: 6, liked: false, photo: null, photoPath: null },
+    { id: "p6", userId: "preview", name: "阿飞不累", createdAt: previousWeek(1), type: "力量", details: "背 + 二头 · 50分钟", parts: ["背", "二头"], duration: 50, note: "", likes: 3, liked: true, photo: null, photoPath: null },
+    { id: "p7", userId: "preview", name: "阿飞不累", createdAt: previousMonth(23), type: "跑步", details: "跑步 · 45分钟", parts: [], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p8", userId: "friend-1", name: "小鹿同学", createdAt: previousMonth(18), type: "力量", details: "核心 · 40分钟", parts: ["核心"], duration: 40, note: "", likes: 1, liked: false, photo: null, photoPath: null },
+    { id: "p9", userId: "friend-2", name: "老周", createdAt: previousMonth(12), type: "游泳", details: "游泳 · 65分钟", parts: [], duration: 65, note: "", likes: 5, liked: false, photo: null, photoPath: null },
+    { id: "p10", userId: "preview", name: "阿飞不累", createdAt: previousMonth(5), type: "力量", details: "肩 + 核心 · 58分钟", parts: ["肩", "核心"], duration: 58, note: "", likes: 4, liked: true, photo: null, photoPath: null },
   ];
   state.service = {
     userId: "preview", toggleLike: async () => {},
@@ -371,8 +384,9 @@ function recentDateOptions() {
   });
 }
 
-function header(title = "嘎巴47") {
-  return `<header class="app-header"><h1 class="brand">${escapeHTML(title)}</h1><button class="avatar-button" data-route="profile" aria-label="打开我的主页">${avatarMarkup(state.user, "header-avatar")}</button></header>`;
+function header(title = "嘎巴47", withShortcuts = false) {
+  const shortcuts = withShortcuts ? `<nav class="header-shortcuts" aria-label="群友快捷入口"><a class="header-shortcut shortcut-listen" href="https://guhuding-lang.github.io/menu-slot/j/" aria-label="打开不开玩笑随听机">${icon("headphones")}<span>随听机</span></a><a class="header-shortcut shortcut-coffee" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" aria-label="打开咖啡打卡">${icon("coffee")}<span>咖啡</span></a></nav>` : "";
+  return `<header class="app-header ${withShortcuts ? "home-header" : ""}"><div class="header-title-row"><h1 class="brand">${escapeHTML(title)}</h1>${shortcuts}</div><button class="avatar-button" data-route="profile" aria-label="打开我的主页">${avatarMarkup(state.user, "header-avatar")}</button></header>`;
 }
 function nav() {
   return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName], index) => index === 2
@@ -397,6 +411,245 @@ function weekBars(member) {
   }).join("");
 }
 
+function addDays(value, amount) {
+  const date = new Date(value);
+  date.setDate(date.getDate() + amount);
+  return date;
+}
+function startOfWeek(value = new Date()) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return date;
+}
+function reportPeriodLabel(start, end, type) {
+  if (type === "month") return `${start.getFullYear()}年${start.getMonth() + 1}月`;
+  const lastDay = addDays(end, -1);
+  return `${start.getMonth() + 1}/${start.getDate()}–${lastDay.getMonth() + 1}/${lastDay.getDate()}`;
+}
+function createReport(type, start, end, publishedAt) {
+  const grouped = new Map();
+  const rows = state.checkins.filter((item) => {
+    const date = new Date(item.createdAt);
+    return !Number.isNaN(date.getTime()) && date >= start && date < end;
+  });
+  for (const item of rows) {
+    const name = cleanDisplayName(item.name) || "47群友";
+    const key = displayNameKey(name) || `id:${item.userId}`;
+    if (!grouped.has(key)) grouped.set(key, { name, minutes: 0, checkins: 0, days: new Set() });
+    const member = grouped.get(key);
+    member.minutes += parseMinutes(item);
+    member.checkins += 1;
+    member.days.add(localDateKey(item.createdAt));
+  }
+  const ranking = [...grouped.values()]
+    .map((member) => ({ ...member, activeDays: member.days.size }))
+    .sort((a, b) => b.minutes - a.minutes || b.activeDays - a.activeDays || a.name.localeCompare(b.name, "zh-CN"));
+  const attendance = [...ranking].sort((a, b) => b.activeDays - a.activeDays || b.checkins - a.checkins || b.minutes - a.minutes);
+  const totalMinutes = ranking.reduce((sum, member) => sum + member.minutes, 0);
+  const periodLabel = reportPeriodLabel(start, end, type);
+  const reportName = type === "week" ? "上周周报" : `${start.getMonth() + 1}月月报`;
+  const highlightName = ranking[0]?.name || "等待上榜";
+  const attendanceName = attendance[0]?.name || "等待打卡";
+  const goal = Math.max(500, Math.ceil((totalMinutes * 1.2) / 100) * 100);
+  const highlights = type === "week"
+    ? [
+        { label: "最佳坚持", value: attendanceName },
+        { label: "本周加油", value: ranking[1]?.name || "更多群友" },
+        { label: "坚持打卡", value: "排名会说话" },
+      ]
+    : [
+        { label: "月度之星", value: highlightName },
+        { label: "最强出勤", value: attendanceName },
+        { label: "下月目标", value: `一起冲 ${goal} 分钟` },
+      ];
+  return {
+    id: `report-${type}-${localDateKey(start)}`,
+    feedKind: "report",
+    reportType: type,
+    reportName,
+    periodLabel,
+    periodStart: start.toISOString(),
+    periodEnd: end.toISOString(),
+    createdAt: publishedAt.toISOString(),
+    totalMinutes,
+    activeCount: ranking.length,
+    checkinCount: rows.length,
+    top3: ranking.slice(0, 3),
+    highlights,
+  };
+}
+function scheduledReports(now = new Date()) {
+  const reports = [];
+  const currentWeek = startOfWeek(now);
+  for (let index = 0; index < 6; index += 1) {
+    const end = addDays(currentWeek, -7 * index);
+    const start = addDays(end, -7);
+    const publishedAt = new Date(end);
+    publishedAt.setHours(12, 0, 0, 0);
+    if (publishedAt <= now) reports.push(createReport("week", start, end, publishedAt));
+  }
+  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  for (let index = 0; index < 3; index += 1) {
+    const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - index, 1);
+    const start = new Date(end.getFullYear(), end.getMonth() - 1, 1);
+    const publishedAt = new Date(end);
+    publishedAt.setHours(12, 0, 0, 0);
+    if (publishedAt <= now) reports.push(createReport("month", start, end, publishedAt));
+  }
+  return reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+function homeFeedItems() {
+  return [...state.checkins.map((item) => ({ ...item, feedKind: "checkin" })), ...scheduledReports()]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 20);
+}
+function reportById(id) { return scheduledReports().find((report) => report.id === id) || null; }
+
+function roundedPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+function shortPosterText(ctx, value, maxWidth) {
+  const original = String(value || "—");
+  if (ctx.measureText(original).width <= maxWidth) return original;
+  let text = original;
+  while (text.length > 1 && ctx.measureText(`${text}…`).width > maxWidth) text = text.slice(0, -1);
+  return `${text}…`;
+}
+function posterFont(weight, size) { return `${weight} ${size}px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif`; }
+function drawLightning(ctx, x, y, radius = 22) {
+  ctx.fillStyle = "#b8ff26";
+  ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + 3, y - 15); ctx.lineTo(x - 8, y + 1); ctx.lineTo(x - 1, y + 1);
+  ctx.lineTo(x - 5, y + 16); ctx.lineTo(x + 10, y - 3); ctx.lineTo(x + 2, y - 3); ctx.closePath();
+  ctx.fillStyle = "#090909"; ctx.fill();
+}
+function drawTrophy(ctx, x, y) {
+  ctx.save();
+  ctx.lineWidth = 4; ctx.strokeStyle = "#090909"; ctx.fillStyle = "#b8ff26";
+  roundedPath(ctx, x, y, 78, 62, 13); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 12, y + 7); ctx.lineTo(x + 17, y + 48); ctx.lineTo(x + 61, y + 48); ctx.lineTo(x + 66, y + 7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x - 1, y + 24, 17, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 79, y + 24, 17, Math.PI / 2, Math.PI * 1.5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 39, y + 62); ctx.lineTo(x + 39, y + 81); ctx.moveTo(x + 17, y + 82); ctx.lineTo(x + 61, y + 82); ctx.stroke();
+  ctx.font = posterFont(900, 27); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#fff"; ctx.fillText("★", x + 39, y + 31);
+  ctx.restore();
+}
+function drawReportPoster(canvas, report) {
+  const baseWidth = 540;
+  const scale = canvas.width / baseWidth;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) return;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.clearRect(0, 0, baseWidth, 960);
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, baseWidth, 960);
+  ctx.textBaseline = "alphabetic";
+
+  drawLightning(ctx, 48, 46, 24);
+  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 22); ctx.textAlign = "left"; ctx.fillText("嘎巴47", 82, 43);
+  ctx.font = posterFont(600, 10); ctx.fillStyle = "#5f5f5a"; ctx.fillText("一起运动 · 一起变强", 82, 60);
+  ctx.fillStyle = "#b8ff26"; ctx.beginPath(); ctx.arc(490, 44, 9, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
+
+  ctx.fillStyle = "#090909"; ctx.font = posterFont(950, 58); ctx.fillText("嘎巴47", 32, 132);
+  const prefix = report.reportType === "week" ? "上周" : `${new Date(report.periodStart).getMonth() + 1}月`;
+  ctx.font = posterFont(950, 52); ctx.fillStyle = "#b8ff26"; ctx.fillText(prefix, 32, 198);
+  const prefixWidth = ctx.measureText(prefix).width;
+  ctx.fillStyle = "#090909"; ctx.fillText(report.reportType === "week" ? "周报" : "月报", 32 + prefixWidth + 5, 198);
+  drawTrophy(ctx, 417, 110);
+  ctx.fillStyle = "#090909"; ctx.font = posterFont(850, 17); ctx.fillText("按排行榜数据统计", 32, 231);
+  roundedPath(ctx, 32, 247, 170, 31, 15); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.font = posterFont(700, 12); ctx.fillText(`统计周期｜${report.periodLabel}`, 46, 267);
+
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 37, 299, 472, 139, 25); ctx.fill();
+  ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 293, 472, 139, 25); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
+  const summary = [["总运动时长", report.totalMinutes, "分钟"], ["活跃人数", report.activeCount, "人"], ["打卡次数", report.checkinCount, "次"]];
+  summary.forEach(([label, value, unit], index) => {
+    const center = 32 + 78.7 + index * 157.3;
+    if (index) { ctx.beginPath(); ctx.moveTo(32 + index * 157.3, 319); ctx.lineTo(32 + index * 157.3, 407); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(9,9,9,.3)"; ctx.stroke(); }
+    ctx.textAlign = "center"; ctx.fillStyle = "#20201d"; ctx.font = posterFont(750, 12); ctx.fillText(label, center, 329);
+    ctx.fillStyle = "#090909"; ctx.font = posterFont(950, String(value).length > 3 ? 38 : 46); ctx.fillText(String(value), center, 384);
+    ctx.font = posterFont(750, 11); ctx.fillText(unit, center, 410);
+  });
+
+  ctx.textAlign = "left"; ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 457, 158, 34, 17); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 17); ctx.fillText("♛ TOP 3 榜单", 48, 480);
+  ctx.strokeStyle = "#090909"; ctx.lineWidth = 2.3; roundedPath(ctx, 32, 474, 472, 238, 24); ctx.stroke();
+  const slots = [
+    { rank: 2, x: 56, y: 535, w: 124, h: 146, lime: false },
+    { rank: 1, x: 208, y: 514, w: 124, h: 167, lime: true },
+    { rank: 3, x: 360, y: 545, w: 124, h: 136, lime: false },
+  ];
+  slots.forEach((slot) => {
+    const member = report.top3[slot.rank - 1];
+    ctx.fillStyle = slot.lime ? "#b8ff26" : "#ffffff"; roundedPath(ctx, slot.x, slot.y, slot.w, slot.h, 18); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+    ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(slot.x + 16, slot.y + 14, 17, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.font = posterFont(900, 16); ctx.fillText(String(slot.rank), slot.x + 16, slot.y + 20);
+    ctx.fillStyle = slot.lime ? "#ffffff" : "#f1f1ed"; ctx.beginPath(); ctx.arc(slot.x + slot.w / 2, slot.y + 55, 29, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+    ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 20); ctx.fillText(member ? initials(member.name) : "—", slot.x + slot.w / 2, slot.y + 62);
+    ctx.font = posterFont(850, 14); ctx.fillText(shortPosterText(ctx, member?.name || "暂无上榜", 96), slot.x + slot.w / 2, slot.y + 101);
+    ctx.font = posterFont(950, 27); ctx.fillText(String(member?.minutes || 0), slot.x + slot.w / 2, slot.y + 132);
+    ctx.font = posterFont(700, 10); ctx.fillText("分钟", slot.x + slot.w / 2, slot.y + 148);
+  });
+
+  ctx.textAlign = "left"; ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 732, 145, 32, 16); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 16); ctx.fillText(report.reportType === "week" ? "上周亮点 ★" : "本月亮点 ★", 48, 754);
+  report.highlights.forEach((item, index) => {
+    const x = 32 + index * 159;
+    roundedPath(ctx, x, 779, 145, 91, 18); ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = 1.8; ctx.strokeStyle = "#090909"; ctx.stroke();
+    ctx.fillStyle = "#b8ff26"; ctx.beginPath(); ctx.arc(x + 27, 810, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 15); ctx.textAlign = "center"; ctx.fillText(["★", "◆", "ϟ"][index], x + 27, 816);
+    ctx.textAlign = "left"; ctx.font = posterFont(700, 10); ctx.fillText(item.label, x + 52, 807);
+    ctx.font = posterFont(900, 14); ctx.fillText(shortPosterText(ctx, item.value, 82), x + 52, 829);
+  });
+
+  drawLightning(ctx, 49, 916, 21);
+  ctx.fillStyle = "#090909"; ctx.textAlign = "left"; ctx.font = posterFont(900, 17); ctx.fillText("坚持打卡，遇见更好的自己！", 82, 916);
+  ctx.strokeStyle = "#b8ff26"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(82, 928); ctx.quadraticCurveTo(190, 937, 300, 928); ctx.stroke();
+  ctx.textAlign = "right"; ctx.font = posterFont(700, 10); ctx.fillText("嘎巴47 · 你的运动打卡小伙伴", 505, 938);
+}
+function paintReportCanvases() {
+  const reports = new Map(scheduledReports().map((report) => [report.id, report]));
+  document.querySelectorAll("canvas[data-report-canvas]").forEach((canvas) => {
+    const report = reports.get(canvas.dataset.reportCanvas);
+    if (report) drawReportPoster(canvas, report);
+  });
+}
+function saveReportImage(report) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1920;
+  drawReportPoster(canvas, report);
+  canvas.toBlob((blob) => {
+    if (!blob) { showToast("图片生成失败，请截图保存"); return; }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `嘎巴47-${report.reportName}-${localDateKey(report.periodStart)}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast("报表图片已生成");
+  }, "image/png");
+}
+
+function reportCard(report) {
+  return `<article class="feed-card system-feed-card"><div class="feed-main"><span class="feed-avatar system-avatar">${icon("lightning")}</span><div class="feed-copy"><div class="feed-name-row"><strong>嘎巴47系统</strong><span class="feed-type">${report.reportType === "week" ? "周报" : "月报"}</span></div><p>${escapeHTML(report.reportName)}已生成 · ${escapeHTML(report.periodLabel)}</p><small>${escapeHTML(relativeTime(report.createdAt))}</small></div></div><button class="report-preview" data-action="open-report" data-report-id="${escapeHTML(report.id)}" aria-label="放大查看${escapeHTML(report.reportName)}"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas><span>${icon("arrows-out-simple")} 点击放大查看并保存</span></button></article>`;
+}
+function reportModal(report) {
+  if (!report) return "";
+  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas></div><div class="report-modal-actions"><p>可点击保存，也可长按报表截图。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
+}
+
 function activityCard(item) {
   const own = item.userId === state.user?.id;
   return `<article class="feed-card"><div class="feed-main">${avatarMarkup(item, "feed-avatar")}<div class="feed-copy"><div class="feed-name-row"><strong>${escapeHTML(item.name)}</strong><span class="feed-type">${escapeHTML(item.type)}</span></div><p>${escapeHTML(item.details || `${item.type} · ${parseMinutes(item)}分钟`)}</p><small>${escapeHTML(relativeTime(item.createdAt))}</small></div><div class="feed-controls"><button class="like-button ${item.liked ? "is-liked" : ""}" data-like="${escapeHTML(item.id)}" aria-label="${item.liked ? "取消点赞" : "点赞"}">${icon("heart-straight")}<span>${item.likes}</span></button>${own ? `<button class="edit-button" data-edit-checkin="${escapeHTML(item.id)}" aria-label="编辑这条打卡">${icon("pencil-simple")}</button>` : ""}</div></div>${item.note ? `<p class="feed-note">${escapeHTML(item.note)}</p>` : ""}${item.photo ? `<img class="feed-photo" src="${escapeHTML(item.photo)}" alt="${escapeHTML(item.name)}的训练照片" loading="lazy" />` : ""}</article>`;
@@ -405,7 +658,11 @@ function activityCard(item) {
 function homePage() {
   const members = memberStats();
   const me = currentMember(members) || { weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, streak: 0, dates: new Set() };
-  return `<main class="page page-home">${header()}<nav class="home-shortcuts" aria-label="群友快捷入口"><a class="home-shortcut shortcut-listen" href="https://guhuding-lang.github.io/menu-slot/j/" aria-label="打开不开玩笑随听机">${icon("headphones")}<strong>不开玩笑随听机</strong>${icon("arrow-right")}</a><a class="home-shortcut shortcut-coffee" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" aria-label="打开咖啡打卡">${icon("coffee")}<strong>咖啡打卡</strong>${icon("arrow-right")}</a></nav><h2 class="home-title">今天你练了吗？</h2>${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月分钟</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div><button class="glow-button" data-route="checkin">去打卡 ${icon("arrow-right")}</button></section><section class="feed-section"><div class="section-heading"><h2>动态</h2><span>${state.checkins.length ? `${state.checkins.length} 条记录` : "等待第一卡"}</span></div><div class="feed-list">${state.checkins.length ? state.checkins.slice(0, 20).map(activityCard).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
+  const reports = scheduledReports();
+  const latest = reports[0];
+  const feedItems = homeFeedItems();
+  const latestButton = latest ? `<button class="latest-report-button" data-action="open-report" data-report-id="${escapeHTML(latest.id)}"><span class="latest-report-icon">${icon(latest.reportType === "week" ? "trophy" : "calendar-star")}</span><span><small>最近一期</small><strong>${escapeHTML(latest.reportName)}</strong></span>${icon("arrow-right")}</button>` : "";
+  return `<main class="page page-home">${header("嘎巴47", true)}${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月分钟</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div></section>${latestButton}<section class="feed-section"><div class="section-heading"><h2>动态</h2><span>${feedItems.length ? `${feedItems.length} 条最近动态` : "等待第一卡"}</span></div><div class="feed-list">${feedItems.length ? feedItems.map((item) => item.feedKind === "report" ? reportCard(item) : activityCard(item)).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
 }
 
 function rankingPage() {
@@ -462,7 +719,9 @@ function render() {
   if (!state.user) { app.innerHTML = joinPage(); return; }
   const pages = { home: homePage, ranking: rankingPage, tools: toolsPage, profile: profilePage, checkin: checkinPage };
   const page = (pages[state.route] || homePage)();
-  app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
+  const openReport = state.reportModal ? reportById(state.reportModal) : null;
+  app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${openReport ? reportModal(openReport) : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
+  requestAnimationFrame(paintReportCanvases);
 }
 function showToast(message) {
   state.toast = message;
@@ -537,6 +796,7 @@ app.addEventListener("click", async (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
     if (routeButton.dataset.route === "checkin") state.checkinForm = emptyCheckinForm();
+    state.reportModal = null;
     state.route = routeButton.dataset.route;
     window.scrollTo({ top: 0, behavior: "smooth" });
     render();
@@ -571,6 +831,19 @@ app.addEventListener("click", async (event) => {
   const actionButton = event.target.closest("[data-action]");
   if (!actionButton) return;
   const action = actionButton.dataset.action;
+  if (action === "open-report") {
+    const report = reportById(actionButton.dataset.reportId);
+    if (!report) { showToast("这期报表暂时不可用"); return; }
+    state.reportModal = report.id;
+    render();
+    return;
+  }
+  if (action === "close-report") { state.reportModal = null; render(); return; }
+  if (action === "save-report") {
+    const report = reportById(actionButton.dataset.reportId);
+    if (report) saveReportImage(report);
+    return;
+  }
   if (action === "roll-dice" && !state.tools.diceRolling) {
     state.tools.diceRolling = true;
     const previous = state.tools.diceIndex;
@@ -700,6 +973,10 @@ app.addEventListener("change", async (event) => {
 app.addEventListener("input", (event) => {
   if (event.target.id === "note-input") state.checkinForm.note = event.target.value;
   if (event.target.id === "profile-name-input") state.profileEditor.name = event.target.value;
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.reportModal) { state.reportModal = null; render(); }
 });
 
 if (PREVIEW_MODE) { previewData(); render(); }
