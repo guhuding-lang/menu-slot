@@ -628,18 +628,19 @@ function saveReportImage(report) {
   canvas.width = 1080;
   canvas.height = 1920;
   drawReportPoster(canvas, report);
-  canvas.toBlob((blob) => {
-    if (!blob) { showToast("图片生成失败，请截图保存"); return; }
-    const url = URL.createObjectURL(blob);
+  try {
+    const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
     link.download = `嘎巴47-${report.reportName}-${localDateKey(report.periodStart)}.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
     showToast("报表图片已生成");
-  }, "image/png");
+  } catch (error) {
+    console.error("报表图片生成失败", error);
+    showToast("图片生成失败，请截图保存");
+  }
 }
 
 function reportCard(report) {
@@ -647,7 +648,7 @@ function reportCard(report) {
 }
 function reportModal(report) {
   if (!report) return "";
-  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas></div><div class="report-modal-actions"><p>可点击保存，也可长按报表截图。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
+  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas></div><div class="report-modal-actions"><p>点击保存图片；若系统拦截下载，也可直接截图。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
 }
 
 function activityCard(item) {
