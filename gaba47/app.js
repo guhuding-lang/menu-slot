@@ -320,11 +320,13 @@ function previewData() {
   const previousMonth = (day, hour = 18) => new Date(now.getFullYear(), now.getMonth() - 1, day, hour).toISOString();
   state.profiles = [
     { id: "preview", display_name: "阿飞不累", avatar_url_signed: null, created_at: ago(720) },
-    { id: "friend-1", display_name: "小鹿同学", avatar_url_signed: null, created_at: ago(700) },
+    { id: "friend-1", display_name: "朱紫瑶（见过张杰版）", avatar_url_signed: null, created_at: ago(700) },
     { id: "friend-2", display_name: "老周", avatar_url_signed: null, created_at: ago(600) },
   ];
   state.checkins = [
-    { id: "p1", userId: "friend-1", name: "小鹿同学", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
+    { id: "p1", userId: "friend-1", name: "朱紫瑶（见过张杰版）", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
+    { id: "p11", userId: "preview", name: "阿飞不累", createdAt: ago(4), type: "混合训练", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
+    { id: "p12", userId: "friend-2", name: "老周", createdAt: ago(7), type: "爬楼", details: "爬楼 · 85分钟", parts: ["爬楼"], duration: 85, note: "一步一步往上。", likes: 6, liked: false, photo: null, photoPath: null },
     { id: "p2", userId: "preview", name: "阿飞不累", createdAt: previousWeek(6, 20), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
     { id: "p3", userId: "preview", name: "阿飞不累", createdAt: previousWeek(4), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
     { id: "p4", userId: "friend-1", name: "小鹿同学", createdAt: previousWeek(3), type: "力量", details: "臀腿 · 55分钟", parts: ["腿"], duration: 55, note: "", likes: 4, liked: false, photo: null, photoPath: null },
@@ -547,7 +549,24 @@ function shortPosterText(ctx, value, maxWidth) {
   while (text.length > 1 && ctx.measureText(`${text}…`).width > maxWidth) text = text.slice(0, -1);
   return `${text}…`;
 }
-function posterFont(weight, size) { return `${weight} ${size}px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif`; }
+function posterFont(weight, size) {
+  const safeWeight = Math.min(900, Math.max(400, Math.round((Number(weight) || 400) / 100) * 100));
+  return `${safeWeight} ${size}px "PingFang SC", "Microsoft YaHei", Arial, sans-serif`;
+}
+function drawPosterText(ctx, value, x, y, maxWidth, options = {}) {
+  const { weight = 800, size = 16, minSize = 9, align = "left", color = "#090909" } = options;
+  const original = String(value ?? "—");
+  let fittedSize = size;
+  ctx.textAlign = align;
+  ctx.fillStyle = color;
+  ctx.font = posterFont(weight, fittedSize);
+  while (fittedSize > minSize && ctx.measureText(original).width > maxWidth) {
+    fittedSize -= 1;
+    ctx.font = posterFont(weight, fittedSize);
+  }
+  const text = ctx.measureText(original).width <= maxWidth ? original : shortPosterText(ctx, original, maxWidth);
+  ctx.fillText(text, x, y);
+}
 function drawLightning(ctx, x, y, radius = 22) {
   ctx.fillStyle = "#b8ff26";
   ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
@@ -575,70 +594,78 @@ function drawReportPoster(canvas, report) {
   if (!ctx) return;
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.clearRect(0, 0, baseWidth, 960);
-  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, baseWidth, 960);
-  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#f4f4ef"; ctx.fillRect(0, 0, baseWidth, 960);
+  ctx.textBaseline = "middle";
 
-  drawLightning(ctx, 48, 46, 24);
-  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 22); ctx.textAlign = "left"; ctx.fillText("嘎巴47", 82, 43);
-  ctx.font = posterFont(600, 10); ctx.fillStyle = "#5f5f5a"; ctx.fillText("一起运动 · 一起变强", 82, 60);
-  ctx.fillStyle = "#b8ff26"; ctx.beginPath(); ctx.arc(490, 44, 9, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 28, 24, 484, 64, 22); ctx.fill();
+  drawLightning(ctx, 59, 56, 17);
+  drawPosterText(ctx, "嘎巴47", 88, 49, 180, { weight: 950, size: 20, color: "#ffffff" });
+  drawPosterText(ctx, "一起运动 · 一起变强", 88, 67, 180, { weight: 650, size: 9, color: "#b8ff26" });
+  drawPosterText(ctx, report.periodLabel, 488, 56, 180, { weight: 800, size: 12, minSize: 9, align: "right", color: "#ffffff" });
 
-  ctx.fillStyle = "#090909"; ctx.font = posterFont(950, 58); ctx.fillText("嘎巴47", 32, 132);
-  const prefix = report.reportType === "week" ? "上周" : `${new Date(report.periodStart).getMonth() + 1}月`;
-  ctx.font = posterFont(950, 52); ctx.fillStyle = "#b8ff26"; ctx.fillText(prefix, 32, 198);
-  const prefixWidth = ctx.measureText(prefix).width;
-  ctx.fillStyle = "#090909"; ctx.fillText(report.reportType === "week" ? "周报" : "月报", 32 + prefixWidth + 5, 198);
-  drawTrophy(ctx, 417, 110);
-  ctx.fillStyle = "#090909"; ctx.font = posterFont(850, 17); ctx.fillText("按排行榜数据统计", 32, 231);
-  roundedPath(ctx, 32, 247, 170, 31, 15); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-  ctx.font = posterFont(700, 12); ctx.fillText(`统计周期｜${report.periodLabel}`, 46, 267);
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 34, 116, 478, 246, 28); ctx.fill();
+  ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 28, 108, 478, 246, 28); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
+  const month = new Date(report.periodStart).getMonth() + 1;
+  const reportTitle = report.reportType === "week" ? "上周训练周报" : `${month}月训练月报`;
+  drawPosterText(ctx, report.reportType === "week" ? "WEEKLY REPORT" : "MONTHLY REPORT", 52, 139, 300, { weight: 900, size: 11 });
+  drawPosterText(ctx, reportTitle, 52, 184, 422, { weight: 950, size: 48, minSize: 35 });
+  drawPosterText(ctx, "群内累计训练", 52, 230, 180, { weight: 800, size: 13 });
+  drawPosterText(ctx, report.totalMinutes, 52, 291, 285, { weight: 950, size: 78, minSize: 48 });
+  drawPosterText(ctx, "分钟", 347, 303, 110, { weight: 900, size: 20 });
+  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 364, 128, 112, 34, 17); ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+  drawPosterText(ctx, report.reportType === "week" ? "上周结算" : "月度结算", 420, 146, 84, { weight: 900, size: 12, align: "center" });
+  drawPosterText(ctx, `统计周期  ${report.periodLabel}`, 52, 331, 410, { weight: 750, size: 12, minSize: 9 });
 
-  ctx.fillStyle = "#090909"; roundedPath(ctx, 37, 299, 472, 139, 25); ctx.fill();
-  ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 293, 472, 139, 25); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
-  const summary = [["总运动时长", report.totalMinutes, "分钟"], ["活跃人数", report.activeCount, "人"], ["打卡次数", report.checkinCount, "次"]];
+  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 382, 484, 102, 22); ctx.fill();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
+  const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
+  const summary = [["活跃人数", report.activeCount, "人"], ["打卡次数", report.checkinCount, "次"], ["人均时长", averageMinutes, "分钟"]];
   summary.forEach(([label, value, unit], index) => {
-    const center = 32 + 78.7 + index * 157.3;
-    if (index) { ctx.beginPath(); ctx.moveTo(32 + index * 157.3, 319); ctx.lineTo(32 + index * 157.3, 407); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(9,9,9,.3)"; ctx.stroke(); }
-    ctx.textAlign = "center"; ctx.fillStyle = "#20201d"; ctx.font = posterFont(750, 12); ctx.fillText(label, center, 329);
-    ctx.fillStyle = "#090909"; ctx.font = posterFont(950, String(value).length > 3 ? 38 : 46); ctx.fillText(String(value), center, 384);
-    ctx.font = posterFont(750, 11); ctx.fillText(unit, center, 410);
+    const left = 28 + index * 161.33;
+    const center = left + 80.66;
+    if (index) { ctx.beginPath(); ctx.moveTo(left, 399); ctx.lineTo(left, 467); ctx.lineWidth = 1.3; ctx.strokeStyle = "#c9c9c3"; ctx.stroke(); }
+    drawPosterText(ctx, label, center, 408, 125, { weight: 750, size: 11, align: "center", color: "#666660" });
+    drawPosterText(ctx, value, center, 445, 118, { weight: 950, size: 34, minSize: 24, align: "center" });
+    drawPosterText(ctx, unit, center, 469, 90, { weight: 750, size: 9, minSize: 8, align: "center", color: "#666660" });
   });
 
-  ctx.textAlign = "left"; ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 457, 158, 34, 17); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 17); ctx.fillText("♛ TOP 3 榜单", 48, 480);
-  ctx.strokeStyle = "#090909"; ctx.lineWidth = 2.3; roundedPath(ctx, 32, 474, 472, 238, 24); ctx.stroke();
-  const slots = [
-    { rank: 2, x: 56, y: 535, w: 124, h: 146, lime: false },
-    { rank: 1, x: 208, y: 514, w: 124, h: 167, lime: true },
-    { rank: 3, x: 360, y: 545, w: 124, h: 136, lime: false },
+  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 510, 484, 242, 24); ctx.fill();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 44, 526, 130, 32, 16); ctx.fill();
+  drawPosterText(ctx, "♛  时长 TOP 3", 109, 543, 108, { weight: 900, size: 13, align: "center", color: "#ffffff" });
+  drawPosterText(ctx, "按分钟排名", 486, 543, 120, { weight: 750, size: 10, align: "right", color: "#74746f" });
+  const podiumColors = ["#b8ff26", "#e3e6ea", "#f1bd84"];
+  Array.from({ length: 3 }, (_, index) => report.top3[index] || null).forEach((member, index) => {
+    const y = 574 + index * 56;
+    ctx.fillStyle = podiumColors[index]; roundedPath(ctx, 42, y, 456, 48, 16); ctx.fill();
+    ctx.lineWidth = index === 0 ? 2.2 : 1.3; ctx.strokeStyle = "#090909"; ctx.stroke();
+    ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(67, y + 24, 16, 0, Math.PI * 2); ctx.fill();
+    drawPosterText(ctx, index === 0 ? "♛" : String(index + 1), 67, y + 25, 24, { weight: 950, size: index === 0 ? 16 : 14, align: "center", color: "#ffffff" });
+    drawPosterText(ctx, member?.name || "等待上榜", 96, y + 18, 218, { weight: 900, size: 15, minSize: 11 });
+    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", 96, y + 36, 150, { weight: 700, size: 9, color: "#565650" });
+    drawPosterText(ctx, member?.minutes ?? "—", 468, y + 20, 112, { weight: 950, size: 23, minSize: 16, align: "right" });
+    drawPosterText(ctx, member ? "分钟" : "待挑战", 468, y + 38, 60, { weight: 700, size: 9, align: "right", color: "#565650" });
+  });
+
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 28, 776, 484, 126, 24); ctx.fill();
+  ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 44, 792, 96, 28, 14); ctx.fill();
+  drawPosterText(ctx, "本期亮点", 92, 807, 78, { weight: 950, size: 12, align: "center" });
+  const highlightPositions = [
+    { x: 44, y: 842, width: 205 },
+    { x: 278, y: 842, width: 190 },
+    { x: 44, y: 874, width: 424 },
   ];
-  slots.forEach((slot) => {
-    const member = report.top3[slot.rank - 1];
-    ctx.fillStyle = slot.lime ? "#b8ff26" : "#ffffff"; roundedPath(ctx, slot.x, slot.y, slot.w, slot.h, 18); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-    ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(slot.x + 16, slot.y + 14, 17, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.font = posterFont(900, 16); ctx.fillText(String(slot.rank), slot.x + 16, slot.y + 20);
-    ctx.fillStyle = slot.lime ? "#ffffff" : "#f1f1ed"; ctx.beginPath(); ctx.arc(slot.x + slot.w / 2, slot.y + 55, 29, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-    ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 20); ctx.fillText(member ? initials(member.name) : "—", slot.x + slot.w / 2, slot.y + 62);
-    ctx.font = posterFont(850, 14); ctx.fillText(shortPosterText(ctx, member?.name || "暂无上榜", 96), slot.x + slot.w / 2, slot.y + 101);
-    ctx.font = posterFont(950, 27); ctx.fillText(String(member?.minutes || 0), slot.x + slot.w / 2, slot.y + 132);
-    ctx.font = posterFont(700, 10); ctx.fillText("分钟", slot.x + slot.w / 2, slot.y + 148);
+  report.highlights.slice(0, 3).forEach((item, index) => {
+    const position = highlightPositions[index];
+    drawPosterText(ctx, item.label, position.x, position.y, position.width, { weight: 700, size: 9, color: "#b8ff26" });
+    drawPosterText(ctx, item.value, position.x, position.y + 17, position.width, { weight: 900, size: index === 2 ? 14 : 16, minSize: 10, color: "#ffffff" });
   });
 
-  ctx.textAlign = "left"; ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 32, 732, 145, 32, 16); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-  ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 16); ctx.fillText(report.reportType === "week" ? "上周亮点 ★" : "本月亮点 ★", 48, 754);
-  report.highlights.forEach((item, index) => {
-    const x = 32 + index * 159;
-    roundedPath(ctx, x, 779, 145, 91, 18); ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = 1.8; ctx.strokeStyle = "#090909"; ctx.stroke();
-    ctx.fillStyle = "#b8ff26"; ctx.beginPath(); ctx.arc(x + 27, 810, 18, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#090909"; ctx.font = posterFont(900, 15); ctx.textAlign = "center"; ctx.fillText(["★", "◆", "ϟ"][index], x + 27, 816);
-    ctx.textAlign = "left"; ctx.font = posterFont(700, 10); ctx.fillText(item.label, x + 52, 807);
-    ctx.font = posterFont(900, 14); ctx.fillText(shortPosterText(ctx, item.value, 82), x + 52, 829);
-  });
-
-  drawLightning(ctx, 49, 916, 21);
-  ctx.fillStyle = "#090909"; ctx.textAlign = "left"; ctx.font = posterFont(900, 17); ctx.fillText("坚持打卡，遇见更好的自己！", 82, 916);
-  ctx.strokeStyle = "#b8ff26"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(82, 928); ctx.quadraticCurveTo(190, 937, 300, 928); ctx.stroke();
-  ctx.textAlign = "right"; ctx.font = posterFont(700, 10); ctx.fillText("嘎巴47 · 你的运动打卡小伙伴", 505, 938);
+  drawLightning(ctx, 49, 934, 17);
+  drawPosterText(ctx, "每一次打卡，都算数。", 78, 929, 250, { weight: 950, size: 16 });
+  drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, 939, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
 }
 function paintReportCanvases() {
   const reports = new Map(scheduledReports().map((report) => [report.id, report]));
@@ -713,9 +740,25 @@ function rankingPage() {
     .filter((member) => member.periodMinutes > 0)
     .sort((a, b) => b.periodMinutes - a.periodMinutes || b.periodCount - a.periodCount || a.name.localeCompare(b.name, "zh-CN"));
   const myIndex = members.findIndex(isCurrentMember);
+  const me = myIndex >= 0 ? members[myIndex] : null;
+  const gapToPrevious = myIndex > 0 ? Math.max(0, members[myIndex - 1].periodMinutes - me.periodMinutes) : 0;
   const total = members.reduce((sum, member) => sum + member.periodMinutes, 0);
   const tabs = Object.entries(periods).map(([key, item]) => `<button class="ranking-tab ${state.rankingPeriod === key ? "is-active" : ""}" data-ranking-period="${key}" aria-pressed="${state.rankingPeriod === key}">${item.label}</button>`).join("");
-  return `<main class="page page-ranking">${header()}${connectionNotice()}<nav class="ranking-tabs" aria-label="排行榜周期">${tabs}</nav><section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内${period.context}</span><strong>${total}<small>分钟</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span><div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.periodCount} 次打卡</small></div><div class="rank-score"><strong>${member.periodMinutes}</strong><span>分钟</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
+  const chaseMessage = myIndex < 0
+    ? `完成一次${period.context}打卡，就会进入${period.label}`
+    : myIndex === 0
+      ? "你正在领跑，继续把差距拉大"
+      : gapToPrevious === 0
+        ? "时长已经追平，增加打卡次数可继续上升"
+        : `再练 ${gapToPrevious} 分钟，就能追平第 ${myIndex} 名`;
+  const gapValue = myIndex < 0 ? "—" : myIndex === 0 ? "榜首" : gapToPrevious;
+  const gapUnit = myIndex < 0 ? "未上榜" : myIndex === 0 ? "继续保持" : "分钟";
+  return `<main class="page page-ranking">${header()}${connectionNotice()}<nav class="ranking-tabs" aria-label="排行榜周期">${tabs}</nav><section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>我的${period.context}时长</span><strong>${me?.periodMinutes || 0}<small>分钟</small></strong></div><div><span>距上一名</span><strong class="rank-gap-value">${gapValue}<small>${gapUnit}</small></strong></div></section><div class="rank-chase">${icon(myIndex === 0 ? "crown" : "lightning")}<strong>${escapeHTML(chaseMessage)}</strong><span>群内共 ${total} 分钟</span></div><section class="ranking-list">${members.length ? members.map((member, index) => {
+    const gap = index === 0 ? null : Math.max(0, members[index - 1].periodMinutes - member.periodMinutes);
+    const gapLabel = index === 0 ? "稳居榜首" : gap === 0 ? "同分钟，按次数排序" : `距上一名 ${gap} 分钟`;
+    const podium = index < 3 ? `<span class="rank-medal podium-${index + 1}"><b>${index === 0 ? "♛" : index + 1}</b><small>TOP</small></span>` : `<span class="rank-index">${String(index + 1).padStart(2, "0")}</span>`;
+    return `<article class="rank-row ${index < 3 ? `is-podium podium-row-${index + 1}` : ""} ${isCurrentMember(member) ? "is-me" : ""}">${podium}${avatarMarkup(member, "rank-avatar")}<div class="rank-copy"><div class="rank-name"><strong>${escapeHTML(member.name)}</strong>${isCurrentMember(member) ? `<span>我</span>` : ""}</div><small>${member.periodCount} 次打卡 · ${gapLabel}</small></div><div class="rank-score"><strong>${member.periodMinutes}</strong><span>分钟</span></div></article>`;
+  }).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
 function toolsPage() {
