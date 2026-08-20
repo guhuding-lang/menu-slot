@@ -66,7 +66,13 @@ function parseParts(item) {
   if (!detail || detail === item.type) return [];
   return detail.split("+").map((part) => part.trim()).filter(Boolean);
 }
-function trainingTypeFor(parts = []) { return parts.length > 1 ? "混合训练" : (parts[0] || "其他"); }
+function trainingTypeFor(parts = []) {
+  const selections = [...new Set(parts.filter(Boolean))];
+  const strengthParts = new Set(["胸", "背", "肩", "腿", "二头", "三头", "核心"]);
+  if (selections.length && selections.every((part) => strengthParts.has(part))) return "力量";
+  if (selections.length === 1 && ["跑步", "骑行", "游泳", "拉伸", "其他"].includes(selections[0])) return selections[0];
+  return "其他";
+}
 function activitySummary(item) {
   const selections = parseParts(item);
   const label = selections.length ? selections.join(" + ") : (item.type || "训练");
@@ -93,9 +99,12 @@ async function parseResponse(response) {
   const text = await response.text();
   if (!response.ok) {
     let message = text;
-    try { const parsed = JSON.parse(text); message = parsed?.message || parsed?.error_description || parsed?.hint || text; } catch {}
+    let parsed = null;
+    try { parsed = JSON.parse(text); message = parsed?.message || parsed?.error_description || parsed?.hint || text; } catch {}
     const error = new Error(message || `请求失败：${response.status}`);
     error.status = response.status;
+    error.code = parsed?.code || "";
+    error.details = parsed?.details || "";
     throw error;
   }
   if (!text) return null;
@@ -221,26 +230,37 @@ async function createService() {
     },
     async createCheckin(input) {
       let photoPath = null;
-      if (input.photo) photoPath = await uploadObject(input.photo, "checkin");
-      await api("/rest/v1/checkins", {
-        method: "POST", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ user_id: userId, training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
-      });
+      try {
+        if (input.photo) photoPath = await uploadObject(input.photo, "checkin");
+        await api("/rest/v1/checkins", {
+          method: "POST", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ user_id: userId, training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
+        });
+      } catch (error) {
+        if (photoPath) await deleteObject(photoPath).catch(() => {});
+        throw error;
+      }
     },
     async updateCheckin(input) {
-      let photoPath = input.originalPhotoPath || null;
+      const previousPhotoPath = input.originalPhotoPath || null;
+      let photoPath = previousPhotoPath;
+      let uploadedPhotoPath = null;
       if (input.photo) {
-        const nextPath = await uploadObject(input.photo, "checkin");
-        if (photoPath) await deleteObject(photoPath).catch(() => {});
-        photoPath = nextPath;
-      } else if (input.removePhoto && photoPath) {
-        await deleteObject(photoPath).catch(() => {});
+        uploadedPhotoPath = await uploadObject(input.photo, "checkin");
+        photoPath = uploadedPhotoPath;
+      } else if (input.removePhoto) {
         photoPath = null;
       }
-      await api(`/rest/v1/checkins?id=eq.${encodeURIComponent(input.id)}&user_id=eq.${encodeURIComponent(userId)}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
-      });
+      try {
+        await api(`/rest/v1/checkins?id=eq.${encodeURIComponent(input.id)}&user_id=eq.${encodeURIComponent(userId)}`, {
+          method: "PATCH", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
+        });
+      } catch (error) {
+        if (uploadedPhotoPath) await deleteObject(uploadedPhotoPath).catch(() => {});
+        throw error;
+      }
+      if (previousPhotoPath && previousPhotoPath !== photoPath) await deleteObject(previousPhotoPath).catch(() => {});
     },
     async deleteCheckin(input) {
       await api(`/rest/v1/checkins?id=eq.${encodeURIComponent(input.id)}&user_id=eq.${encodeURIComponent(userId)}`, { method: "DELETE" });
@@ -325,7 +345,7 @@ function previewData() {
   ];
   state.checkins = [
     { id: "p1", userId: "friend-1", name: "朱紫瑶（见过张杰版）", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
-    { id: "p11", userId: "preview", name: "阿飞不累", createdAt: ago(4), type: "混合训练", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
+    { id: "p11", userId: "preview", name: "阿飞不累", createdAt: ago(4), type: "其他", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
     { id: "p12", userId: "friend-2", name: "老周", createdAt: ago(7), type: "爬楼", details: "爬楼 · 85分钟", parts: ["爬楼"], duration: 85, note: "一步一步往上。", likes: 6, liked: false, photo: null, photoPath: null },
     { id: "p2", userId: "preview", name: "阿飞不累", createdAt: previousWeek(6, 20), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
     { id: "p3", userId: "preview", name: "阿飞不累", createdAt: previousWeek(4), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
@@ -1006,7 +1026,21 @@ app.addEventListener("click", async (event) => {
       if (!PREVIEW_MODE) await loadData();
       state.checkinForm = emptyCheckinForm(); state.route = "home";
       showToast(payload.editing ? "打卡已经更新" : selectedDate === localDateKey() ? "打卡成功，今天没白过" : "补打卡成功，记录已经归位");
-    } catch (error) { console.error(error); state.checkinForm.submitting = false; showToast(error.message.includes("policy") || error.message.includes("permission") ? "请先运行数据库升级脚本" : "保存失败，请稍后再试"); }
+    } catch (error) {
+      console.error(error);
+      state.checkinForm.submitting = false;
+      const detail = `${error.code || ""} ${error.message || ""}`;
+      const message = /23514|training_type|check constraint/i.test(detail)
+        ? "训练内容不兼容，请刷新页面后重试"
+        : /policy|permission|42501/i.test(detail)
+          ? "登录状态失效，请重新打开页面"
+          : /fetch|network|timeout/i.test(detail)
+            ? "网络连接失败，请检查网络后重试"
+            : /storage|bucket|mime|file size/i.test(detail)
+              ? "照片上传失败，请换一张照片后重试"
+              : "保存失败，请稍后再试";
+      showToast(message);
+    }
   }
 });
 
