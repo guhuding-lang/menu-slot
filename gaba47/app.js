@@ -7,19 +7,21 @@ const GROUP_CODE = "47GYM";
 
 const app = document.querySelector("#app");
 const initialUser = PREVIEW_MODE ? { id: "preview", name: "阿飞不累", avatarPath: null, avatarUrl: null } : readJSON(USER_KEY);
-const trainingTypes = [
-  ["力量", "barbell"], ["跑步", "person-simple-run"], ["骑行", "bicycle"],
-  ["游泳", "waves"], ["拉伸", "person-simple-tai-chi"], ["其他", "dots-three"],
+const trainingOptions = [
+  ["胸", "barbell"], ["背", "barbell"], ["肩", "barbell"],
+  ["腿", "barbell"], ["二头", "barbell"], ["三头", "barbell"],
+  ["核心", "person-simple-tai-chi"], ["跑步", "person-simple-run"], ["骑行", "bicycle"],
+  ["游泳", "waves"], ["爬坡", "trend-up"], ["爬楼", "stairs"],
+  ["椭圆机", "person-simple-run"], ["拉伸", "person-simple-tai-chi"], ["其他", "dots-three"],
 ];
-const bodyParts = ["胸", "背", "肩", "腿", "二头", "三头", "核心"];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
-  ["home", "今日", "house"], ["ranking", "排行", "trophy"], ["checkin", "去打卡", "lightning"],
+  ["home", "动态", "activity"], ["ranking", "排行", "trophy"], ["checkin", "去打卡", "lightning"],
   ["tools", "工具", "toolbox"], ["profile", "我的", "user"],
 ];
 
 const emptyCheckinForm = () => ({
-  id: null, editing: false, date: localDateKey(), type: "力量", parts: ["胸"], duration: 60,
+  id: null, editing: false, date: localDateKey(), type: "胸", parts: ["胸"], duration: 60,
   photo: null, photoUrl: "", originalPhotoPath: null, removePhoto: false, uploadStatus: "", note: "", submitting: false,
 });
 
@@ -31,6 +33,7 @@ const state = {
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
   deleteConfirm: false,
   reportModal: null,
+  rankingPeriod: "week",
   tools: { diceIndex: null, diceRolling: false },
 };
 
@@ -62,6 +65,12 @@ function parseParts(item) {
   const detail = String(item.details || "").split("·")[0].trim();
   if (!detail || detail === item.type) return [];
   return detail.split("+").map((part) => part.trim()).filter(Boolean);
+}
+function trainingTypeFor(parts = []) { return parts.length > 1 ? "混合训练" : (parts[0] || "其他"); }
+function activitySummary(item) {
+  const selections = parseParts(item);
+  const label = selections.length ? selections.join(" + ") : (item.type || "训练");
+  return `${label} · ${parseMinutes(item)}分钟`;
 }
 function relativeTime(value) {
   const date = new Date(value);
@@ -161,6 +170,16 @@ async function createService() {
       return api("/rest/v1/profiles?select=id,display_name,created_at&order=created_at.asc");
     }
   };
+  const fetchCheckins = async () => {
+    const rows = [];
+    const pageSize = 1000;
+    for (let offset = 0; offset < 50000; offset += pageSize) {
+      const page = await api(`/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=${pageSize}&offset=${offset}`);
+      rows.push(...(page || []));
+      if (!page || page.length < pageSize) break;
+    }
+    return rows;
+  };
 
   return {
     userId,
@@ -185,7 +204,7 @@ async function createService() {
     },
     async listData() {
       const [data, rawProfiles] = await Promise.all([
-        api("/rest/v1/checkins_feed?select=*&order=created_at.desc&limit=1000"), fetchProfiles(),
+        fetchCheckins(), fetchProfiles(),
       ]);
       const profiles = await Promise.all((rawProfiles || []).map(async (profile) => ({ ...profile, avatar_url_signed: await signPath(profile.avatar_url) })));
       const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -333,7 +352,7 @@ function memberStats() {
     const displayName = cleanDisplayName(name) || "47";
     const nameKey = displayNameKey(displayName) || `id:${id}`;
     if (!map.has(nameKey)) {
-      map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, streak: 0, dates: new Set() });
+      map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, weeklyCount: 0, weeklyMinutes: 0, monthlyCount: 0, monthlyMinutes: 0, yearlyCount: 0, yearlyMinutes: 0, totalCount: 0, totalMinutes: 0, streak: 0, dates: new Set() });
     }
     const member = map.get(nameKey);
     if (id) member.profileIds.add(id);
@@ -352,13 +371,18 @@ function memberStats() {
     const created = new Date(item.createdAt);
     const minutes = parseMinutes(item);
     if (!Number.isNaN(created.getTime())) {
-      if (created >= weekStart) member.weeklyCount += 1;
+      if (created >= weekStart) { member.weeklyCount += 1; member.weeklyMinutes += minutes; }
       if (created.getFullYear() === now.getFullYear() && created.getMonth() === now.getMonth()) {
         member.monthlyCount += 1;
         member.monthlyMinutes += minutes;
       }
+      if (created.getFullYear() === now.getFullYear()) {
+        member.yearlyCount += 1;
+        member.yearlyMinutes += minutes;
+      }
       member.dates.add(localDateKey(created));
     }
+    member.totalCount += 1;
     member.totalMinutes += minutes;
   }
   for (const member of map.values()) {
@@ -367,7 +391,7 @@ function memberStats() {
     if (!member.dates.has(localDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
     while (member.dates.has(localDateKey(cursor))) { member.streak += 1; cursor.setDate(cursor.getDate() - 1); }
   }
-  return [...map.values()].sort((a, b) => b.weeklyCount - a.weeklyCount || b.totalMinutes - a.totalMinutes || a.name.localeCompare(b.name, "zh-CN"));
+  return [...map.values()].sort((a, b) => b.weeklyMinutes - a.weeklyMinutes || b.weeklyCount - a.weeklyCount || a.name.localeCompare(b.name, "zh-CN"));
 }
 
 function isCurrentMember(member) {
@@ -384,9 +408,9 @@ function recentDateOptions() {
   });
 }
 
-function header(title = "嘎巴47", withShortcuts = false) {
-  const shortcuts = withShortcuts ? `<nav class="header-shortcuts" aria-label="群友快捷入口"><a class="header-shortcut shortcut-listen" href="https://guhuding-lang.github.io/menu-slot/j/" aria-label="打开不开玩笑随听机">${icon("headphones")}<span>随听机</span></a><a class="header-shortcut shortcut-coffee" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" aria-label="打开咖啡打卡">${icon("coffee")}<span>咖啡</span></a></nav>` : "";
-  return `<header class="app-header ${withShortcuts ? "home-header" : ""}"><div class="header-title-row"><h1 class="brand">${escapeHTML(title)}</h1>${shortcuts}</div><button class="avatar-button" data-route="profile" aria-label="打开我的主页">${avatarMarkup(state.user, "header-avatar")}</button></header>`;
+function header(title = "") {
+  if (title !== "工具") return "";
+  return `<section class="tool-links" aria-label="常用链接"><a class="tool-link listen-link" href="https://guhuding-lang.github.io/menu-slot/j/" target="_blank" rel="noopener noreferrer">${icon("headphones")}<span><strong>随听机</strong><small>不开玩笑随机听</small></span>${icon("arrow-up-right")}</a><a class="tool-link coffee-link" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" target="_blank" rel="noopener noreferrer">${icon("coffee")}<span><strong>咖啡打卡</strong><small>记录今天这一杯</small></span>${icon("arrow-up-right")}</a></section>`;
 }
 function nav() {
   return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName], index) => index === 2
@@ -662,7 +686,8 @@ function reportModal(report) {
 
 function activityCard(item) {
   const own = item.userId === state.user?.id;
-  return `<article class="feed-card"><div class="feed-main">${avatarMarkup(item, "feed-avatar")}<div class="feed-copy"><div class="feed-name-row"><strong>${escapeHTML(item.name)}</strong><span class="feed-type">${escapeHTML(item.type)}</span></div><p>${escapeHTML(item.details || `${item.type} · ${parseMinutes(item)}分钟`)}</p><small>${escapeHTML(relativeTime(item.createdAt))}</small></div><div class="feed-controls"><button class="like-button ${item.liked ? "is-liked" : ""}" data-like="${escapeHTML(item.id)}" aria-label="${item.liked ? "取消点赞" : "点赞"}">${icon("heart-straight")}<span>${item.likes}</span></button>${own ? `<button class="edit-button" data-edit-checkin="${escapeHTML(item.id)}" aria-label="编辑这条打卡">${icon("pencil-simple")}</button>` : ""}</div></div>${item.note ? `<p class="feed-note">${escapeHTML(item.note)}</p>` : ""}${item.photo ? `<img class="feed-photo" src="${escapeHTML(item.photo)}" alt="${escapeHTML(item.name)}的训练照片" loading="lazy" />` : ""}</article>`;
+  const heart = item.liked ? `<span class="liked-heart" aria-hidden="true">♥</span>` : icon("heart-straight");
+  return `<article class="feed-card"><div class="feed-main">${avatarMarkup(item, "feed-avatar")}<div class="feed-copy"><div class="feed-name-row"><strong>${escapeHTML(item.name)}</strong><span class="feed-type">${escapeHTML(item.type)}</span></div><p>${escapeHTML(activitySummary(item))}</p><small>${escapeHTML(relativeTime(item.createdAt))}</small></div><div class="feed-controls"><button class="like-button ${item.liked ? "is-liked" : ""}" data-like="${escapeHTML(item.id)}" aria-label="${item.liked ? "取消点赞" : "点赞"}">${heart}<span>${item.likes}</span></button>${own ? `<button class="edit-button" data-edit-checkin="${escapeHTML(item.id)}" aria-label="编辑这条打卡">${icon("pencil-simple")}</button>` : ""}</div></div>${item.note ? `<p class="feed-note">${escapeHTML(item.note)}</p>` : ""}${item.photo ? `<img class="feed-photo" src="${escapeHTML(item.photo)}" alt="${escapeHTML(item.name)}的训练照片" loading="lazy" />` : ""}</article>`;
 }
 
 function homePage() {
@@ -676,10 +701,21 @@ function homePage() {
 }
 
 function rankingPage() {
-  const members = memberStats();
+  const periods = {
+    week: { label: "周榜", context: "本周", minutes: "weeklyMinutes", count: "weeklyCount" },
+    month: { label: "月榜", context: "本月", minutes: "monthlyMinutes", count: "monthlyCount" },
+    year: { label: "年榜", context: "今年", minutes: "yearlyMinutes", count: "yearlyCount" },
+    all: { label: "总榜", context: "累计", minutes: "totalMinutes", count: "totalCount" },
+  };
+  const period = periods[state.rankingPeriod] || periods.week;
+  const members = memberStats()
+    .map((member) => ({ ...member, periodMinutes: member[period.minutes] || 0, periodCount: member[period.count] || 0 }))
+    .filter((member) => member.periodMinutes > 0)
+    .sort((a, b) => b.periodMinutes - a.periodMinutes || b.periodCount - a.periodCount || a.name.localeCompare(b.name, "zh-CN"));
   const myIndex = members.findIndex(isCurrentMember);
-  const total = members.reduce((sum, member) => sum + member.weeklyCount, 0);
-  return `<main class="page page-ranking">${header("排行榜")}${connectionNotice()}<section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内本周</span><strong>${total}<small>次</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 && member.weeklyCount > 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span>${avatarMarkup(member, "member-avatar")}<div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.totalMinutes} 分钟</small></div><div class="rank-score"><strong>${member.weeklyCount}</strong><span>本周</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>本周还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
+  const total = members.reduce((sum, member) => sum + member.periodMinutes, 0);
+  const tabs = Object.entries(periods).map(([key, item]) => `<button class="ranking-tab ${state.rankingPeriod === key ? "is-active" : ""}" data-ranking-period="${key}" aria-pressed="${state.rankingPeriod === key}">${item.label}</button>`).join("");
+  return `<main class="page page-ranking">${header()}${connectionNotice()}<nav class="ranking-tabs" aria-label="排行榜周期">${tabs}</nav><section class="rank-hero"><div><span>我的排名</span><strong>${myIndex >= 0 ? `#${myIndex + 1}` : "—"}</strong></div><div><span>群内${period.context}</span><strong>${total}<small>分钟</small></strong></div></section><section class="ranking-list">${members.length ? members.map((member, index) => `<article class="rank-row ${index === 0 ? "is-top" : ""}"><span class="rank-index">${String(index + 1).padStart(2, "0")}</span><div class="rank-copy"><strong>${escapeHTML(member.name)}</strong><small>${member.periodCount} 次打卡</small></div><div class="rank-score"><strong>${member.periodMinutes}</strong><span>分钟</span></div></article>`).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
 function toolsPage() {
@@ -711,7 +747,8 @@ function deleteDialog() {
 function checkinPage() {
   const form = state.checkinForm;
   const recentDates = recentDateOptions();
-  return `<main class="page page-checkin"><header class="edit-header"><button class="icon-button" data-action="close-checkin" aria-label="返回">${icon("arrow-left")}</button><h1>${form.editing ? "编辑打卡" : "发布打卡"}</h1>${form.editing ? `<button class="delete-link" data-action="ask-delete">删除</button>` : `<span></span>`}</header>${connectionNotice()}<section class="editor-card"><div class="form-section date-section"><div class="form-section-title"><h2>训练日期</h2><span>支持近一周补打卡</span></div><div class="date-picker">${recentDates.map((item) => `<button class="date-button ${form.date === item.key ? "is-selected" : ""}" data-date="${item.key}" aria-pressed="${form.date === item.key}"><strong>${item.day}</strong><span>${item.label}</span></button>`).join("")}</div></div><section class="form-section"><h2>训练类型</h2><div class="type-grid">${trainingTypes.map(([type, iconName]) => `<button class="type-button ${form.type === type ? "is-selected" : ""}" data-type="${type}">${icon(iconName)}<span>${type}</span></button>`).join("")}</div></section><section class="form-section"><h2>训练部位 <small>可多选</small></h2><div class="parts-row">${bodyParts.map((part) => `<button class="part-button ${form.parts.includes(part) ? "is-selected" : ""}" data-part="${part}">${part}</button>`).join("")}</div></section><section class="form-section"><h2>训练时长</h2><div class="duration-stepper"><button data-duration="-5" aria-label="减少5分钟">${icon("minus")}</button><strong>${form.duration}<span>分钟</span></strong><button data-duration="5" aria-label="增加5分钟">${icon("plus")}</button></div></section><section class="form-section"><h2>训练照片 <small>选填</small></h2><label class="photo-upload">${form.photoUrl && !form.removePhoto ? `<img class="photo-preview" src="${escapeHTML(form.photoUrl)}" alt="训练照片预览" />` : `${icon("camera")}<strong>添加训练照</strong><span>自动压缩后上传</span>`}<input id="photo-input" type="file" accept="image/*" /></label>${form.photoUrl && !form.removePhoto ? `<button class="text-button danger" data-action="remove-checkin-photo">移除照片</button>` : ""}${form.uploadStatus ? `<p class="form-status">${escapeHTML(form.uploadStatus)}</p>` : ""}</section><section class="form-section"><h2>训练感受 <small>选填</small></h2><textarea id="note-input" maxlength="300" placeholder="写一句真实感受，不写也可以">${escapeHTML(form.note)}</textarea></section><button class="primary-button" data-action="submit-checkin" ${form.submitting || (state.connection !== "ready" && state.connection !== "preview") ? "disabled" : ""}>${form.submitting ? "正在保存…" : form.editing ? "保存修改" : "完成打卡"}</button><p class="privacy-note">${icon("lock-simple")} 仅47群成员可见</p></section></main>${state.deleteConfirm ? deleteDialog() : ""}`;
+  const trainingSelector = trainingOptions.map(([option, iconName]) => `<button class="type-button ${form.parts.includes(option) ? "is-selected" : ""}" data-part="${option}" aria-pressed="${form.parts.includes(option)}">${icon(iconName)}<span>${option}</span></button>`).join("");
+  return `<main class="page page-checkin"><header class="edit-header"><button class="icon-button" data-action="close-checkin" aria-label="返回">${icon("arrow-left")}</button><h1>${form.editing ? "编辑打卡" : "发布打卡"}</h1>${form.editing ? `<button class="delete-link" data-action="ask-delete">删除</button>` : `<span></span>`}</header>${connectionNotice()}<section class="editor-card"><div class="form-section date-section"><div class="form-section-title"><h2>训练日期</h2><span>支持近一周补打卡</span></div><div class="date-picker">${recentDates.map((item) => `<button class="date-button ${form.date === item.key ? "is-selected" : ""}" data-date="${item.key}" aria-pressed="${form.date === item.key}"><strong>${item.day}</strong><span>${item.label}</span></button>`).join("")}</div></div><section class="form-section"><div class="form-section-title"><h2>训练内容 <small>可多选</small></h2><span>力量、有氧可以一起选</span></div><div class="type-grid training-grid">${trainingSelector}</div></section><section class="form-section"><h2>训练时长</h2><div class="duration-stepper"><button data-duration="-5" aria-label="减少5分钟">${icon("minus")}</button><strong>${form.duration}<span>分钟</span></strong><button data-duration="5" aria-label="增加5分钟">${icon("plus")}</button></div></section><section class="form-section"><h2>训练照片 <small>选填</small></h2><label class="photo-upload">${form.photoUrl && !form.removePhoto ? `<img class="photo-preview" src="${escapeHTML(form.photoUrl)}" alt="训练照片预览" />` : `${icon("camera")}<strong>添加训练照</strong><span>自动压缩后上传</span>`}<input id="photo-input" type="file" accept="image/*" /></label>${form.photoUrl && !form.removePhoto ? `<button class="text-button danger" data-action="remove-checkin-photo">移除照片</button>` : ""}${form.uploadStatus ? `<p class="form-status">${escapeHTML(form.uploadStatus)}</p>` : ""}</section><section class="form-section"><h2>训练感受 <small>选填</small></h2><textarea id="note-input" maxlength="300" placeholder="写一句真实感受，不写也可以">${escapeHTML(form.note)}</textarea></section><button class="primary-button" data-action="submit-checkin" ${form.submitting || (state.connection !== "ready" && state.connection !== "preview") ? "disabled" : ""}>${form.submitting ? "正在保存…" : form.editing ? "保存修改" : "完成打卡"}</button><p class="privacy-note">${icon("lock-simple")} 仅47群成员可见</p></section></main>${state.deleteConfirm ? deleteDialog() : ""}`;
 }
 
 function joinPage(error = "") {
@@ -789,7 +826,9 @@ async function connect() {
 function openEditCheckin(id) {
   const item = state.checkins.find((checkin) => checkin.id === id && checkin.userId === state.user?.id);
   if (!item) return;
-  state.checkinForm = { ...emptyCheckinForm(), id: item.id, editing: true, date: localDateKey(item.createdAt), type: item.type, parts: parseParts(item), duration: parseMinutes(item) || 5, photoUrl: item.photo || "", originalPhotoPath: item.photoPath || null, note: item.note || "" };
+  const selections = parseParts(item);
+  const parts = selections.length ? selections : [item.type].filter(Boolean);
+  state.checkinForm = { ...emptyCheckinForm(), id: item.id, editing: true, date: localDateKey(item.createdAt), type: trainingTypeFor(parts), parts, duration: parseMinutes(item) || 5, photoUrl: item.photo || "", originalPhotoPath: item.photoPath || null, note: item.note || "" };
   state.route = "checkin";
   window.scrollTo({ top: 0 });
   render();
@@ -814,14 +853,18 @@ app.addEventListener("click", async (event) => {
   }
   const editButton = event.target.closest("[data-edit-checkin]");
   if (editButton) { openEditCheckin(editButton.dataset.editCheckin); return; }
-  const typeButton = event.target.closest("[data-type]");
-  if (typeButton) { state.checkinForm.type = typeButton.dataset.type; if (state.checkinForm.type !== "力量") state.checkinForm.parts = []; render(); return; }
   const dateButton = event.target.closest("[data-date]");
   if (dateButton) { state.checkinForm.date = dateButton.dataset.date; render(); return; }
   const partButton = event.target.closest("[data-part]");
   if (partButton) {
     const part = partButton.dataset.part;
     state.checkinForm.parts = state.checkinForm.parts.includes(part) ? state.checkinForm.parts.filter((item) => item !== part) : [...state.checkinForm.parts, part];
+    state.checkinForm.type = trainingTypeFor(state.checkinForm.parts);
+    render(); return;
+  }
+  const rankingPeriodButton = event.target.closest("[data-ranking-period]");
+  if (rankingPeriodButton) {
+    state.rankingPeriod = rankingPeriodButton.dataset.rankingPeriod;
     render(); return;
   }
   const durationButton = event.target.closest("[data-duration]");
@@ -921,12 +964,13 @@ app.addEventListener("click", async (event) => {
     return;
   }
   if (action === "submit-checkin" && state.service && !state.checkinForm.submitting) {
+    if (!state.checkinForm.parts.length) { showToast("请至少选择一项训练内容"); return; }
     state.checkinForm.submitting = true;
     const selectedDate = state.checkinForm.date;
     const [year, month, day] = selectedDate.split("-").map(Number);
     const originalTime = state.checkinForm.editing ? new Date(state.checkins.find((item) => item.id === state.checkinForm.id)?.createdAt || Date.now()) : new Date();
     const createdAt = new Date(year, month - 1, day, originalTime.getHours(), originalTime.getMinutes(), originalTime.getSeconds()).toISOString();
-    const payload = { ...state.checkinForm, note: state.checkinForm.note.trim(), createdAt };
+    const payload = { ...state.checkinForm, type: trainingTypeFor(state.checkinForm.parts), note: state.checkinForm.note.trim(), createdAt };
     render();
     try {
       if (payload.editing) await state.service.updateCheckin(payload); else await state.service.createCheckin(payload);

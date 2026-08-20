@@ -188,7 +188,7 @@ img { display: block; max-width: 100%; }
 .feed-name-row { display: flex; align-items: center; gap: 7px; }
 .feed-name-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
 .feed-type { padding: 2px 7px; border-radius: 999px; color: var(--ink); background: var(--lime-soft); font-size: 9px; font-weight: 700; }
-.feed-copy p { margin: 4px 0 2px; color: #242421; font-size: 13px; }
+.feed-copy p { margin: 5px 0 3px; color: #242421; font-size: 14px; line-height: 1.35; font-weight: 800; }
 .feed-copy small { color: var(--muted); font-size: 10px; }
 .feed-controls { display: flex; align-items: center; gap: 2px; }
 .like-button, .edit-button, .text-button { border: 0; background: transparent; }
@@ -196,8 +196,9 @@ img { display: block; max-width: 100%; }
 .like-button i { font-size: 23px; }
 .like-button span { font-size: 10px; }
 .like-button.is-liked { color: var(--danger); }
+.like-button .liked-heart { font-size: 24px; line-height: 1; }
 .edit-button { display: grid; place-items: center; width: 40px; height: 40px; color: var(--ink); font-size: 19px; }
-.feed-note { margin: 11px 0 0 55px; padding-top: 10px; border-top: 1px solid var(--line); color: #4f4f4a; font-size: 12px; line-height: 1.55; }
+.feed-note { margin: 12px 0 0 55px; padding-top: 11px; border-top: 1px solid var(--line); color: #242421; font-size: 15px; line-height: 1.55; font-weight: 800; }
 .feed-photo { width: calc(100% - 55px); max-height: 320px; margin: 12px 0 0 55px; object-fit: cover; border: 1px solid var(--ink); border-radius: 14px; }
 .system-feed-card { padding-bottom: 24px; }
 .system-avatar { color: var(--ink); background: var(--lime); font-size: 20px; }
@@ -282,6 +283,26 @@ img { display: block; max-width: 100%; }
 .primary-circle i { font-size: 26px; font-weight: 900; }
 
 .page-ranking .app-header, .page-members .app-header { margin-bottom: 20px; }
+.ranking-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 5px;
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  background: #f2f2ee;
+}
+.ranking-tab {
+  min-height: 42px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 900;
+}
+.ranking-tab.is-active { background: var(--lime); box-shadow: 2px 2px 0 var(--ink); }
 .rank-hero, .members-hero { display: grid; grid-template-columns: 1fr 1fr; margin: 0 0 24px; overflow: hidden; border: 2px solid var(--ink); border-radius: var(--radius-xl); background: var(--lime); box-shadow: 5px 5px 0 var(--ink); }
 .rank-hero > div, .members-hero > div { min-width: 0; padding: 21px 18px; border-left: 1px solid rgba(9, 9, 9, .32); }
 .rank-hero > div:first-child, .members-hero > div:first-child { border-left: 0; }
@@ -485,6 +506,29 @@ img { display: block; max-width: 100%; }
 
 .page-tools { padding-bottom: calc(132px + var(--safe-bottom)); }
 .page-tools .app-header { margin-bottom: 20px; }
+.tool-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.tool-link {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 9px;
+  min-height: 78px;
+  padding: 12px;
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.tool-link > i:first-child { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #fff; font-size: 19px; }
+.tool-link > i:last-child { justify-self: end; font-size: 15px; }
+.tool-link span { min-width: 0; }
+.tool-link strong, .tool-link small { display: block; }
+.tool-link strong { font-size: 13px; }
+.tool-link small { margin-top: 3px; overflow: hidden; color: #4f4f4a; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+.listen-link { background: #fff1c9; }
+.coffee-link { background: #edf8ff; }
+.tool-link:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .tool-card {
   margin-bottom: 18px;
   padding: 18px;
@@ -652,6 +696,7 @@ img { display: block; max-width: 100%; }
 .date-button span { margin-top: 3px; color: var(--muted); font-size: 9px; }
 .date-button.is-selected { background: var(--lime); box-shadow: 3px 3px 0 var(--ink); }
 .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.training-grid { margin-top: 14px; }
 .type-button, .part-button { border: 1px solid var(--ink); border-radius: 14px; background: #fff; }
 .type-button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; font-size: 12px; }
 .type-button i { font-size: 18px; }
