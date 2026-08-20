@@ -471,24 +471,9 @@ function createReport(type, start, end, publishedAt) {
   const ranking = [...grouped.values()]
     .map((member) => ({ ...member, activeDays: member.days.size }))
     .sort((a, b) => b.minutes - a.minutes || b.activeDays - a.activeDays || a.name.localeCompare(b.name, "zh-CN"));
-  const attendance = [...ranking].sort((a, b) => b.activeDays - a.activeDays || b.checkins - a.checkins || b.minutes - a.minutes);
   const totalMinutes = ranking.reduce((sum, member) => sum + member.minutes, 0);
   const periodLabel = reportPeriodLabel(start, end, type);
   const reportName = type === "week" ? "上周周报" : `${start.getMonth() + 1}月月报`;
-  const highlightName = ranking[0]?.name || "等待上榜";
-  const attendanceName = attendance[0]?.name || "等待打卡";
-  const goal = Math.max(500, Math.ceil((totalMinutes * 1.2) / 100) * 100);
-  const highlights = type === "week"
-    ? [
-        { label: "最佳坚持", value: attendanceName },
-        { label: "本周加油", value: ranking[1]?.name || "更多群友" },
-        { label: "坚持打卡", value: "排名会说话" },
-      ]
-    : [
-        { label: "月度之星", value: highlightName },
-        { label: "最强出勤", value: attendanceName },
-        { label: "下月目标", value: `一起冲 ${goal} 分钟` },
-      ];
   return {
     id: `report-${type}-${localDateKey(start)}`,
     feedKind: "report",
@@ -502,7 +487,6 @@ function createReport(type, start, end, publishedAt) {
     activeCount: ranking.length,
     checkinCount: rows.length,
     top3: ranking.slice(0, 3),
-    highlights,
   };
 }
 function scheduledReports(now = new Date()) {
@@ -631,37 +615,39 @@ function drawReportPoster(canvas, report) {
     drawPosterText(ctx, unit, center, 469, 90, { weight: 750, size: 9, minSize: 8, align: "center", color: "#666660" });
   });
 
-  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 510, 484, 242, 24); ctx.fill();
+  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 510, 484, 384, 24); ctx.fill();
   ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
   ctx.fillStyle = "#090909"; roundedPath(ctx, 44, 526, 130, 32, 16); ctx.fill();
   drawPosterText(ctx, "♛  时长 TOP 3", 109, 543, 108, { weight: 900, size: 13, align: "center", color: "#ffffff" });
   drawPosterText(ctx, "按分钟排名", 486, 543, 120, { weight: 750, size: 10, align: "right", color: "#74746f" });
-  const podiumColors = ["#b8ff26", "#e3e6ea", "#f1bd84"];
-  Array.from({ length: 3 }, (_, index) => report.top3[index] || null).forEach((member, index) => {
-    const y = 574 + index * 56;
-    ctx.fillStyle = podiumColors[index]; roundedPath(ctx, 42, y, 456, 48, 16); ctx.fill();
-    ctx.lineWidth = index === 0 ? 2.2 : 1.3; ctx.strokeStyle = "#090909"; ctx.stroke();
-    ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(67, y + 24, 16, 0, Math.PI * 2); ctx.fill();
-    drawPosterText(ctx, index === 0 ? "♛" : String(index + 1), 67, y + 25, 24, { weight: 950, size: index === 0 ? 16 : 14, align: "center", color: "#ffffff" });
-    drawPosterText(ctx, member?.name || "等待上榜", 96, y + 18, 218, { weight: 900, size: 15, minSize: 11 });
-    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", 96, y + 36, 150, { weight: 700, size: 9, color: "#565650" });
-    drawPosterText(ctx, member?.minutes ?? "—", 468, y + 20, 112, { weight: 950, size: 23, minSize: 16, align: "right" });
-    drawPosterText(ctx, member ? "分钟" : "待挑战", 468, y + 38, 60, { weight: 700, size: 9, align: "right", color: "#565650" });
-  });
-
-  ctx.fillStyle = "#090909"; roundedPath(ctx, 28, 776, 484, 126, 24); ctx.fill();
-  ctx.fillStyle = "#b8ff26"; roundedPath(ctx, 44, 792, 96, 28, 14); ctx.fill();
-  drawPosterText(ctx, "本期亮点", 92, 807, 78, { weight: 950, size: 12, align: "center" });
-  const highlightPositions = [
-    { x: 44, y: 842, width: 205 },
-    { x: 278, y: 842, width: 190 },
-    { x: 44, y: 874, width: 424 },
+  const podiumSlots = [
+    { rank: 2, x: 44, y: 716, width: 148, height: 152, avatarY: 682, avatarRadius: 30, color: "#e3e6ea", nameY: 748, checkinY: 766, scoreY: 794, unitY: 817, labelY: 846 },
+    { rank: 1, x: 190, y: 650, width: 160, height: 218, avatarY: 612, avatarRadius: 36, color: "#b8ff26", nameY: 688, checkinY: 708, scoreY: 750, unitY: 778, labelY: 839 },
+    { rank: 3, x: 348, y: 752, width: 148, height: 116, avatarY: 720, avatarRadius: 28, color: "#f1bd84", nameY: 779, checkinY: 796, scoreY: 820, unitY: 840, labelY: 855 },
   ];
-  report.highlights.slice(0, 3).forEach((item, index) => {
-    const position = highlightPositions[index];
-    drawPosterText(ctx, item.label, position.x, position.y, position.width, { weight: 700, size: 9, color: "#b8ff26" });
-    drawPosterText(ctx, item.value, position.x, position.y + 17, position.width, { weight: 900, size: index === 2 ? 14 : 16, minSize: 10, color: "#ffffff" });
+  podiumSlots.forEach((slot) => {
+    const member = report.top3[slot.rank - 1] || null;
+    const center = slot.x + slot.width / 2;
+    ctx.fillStyle = slot.color; roundedPath(ctx, slot.x, slot.y, slot.width, slot.height, 18); ctx.fill();
+    ctx.lineWidth = slot.rank === 1 ? 3 : 2; ctx.strokeStyle = "#090909"; ctx.stroke();
+
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(center, slot.avatarY, slot.avatarRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = slot.rank === 1 ? 3 : 2.2; ctx.strokeStyle = "#090909"; ctx.stroke();
+    drawPosterText(ctx, member ? initials(member.name) : "—", center, slot.avatarY + 1, slot.avatarRadius * 1.35, { weight: 900, size: slot.rank === 1 ? 24 : 20, minSize: 14, align: "center" });
+    if (slot.rank === 1) {
+      ctx.fillStyle = "#090909"; roundedPath(ctx, center - 22, 568, 44, 26, 13); ctx.fill();
+      drawPosterText(ctx, "♛", center, 582, 28, { weight: 900, size: 17, align: "center", color: "#ffffff" });
+    }
+
+    ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(slot.x + 19, slot.y + 19, 15, 0, Math.PI * 2); ctx.fill();
+    drawPosterText(ctx, slot.rank, slot.x + 19, slot.y + 20, 20, { weight: 900, size: 13, align: "center", color: "#ffffff" });
+    drawPosterText(ctx, member?.name || "等待上榜", center, slot.nameY, slot.width - 30, { weight: 900, size: slot.rank === 1 ? 15 : 13, minSize: 9, align: "center" });
+    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", center, slot.checkinY, slot.width - 30, { weight: 700, size: 9, minSize: 8, align: "center", color: "#565650" });
+    drawPosterText(ctx, member?.minutes ?? "—", center, slot.scoreY, slot.width - 24, { weight: 900, size: slot.rank === 1 ? 35 : 28, minSize: 18, align: "center" });
+    drawPosterText(ctx, member ? "分钟" : "待挑战", center, slot.unitY, slot.width - 30, { weight: 700, size: 9, minSize: 8, align: "center", color: "#565650" });
+    drawPosterText(ctx, slot.rank === 1 ? "冠军" : `第 ${slot.rank} 名`, center, slot.labelY, slot.width - 30, { weight: 900, size: 11, align: "center" });
   });
+  ctx.beginPath(); ctx.moveTo(46, 868); ctx.lineTo(494, 868); ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
 
   drawLightning(ctx, 49, 934, 17);
   drawPosterText(ctx, "每一次打卡，都算数。", 78, 929, 250, { weight: 950, size: 16 });
