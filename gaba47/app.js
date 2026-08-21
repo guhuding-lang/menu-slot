@@ -492,6 +492,7 @@ function createReport(type, start, end, publishedAt) {
     .map((member) => ({ ...member, activeDays: member.days.size }))
     .sort((a, b) => b.minutes - a.minutes || b.activeDays - a.activeDays || a.name.localeCompare(b.name, "zh-CN"));
   const totalMinutes = ranking.reduce((sum, member) => sum + member.minutes, 0);
+  const timedRanking = ranking.filter((member) => member.minutes > 0);
   const periodLabel = reportPeriodLabel(start, end, type);
   const reportName = type === "week" ? "上周周报" : `${start.getMonth() + 1}月月报`;
   return {
@@ -506,7 +507,8 @@ function createReport(type, start, end, publishedAt) {
     totalMinutes,
     activeCount: ranking.length,
     checkinCount: rows.length,
-    top3: ranking.slice(0, 3),
+    top3: timedRanking.slice(0, 3),
+    ranking: timedRanking,
   };
 }
 function scheduledReports(now = new Date()) {
@@ -591,14 +593,37 @@ function drawTrophy(ctx, x, y) {
   ctx.font = posterFont(900, 27); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#fff"; ctx.fillText("★", x + 39, y + 31);
   ctx.restore();
 }
+function formatReportHours(minutes) {
+  const hours = Math.max(0, Number(minutes) || 0) / 60;
+  if (hours >= 1000) return Math.round(hours).toLocaleString("zh-CN");
+  return hours.toFixed(1).replace(/\.0$/, "");
+}
+function reportPosterLayout(report) {
+  const ranking = (report.ranking || report.top3 || []).filter((member) => Number(member?.minutes) > 0);
+  const remainingRows = Math.ceil(Math.max(0, ranking.length - 3) / 3);
+  const rankingTop = 382;
+  const rankingBottom = remainingRows ? 806 + remainingRows * 74 + 20 : 790;
+  const footerY = rankingBottom + 48;
+  return {
+    ranking,
+    remainingRows,
+    rankingTop,
+    rankingBottom,
+    footerY,
+    height: Math.max(960, footerY + 34),
+  };
+}
 function drawReportPoster(canvas, report) {
   const baseWidth = 540;
+  const layout = reportPosterLayout(report);
   const scale = canvas.width / baseWidth;
+  const targetHeight = Math.round(layout.height * scale);
+  if (canvas.height !== targetHeight) canvas.height = targetHeight;
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) return;
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  ctx.clearRect(0, 0, baseWidth, 960);
-  ctx.fillStyle = "#f4f4ef"; ctx.fillRect(0, 0, baseWidth, 960);
+  ctx.clearRect(0, 0, baseWidth, layout.height);
+  ctx.fillStyle = "#f4f4ef"; ctx.fillRect(0, 0, baseWidth, layout.height);
   ctx.textBaseline = "middle";
 
   ctx.fillStyle = "#090909"; roundedPath(ctx, 28, 24, 484, 64, 22); ctx.fill();
@@ -612,38 +637,38 @@ function drawReportPoster(canvas, report) {
   ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
   const month = new Date(report.periodStart).getMonth() + 1;
   const reportTitle = report.reportType === "week" ? "上周训练周报" : `${month}月训练月报`;
-  drawPosterText(ctx, report.reportType === "week" ? "WEEKLY REPORT" : "MONTHLY REPORT", 52, 139, 300, { weight: 900, size: 11 });
-  drawPosterText(ctx, reportTitle, 52, 184, 422, { weight: 950, size: 48, minSize: 35 });
-  drawPosterText(ctx, "群内累计训练", 52, 230, 180, { weight: 800, size: 13 });
-  drawPosterText(ctx, report.totalMinutes, 52, 291, 285, { weight: 950, size: 78, minSize: 48 });
-  drawPosterText(ctx, "分钟", 347, 303, 110, { weight: 900, size: 20 });
+  drawPosterText(ctx, report.reportType === "week" ? "WEEKLY REPORT" : "MONTHLY REPORT", 52, 137, 300, { weight: 900, size: 11 });
+  drawPosterText(ctx, reportTitle, 52, 178, 422, { weight: 950, size: 42, minSize: 32 });
   ctx.fillStyle = "#ffffff"; roundedPath(ctx, 364, 128, 112, 34, 17); ctx.fill();
   ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
   drawPosterText(ctx, report.reportType === "week" ? "上周结算" : "月度结算", 420, 146, 84, { weight: 900, size: 12, align: "center" });
+  const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
+  const metrics = [
+    ["累计时长", formatReportHours(report.totalMinutes), "小时"],
+    ["活跃人数", report.activeCount, "人"],
+    ["打卡次数", report.checkinCount, "次"],
+    ["人均时长", formatReportHours(averageMinutes), "小时"],
+  ];
+  ctx.beginPath(); ctx.moveTo(52, 211); ctx.lineTo(482, 211); ctx.lineWidth = 1.5; ctx.strokeStyle = "#090909"; ctx.stroke();
+  metrics.forEach(([label, value, unit], index) => {
+    const left = 52 + index * 107.5;
+    const center = left + 53.75;
+    if (index) { ctx.beginPath(); ctx.moveTo(left, 226); ctx.lineTo(left, 306); ctx.lineWidth = 1.1; ctx.strokeStyle = "rgba(9, 9, 9, .35)"; ctx.stroke(); }
+    drawPosterText(ctx, label, center, 230, 94, { weight: 800, size: 10, minSize: 8, align: "center", color: "#3f3f3a" });
+    drawPosterText(ctx, value, center, 270, 92, { weight: 950, size: 31, minSize: 20, align: "center" });
+    drawPosterText(ctx, unit, center, 297, 82, { weight: 800, size: 9, minSize: 8, align: "center", color: "#3f3f3a" });
+  });
   drawPosterText(ctx, `统计周期  ${report.periodLabel}`, 52, 331, 410, { weight: 750, size: 12, minSize: 9 });
 
-  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 382, 484, 102, 22); ctx.fill();
+  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, layout.rankingTop, 484, layout.rankingBottom - layout.rankingTop, 24); ctx.fill();
   ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
-  const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
-  const summary = [["活跃人数", report.activeCount, "人"], ["打卡次数", report.checkinCount, "次"], ["人均时长", averageMinutes, "分钟"]];
-  summary.forEach(([label, value, unit], index) => {
-    const left = 28 + index * 161.33;
-    const center = left + 80.66;
-    if (index) { ctx.beginPath(); ctx.moveTo(left, 399); ctx.lineTo(left, 467); ctx.lineWidth = 1.3; ctx.strokeStyle = "#c9c9c3"; ctx.stroke(); }
-    drawPosterText(ctx, label, center, 408, 125, { weight: 750, size: 11, align: "center", color: "#666660" });
-    drawPosterText(ctx, value, center, 445, 118, { weight: 950, size: 34, minSize: 24, align: "center" });
-    drawPosterText(ctx, unit, center, 469, 90, { weight: 750, size: 9, minSize: 8, align: "center", color: "#666660" });
-  });
-
-  ctx.fillStyle = "#ffffff"; roundedPath(ctx, 28, 510, 484, 384, 24); ctx.fill();
-  ctx.lineWidth = 2.5; ctx.strokeStyle = "#090909"; ctx.stroke();
-  ctx.fillStyle = "#090909"; roundedPath(ctx, 44, 526, 130, 32, 16); ctx.fill();
-  drawPosterText(ctx, "♛  时长 TOP 3", 109, 543, 108, { weight: 900, size: 13, align: "center", color: "#ffffff" });
-  drawPosterText(ctx, "按分钟排名", 486, 543, 120, { weight: 750, size: 10, align: "right", color: "#74746f" });
+  ctx.fillStyle = "#090909"; roundedPath(ctx, 44, 398, 130, 32, 16); ctx.fill();
+  drawPosterText(ctx, "♛  时长 TOP 3", 109, 415, 108, { weight: 900, size: 13, align: "center", color: "#ffffff" });
+  drawPosterText(ctx, "按小时排名", 486, 415, 120, { weight: 750, size: 10, align: "right", color: "#74746f" });
   const podiumSlots = [
-    { rank: 2, x: 44, y: 716, width: 148, height: 152, avatarY: 682, avatarRadius: 30, color: "#e3e6ea", nameY: 748, checkinY: 766, scoreY: 794, unitY: 817, labelY: 846 },
-    { rank: 1, x: 190, y: 650, width: 160, height: 218, avatarY: 612, avatarRadius: 36, color: "#b8ff26", nameY: 688, checkinY: 708, scoreY: 750, unitY: 778, labelY: 839 },
-    { rank: 3, x: 348, y: 752, width: 148, height: 116, avatarY: 720, avatarRadius: 28, color: "#f1bd84", nameY: 779, checkinY: 796, scoreY: 820, unitY: 840, labelY: 855 },
+    { rank: 2, x: 44, y: 586, width: 148, height: 160, avatarY: 552, avatarRadius: 30, color: "#e3e6ea", nameY: 618, checkinY: 638, scoreY: 675, unitY: 701, labelY: 727 },
+    { rank: 1, x: 190, y: 520, width: 160, height: 226, avatarY: 482, avatarRadius: 36, color: "#b8ff26", nameY: 558, checkinY: 579, scoreY: 624, unitY: 654, labelY: 718 },
+    { rank: 3, x: 348, y: 618, width: 148, height: 128, avatarY: 588, avatarRadius: 28, color: "#f1bd84", nameY: 648, checkinY: 666, scoreY: 694, unitY: 716, labelY: 733 },
   ];
   podiumSlots.forEach((slot) => {
     const member = report.top3[slot.rank - 1] || null;
@@ -655,23 +680,42 @@ function drawReportPoster(canvas, report) {
     ctx.lineWidth = slot.rank === 1 ? 3 : 2.2; ctx.strokeStyle = "#090909"; ctx.stroke();
     drawPosterText(ctx, member ? initials(member.name) : "—", center, slot.avatarY + 1, slot.avatarRadius * 1.35, { weight: 900, size: slot.rank === 1 ? 24 : 20, minSize: 14, align: "center" });
     if (slot.rank === 1) {
-      ctx.fillStyle = "#090909"; roundedPath(ctx, center - 22, 568, 44, 26, 13); ctx.fill();
-      drawPosterText(ctx, "♛", center, 582, 28, { weight: 900, size: 17, align: "center", color: "#ffffff" });
+      ctx.fillStyle = "#090909"; roundedPath(ctx, center - 22, 438, 44, 26, 13); ctx.fill();
+      drawPosterText(ctx, "♛", center, 452, 28, { weight: 900, size: 17, align: "center", color: "#ffffff" });
     }
 
     ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(slot.x + 19, slot.y + 19, 15, 0, Math.PI * 2); ctx.fill();
     drawPosterText(ctx, slot.rank, slot.x + 19, slot.y + 20, 20, { weight: 900, size: 13, align: "center", color: "#ffffff" });
     drawPosterText(ctx, member?.name || "等待上榜", center, slot.nameY, slot.width - 30, { weight: 900, size: slot.rank === 1 ? 15 : 13, minSize: 9, align: "center" });
     drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", center, slot.checkinY, slot.width - 30, { weight: 700, size: 9, minSize: 8, align: "center", color: "#565650" });
-    drawPosterText(ctx, member?.minutes ?? "—", center, slot.scoreY, slot.width - 24, { weight: 900, size: slot.rank === 1 ? 35 : 28, minSize: 18, align: "center" });
-    drawPosterText(ctx, member ? "分钟" : "待挑战", center, slot.unitY, slot.width - 30, { weight: 700, size: 9, minSize: 8, align: "center", color: "#565650" });
+    drawPosterText(ctx, member ? formatReportHours(member.minutes) : "—", center, slot.scoreY, slot.width - 24, { weight: 900, size: slot.rank === 1 ? 35 : 28, minSize: 18, align: "center" });
+    drawPosterText(ctx, member ? "小时" : "待挑战", center, slot.unitY, slot.width - 30, { weight: 700, size: 9, minSize: 8, align: "center", color: "#565650" });
     drawPosterText(ctx, slot.rank === 1 ? "冠军" : `第 ${slot.rank} 名`, center, slot.labelY, slot.width - 30, { weight: 900, size: 11, align: "center" });
   });
-  ctx.beginPath(); ctx.moveTo(46, 868); ctx.lineTo(494, 868); ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(46, 746); ctx.lineTo(494, 746); ctx.lineWidth = 3; ctx.strokeStyle = "#090909"; ctx.stroke();
 
-  drawLightning(ctx, 49, 934, 17);
-  drawPosterText(ctx, "每一次打卡，都算数。", 78, 929, 250, { weight: 950, size: 16 });
-  drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, 939, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
+  const remaining = layout.ranking.slice(3);
+  if (remaining.length) {
+    drawPosterText(ctx, "其他训练成员", 44, 780, 170, { weight: 900, size: 13 });
+    drawPosterText(ctx, `共 ${layout.ranking.length} 人有训练时长`, 494, 780, 220, { weight: 750, size: 9, minSize: 8, align: "right", color: "#74746f" });
+    remaining.forEach((member, index) => {
+      const column = index % 3;
+      const row = Math.floor(index / 3);
+      const width = 145.33;
+      const x = 44 + column * (width + 8);
+      const y = 806 + row * 74;
+      ctx.fillStyle = "#f4f4ef"; roundedPath(ctx, x, y, width, 62, 14); ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = "#090909"; ctx.stroke();
+      ctx.fillStyle = "#090909"; ctx.beginPath(); ctx.arc(x + 16, y + 17, 11, 0, Math.PI * 2); ctx.fill();
+      drawPosterText(ctx, index + 4, x + 16, y + 18, 17, { weight: 900, size: 9, minSize: 8, align: "center", color: "#ffffff" });
+      drawPosterText(ctx, member.name, x + 32, y + 17, width - 42, { weight: 900, size: 11, minSize: 8 });
+      drawPosterText(ctx, `${formatReportHours(member.minutes)} 小时 · ${member.checkins} 次`, x + width / 2, y + 44, width - 18, { weight: 800, size: 11, minSize: 8, align: "center", color: "#50504b" });
+    });
+  }
+
+  drawLightning(ctx, 49, layout.footerY, 17);
+  drawPosterText(ctx, "每一次打卡，都算数。", 78, layout.footerY - 5, 250, { weight: 950, size: 16 });
+  drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, layout.footerY + 5, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
 }
 function paintReportCanvases() {
   const reports = new Map(scheduledReports().map((report) => [report.id, report]));
