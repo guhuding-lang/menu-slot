@@ -990,7 +990,7 @@ function plazaMotion(member, index, count) {
   const dy2 = (Math.floor(hash / 53) % 17) - 8;
   const duration = 13 + (hash % 9);
   const delay = -(hash % 12);
-  const size = count <= 12 ? 11.5 : count <= 18 ? 10 : count <= 24 ? 8.5 : 7.5;
+  const size = 15;
   return `--x:${x}%;--y:${y}%;--dx1:${dx1}px;--dy1:${dy1}px;--dx2:${dx2}px;--dy2:${dy2}px;--wander-duration:${duration}s;--wander-delay:${delay}s;--cat-size:${size}%;--depth:${100 + Math.round(y)}`;
 }
 
