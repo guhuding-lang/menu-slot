@@ -1,11 +1,18 @@
-const CACHE = 'gaba47-v28'
+const CACHE = 'gaba47-v29'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
-  './app.css?v=16',
+  './app.css?v=17',
   './photo-fix.js?v=1',
-  './app.js?v=22',
-  './cat-ui.js?v=1',
+  './app.js?v=23',
+  './cat-ui.js?v=2',
+  './assets/cats-v2/gym-room.webp',
+  './assets/cats-v2/orange-wave.webp',
+  './assets/cats-v2/orange-phone.webp',
+  './assets/cats-v2/cow-run.webp',
+  './assets/cats-v2/black-strength.webp',
+  './assets/cats-v2/white-stretch.webp',
+  './assets/cats-v2/tabby-water.webp',
   './assets/phosphor/phosphor.css',
   './assets/phosphor/Phosphor-Regular.woff2',
   './assets/app-icon-192.webp',

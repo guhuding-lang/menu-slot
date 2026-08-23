@@ -687,12 +687,13 @@ img { display: block; max-width: 100%; }
 .feature-kicker { display: inline-flex; min-height: 28px; align-items: center; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--lime); box-shadow: 2px 2px 0 var(--ink); font-size: 11px; font-weight: 900; }
 .feature-heading h1 { margin: 12px 0 4px; font-size: clamp(31px, 9vw, 43px); line-height: 1; letter-spacing: -.07em; }
 .feature-heading p { margin: 0; color: var(--muted); font-size: 12px; }
-.cat-character { display: block; width: 100%; }
-.cat-character svg { display: block; width: 100%; height: auto; overflow: visible; }
-.cat-character.action-run svg { transform: rotate(-2deg); }
-.cat-character.action-rest svg { transform: rotate(4deg) translateY(3px); }
-.cat-character.action-stretch .cat-arm-left { transform: translate(5px, -8px) rotate(-12deg); transform-origin: 39px 82px; }
-.cat-character.action-strength .cat-arm-right { transform: translateY(-5px); }
+.cat-character { position: relative; display: block; width: 100%; }
+.cat-character img { display: block; width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 5px 2px rgba(9, 9, 9, .16)); user-select: none; }
+.cat-character.action-run img { transform: rotate(-2deg); }
+.cat-character.action-rest img { transform: rotate(2deg) translateY(2px); }
+.cat-traits { position: absolute; right: 1%; bottom: 5%; display: flex; gap: 2px; }
+.cat-traits i { display: grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--lime); box-shadow: 2px 2px 0 var(--ink); font-size: 10px; }
+.outfit-green-vest img { filter: drop-shadow(0 5px 2px rgba(9, 9, 9, .16)) drop-shadow(0 0 7px rgba(168, 255, 30, .55)); }
 
 .member-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 18px; overflow: hidden; border: 2px solid var(--ink); border-radius: 20px; background: var(--lime); box-shadow: 5px 5px 0 var(--ink); }
 .member-stats > div { padding: 15px 8px; border-left: 1.5px solid rgba(9, 9, 9, .28); text-align: center; }
@@ -707,15 +708,31 @@ img { display: block; max-width: 100%; }
 .gym-zone-rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border-block: 1.5px solid var(--ink); background: var(--ink); }
 .gym-zone-rail span { display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 34px; background: #f5f5ef; font-size: 8px; font-weight: 800; }
 .gym-zone-rail i { font-size: 13px; }
-.gym-floor { position: relative; min-height: 390px; padding: 18px 10px 20px; overflow: hidden; background-color: #e8e8df; background-image: linear-gradient(#d2d2c7 1px, transparent 1px), linear-gradient(90deg, #d2d2c7 1px, transparent 1px); background-size: 34px 34px; }
-.gym-floor.is-expanded { min-height: 720px; }
-.gym-machine { position: absolute; z-index: 0; display: grid; place-items: center; width: 42px; height: 42px; border: 2px solid var(--ink); border-radius: 12px; color: rgba(9, 9, 9, .4); background: rgba(255,255,255,.68); font-size: 22px; }
-.machine-run { top: 14px; left: 12px; }
-.machine-barbell { top: 14px; right: 12px; }
-.machine-water { right: 12px; bottom: 12px; background: #d8f5ff; }
-.gym-cat-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 5px; }
-.gym-cat { min-width: 0; padding: 0 2px; border: 0; background: transparent; }
-.gym-cat .cat-character { width: min(100%, 92px); margin: 0 auto -2px; }
+.gym-scenes { padding: 9px; background: #e8e8df; }
+.gym-scene { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border: 1.5px solid var(--ink); border-radius: 20px; background: #f3eee5 url("./assets/cats-v2/gym-room.webp") center / cover no-repeat; }
+.gym-scene + .gym-scene { margin-top: 9px; }
+.gym-floor-label { position: absolute; z-index: 4; top: 10px; left: 10px; min-height: 25px; padding: 6px 9px 0; border: 1px solid var(--ink); border-radius: 999px; background: rgba(255, 255, 255, .9); box-shadow: 2px 2px 0 var(--ink); font-size: 8px; font-weight: 900; }
+.gym-cat { position: absolute; z-index: 2; width: 29%; min-width: 0; padding: 0; border: 0; background: transparent; transition: transform .16s ease; }
+.gym-cat:active { transform: scale(.96); }
+.gym-cat .cat-character { width: 100%; margin: 0 auto -7px; }
+.gym-cat .cat-character img { filter: drop-shadow(0 4px 1px rgba(9, 9, 9, .2)); }
+.gym-cat .cat-traits { display: none; }
+.gym-slot-0 { top: 6%; left: 1%; }
+.gym-slot-1 { top: 3%; left: 35%; }
+.gym-slot-2 { top: 8%; right: 1%; }
+.gym-slot-3 { top: 27%; left: 6%; }
+.gym-slot-4 { top: 23%; left: 37%; }
+.gym-slot-5 { top: 29%; right: 2%; }
+.gym-slot-6 { top: 48%; left: 0; }
+.gym-slot-7 { top: 44%; left: 36%; }
+.gym-slot-8 { top: 49%; right: 1%; }
+.gym-slot-9 { top: 68%; left: 6%; }
+.gym-slot-10 { top: 66%; left: 36%; }
+.gym-slot-11 { top: 69%; right: 2%; }
+.gym-empty { display: grid; place-items: center; min-height: 260px; border: 1.5px solid var(--ink); border-radius: 20px; background: #f3eee5 url("./assets/cats-v2/gym-room.webp") center / cover no-repeat; text-align: center; }
+.gym-empty strong, .gym-empty span { display: block; padding: 5px 9px; border-radius: 999px; background: rgba(255, 255, 255, .9); }
+.gym-empty strong { font-size: 15px; }
+.gym-empty span { margin-top: 4px; color: var(--muted); font-size: 9px; }
 .member-cat-copy { display: grid; justify-items: center; gap: 4px; min-width: 0; }
 .member-cat-copy strong { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 .cat-status { display: inline-flex; align-items: center; min-height: 20px; padding: 0 7px; border: 1px solid var(--ink); border-radius: 999px; font-size: 8px; font-weight: 900; white-space: nowrap; }
@@ -949,8 +966,9 @@ button:focus-visible, label:focus-within { outline: 3px solid var(--lime); outli
   .nav-item, .nav-primary { font-size: 7px; }
   .nav-item i { font-size: 18px; }
   .primary-circle { width: 53px; height: 53px; }
-  .gym-cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .gym-zone-rail { grid-template-columns: repeat(2, 1fr); }
+  .gym-scenes { padding: 7px; }
+  .gym-cat { width: 30%; }
+  .gym-cat .member-cat-copy strong { font-size: 9px; }
   .catden-character { width: 78%; }
 }
 @media (prefers-reduced-motion: reduce) {

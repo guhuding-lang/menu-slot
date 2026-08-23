@@ -6,7 +6,7 @@ import {
   catCharacter,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./cat-ui.js?v=1";
+} from "./cat-ui.js?v=2";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -967,10 +967,11 @@ function rankingPage() {
   }).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
-function memberCatCard(member, compact = false) {
+function memberCatCard(member, compact = false, slot = 0) {
   const profile = catProfileFor(member);
   const status = memberTodayState(member);
-  return `<button class="${compact ? "member-list-row" : "gym-cat"}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="member-cat-copy"><strong>${escapeHTML(member.name)}</strong><small class="cat-status status-${status.kind}">${status.label}</small></span>${compact ? icon("caret-right") : ""}</button>`;
+  const slotClass = compact ? "" : ` gym-slot-${slot}`;
+  return `<button class="${compact ? "member-list-row" : "gym-cat"}${slotClass}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="member-cat-copy"><strong>${escapeHTML(member.name)}</strong><small class="cat-status status-${status.kind}">${status.label}</small></span>${compact ? icon("caret-right") : ""}</button>`;
 }
 function memberDetailModal() {
   const member = memberStats().find((item) => item.id === state.memberModal);
@@ -991,11 +992,16 @@ function membersPage() {
   const newCount = members.filter(isNewMember).length;
   const sceneMembers = members.slice(0, 24);
   const hiddenCount = Math.max(0, members.length - sceneMembers.length);
-  return `<main class="page page-members"><header class="feature-heading"><span class="feature-kicker">群友</span><h1>47猫猫健身房</h1><p>看看今天谁已经出动了</p></header>${connectionNotice()}<section class="member-stats" aria-label="群友统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="gym-card"><div class="gym-heading"><div><small>GABA 47 GYM</small><h2>猫猫健身房</h2></div><span>${icon("users-three")} ${members.length} 只猫</span></div><div class="gym-zone-rail" aria-hidden="true"><span>${icon("person-simple-run")}跑步区</span><span>${icon("barbell")}力量区</span><span>${icon("person-simple-tai-chi")}拉伸区</span><span>${icon("drop")}补水区</span></div><div class="gym-floor ${sceneMembers.length > 12 ? "is-expanded" : ""}"><span class="gym-machine machine-run">${icon("person-simple-run")}</span><span class="gym-machine machine-barbell">${icon("barbell")}</span><span class="gym-machine machine-water">${icon("drop")}</span><div class="gym-cat-grid">${sceneMembers.map((member) => memberCatCard(member)).join("")}</div></div>${hiddenCount ? `<p class="gym-overflow-note">场内先展示 24 位，还有 ${hiddenCount} 位群友在休息区。</p>` : ""}<button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member, true)).join("")}</div></section>` : ""}</main>`;
+  const floorGroups = sceneMembers.length > 12
+    ? [sceneMembers.slice(0, Math.ceil(sceneMembers.length / 2)), sceneMembers.slice(Math.ceil(sceneMembers.length / 2))]
+    : [sceneMembers];
+  const gymScenes = floorGroups.filter((group) => group.length).map((group, floorIndex) => `<div class="gym-scene" aria-label="${floorIndex ? "猫猫健身房休息区" : "猫猫健身房训练区"}"><span class="gym-floor-label">${floorIndex ? "休息区" : "训练区"}</span>${group.map((member, index) => { const slot = group.length === 1 ? 5 : Math.round(index * 11 / (group.length - 1)); return memberCatCard(member, false, slot); }).join("")}</div>`).join("");
+  return `<main class="page page-members"><header class="feature-heading"><span class="feature-kicker">群友</span><h1>47猫猫健身房</h1><p>看看今天谁已经出动了</p></header>${connectionNotice()}<section class="member-stats" aria-label="群友统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="gym-card"><div class="gym-heading"><div><small>GABA 47 GYM</small><h2>猫猫健身房</h2></div><span>${icon("users-three")} ${members.length} 只猫</span></div><div class="gym-zone-rail" aria-hidden="true"><span>${icon("person-simple-run")}跑步</span><span>${icon("barbell")}力量</span><span>${icon("person-simple-tai-chi")}拉伸</span><span>${icon("drop")}补水</span></div><div class="gym-scenes">${gymScenes || `<div class="gym-empty"><strong>健身房还空着</strong><span>第一只猫打卡后就会出现。</span></div>`}</div>${hiddenCount ? `<p class="gym-overflow-note">场内先展示 24 位，还有 ${hiddenCount} 位群友在休息区。</p>` : ""}<button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member, true)).join("")}</div></section>` : ""}</main>`;
 }
 
 function catOptionGroup(label, field, options, draft) {
-  return `<section class="cat-option-group"><h3>${label}</h3><div class="cat-option-grid">${options.map((item) => `<button class="cat-option ${draft[field] === item.value ? "is-selected" : ""}" data-cat-field="${field}" data-cat-value="${item.value}" aria-pressed="${draft[field] === item.value}"><span>${field === "furType" ? "●" : field === "headwear" ? "⌒" : field === "outfit" ? "47" : "＋"}</span><strong>${item.label}</strong></button>`).join("")}</div></section>`;
+  const fieldIcon = { furType: "palette", headwear: "headphones", outfit: "t-shirt", accessory: "barbell" }[field] || "paw-print";
+  return `<section class="cat-option-group"><h3>${label}</h3><div class="cat-option-grid">${options.map((item) => `<button class="cat-option ${draft[field] === item.value ? "is-selected" : ""}" data-cat-field="${field}" data-cat-value="${item.value}" aria-pressed="${draft[field] === item.value}"><span>${icon(fieldIcon)}</span><strong>${item.label}</strong></button>`).join("")}</div></section>`;
 }
 function catEditorPanel(member, profile) {
   if (!state.catEditor.open) return "";
