@@ -1,7 +1,18 @@
+import {
+  CAT_ACCESSORY_OPTIONS,
+  CAT_FUR_OPTIONS,
+  CAT_HEADWEAR_OPTIONS,
+  CAT_OUTFIT_OPTIONS,
+  catCharacter,
+  defaultCatProfile,
+  normalizeCatProfile,
+} from "./cat-ui.js?v=1";
+
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
 const SESSION_KEY = "gaba47-supabase-session-v1";
 const USER_KEY = "gaba47-user-v2";
+const CAT_LOCAL_KEY = "gaba47-cat-profile-v1";
 const PREVIEW_MODE = new URLSearchParams(location.search).get("preview") === "1";
 const GROUP_CODE = "47GYM";
 
@@ -16,7 +27,8 @@ const trainingOptions = [
 ];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
-  ["home", "动态", "activity"], ["ranking", "排行", "trophy"], ["checkin", "去打卡", "lightning"],
+  ["home", "动态", "activity"], ["ranking", "排行", "trophy"], ["members", "群友", "users-three"],
+  ["checkin", "去打卡", "lightning"], ["catden", "猫窝", "paw-print"],
   ["tools", "工具", "toolbox"], ["profile", "我的", "user"],
 ];
 
@@ -27,12 +39,15 @@ const emptyCheckinForm = () => ({
 
 const state = {
   user: initialUser,
-  service: null, route: "home", checkins: [], profiles: [], booting: !PREVIEW_MODE && !initialUser, loading: false,
+  service: null, route: "home", checkins: [], profiles: [], catProfiles: [], booting: !PREVIEW_MODE && !initialUser, loading: false,
   connection: PREVIEW_MODE ? "preview" : "idle", identityIssue: null, toast: "", toastTimer: null,
   checkinForm: emptyCheckinForm(),
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
   deleteConfirm: false,
   reportModal: null,
+  memberModal: null,
+  showAllMembers: false,
+  catEditor: { open: false, draft: null, saving: false, status: "" },
   rankingPeriod: "week",
   tools: { diceIndex: null, diceRolling: false },
 };
@@ -143,6 +158,7 @@ async function createService() {
   const encodePath = (value) => value.split("/").map(encodeURIComponent).join("/");
   const signedCache = new Map();
   let supportsAvatar = true;
+  let supportsCats = true;
 
   const signPath = async (path) => {
     if (!path) return null;
@@ -189,10 +205,20 @@ async function createService() {
     }
     return rows;
   };
+  const fetchCatProfiles = async () => {
+    try {
+      return await api("/rest/v1/cat_profiles?select=user_id,fur_type,headwear,outfit,accessory,selected_title,unlocked_items,unlocked_achievements,updated_at");
+    } catch (error) {
+      if (!/cat_profiles|schema cache|42P01|PGRST205/i.test(`${error.code || ""} ${error.message || ""}`)) throw error;
+      supportsCats = false;
+      return [];
+    }
+  };
 
   return {
     userId,
     get supportsAvatar() { return supportsAvatar; },
+    get supportsCats() { return supportsCats; },
     async getOwnProfile() {
       let rows;
       try { rows = await api(`/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,display_name,avatar_url,created_at&limit=1`); }
@@ -212,8 +238,8 @@ async function createService() {
       });
     },
     async listData() {
-      const [data, rawProfiles] = await Promise.all([
-        fetchCheckins(), fetchProfiles(),
+      const [data, rawProfiles, rawCatProfiles] = await Promise.all([
+        fetchCheckins(), fetchProfiles(), fetchCatProfiles(),
       ]);
       const profiles = await Promise.all((rawProfiles || []).map(async (profile) => ({ ...profile, avatar_url_signed: await signPath(profile.avatar_url) })));
       const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -226,7 +252,8 @@ async function createService() {
           likes: Number(item.likes_count || 0), liked: Boolean(item.liked_by_me),
         };
       }));
-      return { checkins, profiles };
+      const catProfiles = (rawCatProfiles || []).map((profile) => normalizeCatProfile(profile, profile.user_id));
+      return { checkins, profiles, catProfiles };
     },
     async createCheckin(input) {
       let photoPath = null;
@@ -288,6 +315,26 @@ async function createService() {
       if (previousPath && previousPath !== avatarPath) await deleteObject(previousPath).catch(() => {});
       return { avatarPath, avatarUrl: avatarPath ? await signPath(avatarPath) : null };
     },
+    async saveCatProfile(input) {
+      if (!supportsCats) return { synced: false };
+      const profile = normalizeCatProfile(input, userId);
+      await api("/rest/v1/cat_profiles?on_conflict=user_id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          user_id: userId,
+          fur_type: profile.furType,
+          headwear: profile.headwear,
+          outfit: profile.outfit,
+          accessory: profile.accessory,
+          selected_title: profile.selectedTitle,
+          unlocked_items: profile.unlockedItems,
+          unlocked_achievements: profile.unlockedAchievements,
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      return { synced: true };
+    },
     async toggleLike(id) {
       await api("/rest/v1/rpc/toggle_checkin_like", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target_checkin: id }) });
     },
@@ -342,11 +389,24 @@ function previewData() {
     { id: "preview", display_name: "阿飞不累", avatar_url_signed: null, created_at: ago(720) },
     { id: "friend-1", display_name: "朱紫瑶（见过张杰版）", avatar_url_signed: null, created_at: ago(700) },
     { id: "friend-2", display_name: "老周", avatar_url_signed: null, created_at: ago(600) },
+    { id: "friend-3", display_name: "青鱼", avatar_url_signed: null, created_at: ago(48) },
+    { id: "friend-4", display_name: "蛙蛙", avatar_url_signed: null, created_at: ago(1800) },
+    { id: "friend-5", display_name: "故梦", avatar_url_signed: null, created_at: ago(2400) },
+    { id: "friend-6", display_name: "天蝎-1", avatar_url_signed: null, created_at: ago(3000) },
+    { id: "friend-7", display_name: "小鹿同学", avatar_url_signed: null, created_at: ago(36) },
+    { id: "friend-8", display_name: "源氏的小钢刀", avatar_url_signed: null, created_at: ago(3600) },
+    { id: "friend-9", display_name: "申懒腰", avatar_url_signed: null, created_at: ago(5000) },
+    { id: "friend-10", display_name: "柚子", avatar_url_signed: null, created_at: ago(20) },
+    { id: "friend-11", display_name: "Luna", avatar_url_signed: null, created_at: ago(4600) },
+    { id: "friend-12", display_name: "阿豪", avatar_url_signed: null, created_at: ago(5600) },
   ];
   state.checkins = [
     { id: "p1", userId: "friend-1", name: "朱紫瑶（见过张杰版）", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
     { id: "p11", userId: "preview", name: "阿飞不累", createdAt: ago(4), type: "其他", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
     { id: "p12", userId: "friend-2", name: "老周", createdAt: ago(7), type: "爬楼", details: "爬楼 · 85分钟", parts: ["爬楼"], duration: 85, note: "一步一步往上。", likes: 6, liked: false, photo: null, photoPath: null },
+    { id: "p13", userId: "friend-3", name: "青鱼", createdAt: ago(2), type: "跑步", details: "跑步 · 95分钟", parts: ["跑步"], duration: 95, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p14", userId: "friend-8", name: "源氏的小钢刀", createdAt: ago(3), type: "力量", details: "腿 · 70分钟", parts: ["腿"], duration: 70, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p15", userId: "friend-12", name: "阿豪", createdAt: ago(5), type: "力量", details: "胸 · 45分钟", parts: ["胸"], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
     { id: "p2", userId: "preview", name: "阿飞不累", createdAt: previousWeek(6, 20), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
     { id: "p3", userId: "preview", name: "阿飞不累", createdAt: previousWeek(4), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
     { id: "p4", userId: "friend-1", name: "小鹿同学", createdAt: previousWeek(3), type: "力量", details: "臀腿 · 55分钟", parts: ["腿"], duration: 55, note: "", likes: 4, liked: false, photo: null, photoPath: null },
@@ -357,10 +417,15 @@ function previewData() {
     { id: "p9", userId: "friend-2", name: "老周", createdAt: previousMonth(12), type: "游泳", details: "游泳 · 65分钟", parts: [], duration: 65, note: "", likes: 5, liked: false, photo: null, photoPath: null },
     { id: "p10", userId: "preview", name: "阿飞不累", createdAt: previousMonth(5), type: "力量", details: "肩 + 核心 · 58分钟", parts: ["肩", "核心"], duration: 58, note: "", likes: 4, liked: true, photo: null, photoPath: null },
   ];
+  state.catProfiles = [
+    { ...defaultCatProfile("preview"), furType: "orange", headwear: "green-headband", outfit: "black-vest", accessory: "dumbbell" },
+    { ...defaultCatProfile("friend-3"), furType: "cow", outfit: "green-vest", selectedTitle: "还活着" },
+    { ...defaultCatProfile("friend-12"), furType: "black", headwear: "black-cap", accessory: "shaker" },
+  ];
   state.service = {
-    userId: "preview", toggleLike: async () => {},
+    userId: "preview", toggleLike: async () => {}, supportsCats: true,
     updateProfile: async (input) => ({ avatarPath: input.currentAvatarPath, avatarUrl: state.user.avatarUrl }),
-    createCheckin: async () => {}, updateCheckin: async () => {}, deleteCheckin: async () => {},
+    createCheckin: async () => {}, updateCheckin: async () => {}, deleteCheckin: async () => {}, saveCatProfile: async () => ({ synced: true }),
   };
 }
 
@@ -370,11 +435,11 @@ function memberStats() {
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
   const map = new Map();
-  const ensureMember = ({ id = "", name = "", avatarUrl = null } = {}) => {
+  const ensureMember = ({ id = "", name = "", avatarUrl = null, createdAt = null } = {}) => {
     const displayName = cleanDisplayName(name) || "47";
     const nameKey = displayNameKey(displayName) || `id:${id}`;
     if (!map.has(nameKey)) {
-      map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, weeklyCount: 0, weeklyMinutes: 0, monthlyCount: 0, monthlyMinutes: 0, yearlyCount: 0, yearlyMinutes: 0, totalCount: 0, totalMinutes: 0, streak: 0, dates: new Set() });
+      map.set(nameKey, { id: id || nameKey, name: displayName, nameKey, profileIds: new Set(), avatarUrl, createdAt, weeklyCount: 0, weeklyMinutes: 0, monthlyCount: 0, monthlyMinutes: 0, yearlyCount: 0, yearlyMinutes: 0, totalCount: 0, totalMinutes: 0, streak: 0, dates: new Set() });
     }
     const member = map.get(nameKey);
     if (id) member.profileIds.add(id);
@@ -383,10 +448,11 @@ function memberStats() {
       member.name = cleanDisplayName(state.user?.name) || displayName;
       if (avatarUrl) member.avatarUrl = avatarUrl;
     } else if (!member.avatarUrl && avatarUrl) member.avatarUrl = avatarUrl;
+    if (createdAt && (!member.createdAt || new Date(createdAt) < new Date(member.createdAt))) member.createdAt = createdAt;
     return member;
   };
   for (const profile of state.profiles) {
-    ensureMember({ id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null });
+    ensureMember({ id: profile.id, name: profile.display_name, avatarUrl: profile.avatar_url_signed || null, createdAt: profile.created_at });
   }
   for (const item of state.checkins) {
     const member = ensureMember({ id: item.userId, name: item.name, avatarUrl: item.avatarUrl });
@@ -421,6 +487,96 @@ function isCurrentMember(member) {
   return member.profileIds?.has(state.user.id) || member.nameKey === displayNameKey(state.user.name);
 }
 function currentMember(members = memberStats()) { return members.find(isCurrentMember) || null; }
+
+function memberRows(member) {
+  if (!member) return [];
+  return state.checkins.filter((item) => member.profileIds?.has(item.userId) || displayNameKey(item.name) === member.nameKey);
+}
+function stableIndex(value, length) {
+  let hash = 0;
+  for (const character of String(value || "47")) hash = ((hash << 5) - hash + character.codePointAt(0)) | 0;
+  return Math.abs(hash) % Math.max(1, length);
+}
+function catProfileFor(memberOrId) {
+  const id = typeof memberOrId === "string" ? memberOrId : (memberOrId?.profileIds?.has(state.user?.id) ? state.user.id : memberOrId?.id);
+  const stored = state.catProfiles.find((profile) => profile.userId === id);
+  return normalizeCatProfile(stored || defaultCatProfile(id || "47"), id || "47");
+}
+function replaceCatProfile(profile) {
+  const normalized = normalizeCatProfile(profile, profile.userId);
+  state.catProfiles = [...state.catProfiles.filter((item) => item.userId !== normalized.userId), normalized];
+  return normalized;
+}
+function isNewMember(member) {
+  if (!member?.createdAt) return false;
+  const joined = new Date(member.createdAt);
+  return !Number.isNaN(joined.getTime()) && Date.now() - joined.getTime() <= 3 * 86400000;
+}
+function memberTodayState(member) {
+  const rows = memberRows(member).filter((item) => localDateKey(item.createdAt) === localDateKey());
+  const minutes = rows.reduce((sum, item) => sum + parseMinutes(item), 0);
+  const parts = rows.flatMap(parseParts);
+  const text = `${parts.join(" ")} ${rows.map((item) => item.type).join(" ")}`;
+  const trained = rows.length > 0;
+  let action = trained
+    ? (/跑步|爬坡|爬楼|椭圆机|骑行/.test(text) ? "run" : /拉伸|瑜伽/.test(text) ? "stretch" : /游泳/.test(text) ? "water" : "strength")
+    : ["sit", "phone", "water"][stableIndex(member?.id, 3)];
+  if (minutes >= 90) action = "rest";
+  const kind = isNewMember(member) ? "new" : trained ? "trained" : "watching";
+  return {
+    kind,
+    label: kind === "new" ? "新成员" : kind === "trained" ? "已打卡" : "围观中",
+    action,
+    rows,
+    minutes,
+    message: minutes >= 90 ? "今天练到关机" : trained ? "今天已经出动 ⚡" : "今天还在窝着",
+  };
+}
+function hasResurrection(rows) {
+  const dates = [...new Set(rows.map((item) => localDateKey(item.createdAt)).filter(Boolean))].sort();
+  return dates.some((date, index) => index > 0 && (new Date(date) - new Date(dates[index - 1])) / 86400000 >= 14);
+}
+function progressFor(member) {
+  const rows = memberRows(member);
+  const now = Date.now();
+  const late = rows.filter((item) => new Date(item.createdAt).getHours() >= 23).length;
+  const early = rows.filter((item) => new Date(item.createdAt).getHours() < 8).length;
+  const legs = rows.filter((item) => /腿|臀/.test(`${parseParts(item).join(" ")} ${item.type || ""}`)).length;
+  const recent30 = rows.filter((item) => now - new Date(item.createdAt).getTime() <= 30 * 86400000).length;
+  const memberAge = member?.createdAt ? (now - new Date(member.createdAt).getTime()) / 86400000 : 0;
+  const resurrection = hasResurrection(rows);
+  return { rows, late, early, legs, recent30, memberAge, resurrection };
+}
+const CAT_TITLES = [
+  { id: "alive", label: "还活着", rule: "连续训练 7 天", test: (member) => member.streak >= 7 },
+  { id: "regular", label: "健身房钉子户", rule: "累计打卡 50 次", test: (member) => member.totalCount >= 50 },
+  { id: "night", label: "夜猫子", rule: "23:00 后完成 10 次打卡", test: (_, p) => p.late >= 10 },
+  { id: "early", label: "早八战士", rule: "08:00 前完成 10 次打卡", test: (_, p) => p.early >= 10 },
+  { id: "legs", label: "腿软猫", rule: "完成 10 次腿部训练", test: (_, p) => p.legs >= 10 },
+  { id: "revive", label: "诈尸成功", rule: "停练 14 天后重新出动", test: (_, p) => p.resurrection },
+  { id: "charity", label: "办卡慈善家", rule: "加入满 30 天且近 30 天打卡不超过 2 次", test: (_, p) => p.memberAge >= 30 && p.recent30 <= 2 },
+];
+const CAT_ACHIEVEMENTS = [
+  { id: "first", label: "第一次出动", icon: "lightning", rule: "完成第一次打卡", test: (member) => member.totalCount >= 1 },
+  { id: "streak3", label: "连续3天", icon: "fire", rule: "连续训练 3 天", test: (member) => member.streak >= 3 },
+  { id: "streak7", label: "连续7天", icon: "calendar-check", rule: "连续训练 7 天", test: (member) => member.streak >= 7 },
+  { id: "hours10", label: "累计10小时", icon: "clock", rule: "累计训练 10 小时", test: (member) => member.totalMinutes >= 600 },
+  { id: "hours50", label: "累计50小时", icon: "trophy", rule: "累计训练 50 小时", test: (member) => member.totalMinutes >= 3000 },
+  { id: "early", label: "晨练达人", icon: "sun-horizon", rule: "08:00 前完成 10 次打卡", test: (_, p) => p.early >= 10 },
+  { id: "night", label: "夜猫子", icon: "moon-stars", rule: "23:00 后完成 10 次打卡", test: (_, p) => p.late >= 10 },
+  { id: "revive", label: "诈尸成功", icon: "heartbeat", rule: "停练 14 天后重新出动", test: (_, p) => p.resurrection },
+];
+function unlockedFor(member) {
+  const progress = progressFor(member);
+  return {
+    titles: CAT_TITLES.filter((item) => item.test(member, progress)),
+    achievements: CAT_ACHIEVEMENTS.filter((item) => item.test(member, progress)),
+  };
+}
+function selectedTitleFor(member, profile = catProfileFor(member)) {
+  const unlocked = unlockedFor(member).titles;
+  return unlocked.some((item) => item.label === profile.selectedTitle) ? profile.selectedTitle : "";
+}
 function recentDateOptions() {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
@@ -435,7 +591,7 @@ function header(title = "") {
   return `<section class="tool-links" aria-label="常用链接"><a class="tool-link listen-link" href="https://guhuding-lang.github.io/menu-slot/j/" target="_blank" rel="noopener noreferrer">${icon("headphones")}<span><strong>随听机</strong><small>不开玩笑随机听</small></span>${icon("arrow-up-right")}</a><a class="tool-link coffee-link" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" target="_blank" rel="noopener noreferrer">${icon("coffee")}<span><strong>咖啡打卡</strong><small>记录今天这一杯</small></span>${icon("arrow-up-right")}</a></section>`;
 }
 function nav() {
-  return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName], index) => index === 2
+  return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName]) => route === "checkin"
     ? `<button class="nav-primary" data-route="${route}" aria-label="${label}"><span class="primary-circle">${icon(iconName)}</span><span>${label}</span></button>`
     : `<button class="nav-item ${state.route === route ? "is-active" : ""}" data-route="${route}" ${state.route === route ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`
   ).join("")}</nav>`;
@@ -811,6 +967,52 @@ function rankingPage() {
   }).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
+function memberCatCard(member, compact = false) {
+  const profile = catProfileFor(member);
+  const status = memberTodayState(member);
+  return `<button class="${compact ? "member-list-row" : "gym-cat"}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="member-cat-copy"><strong>${escapeHTML(member.name)}</strong><small class="cat-status status-${status.kind}">${status.label}</small></span>${compact ? icon("caret-right") : ""}</button>`;
+}
+function memberDetailModal() {
+  const member = memberStats().find((item) => item.id === state.memberModal);
+  if (!member) return "";
+  const profile = catProfileFor(member);
+  const status = memberTodayState(member);
+  const title = selectedTitleFor(member, profile);
+  const metrics = [
+    member.weeklyCount > 0 ? `<div><span>本周训练</span><strong>${member.weeklyCount}<small>次</small></strong></div>` : "",
+    member.weeklyMinutes > 0 ? `<div><span>本周时长</span><strong>${formatReportHours(member.weeklyMinutes)}<small>小时</small></strong></div>` : "",
+    member.streak > 0 ? `<div><span>连续打卡</span><strong>${member.streak}<small>天</small></strong></div>` : "",
+  ].filter(Boolean).join("");
+  return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-detail-cat">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="cat-status status-${status.kind}">${status.label}</span></div><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}${metrics ? `<div class="member-detail-metrics">${metrics}</div>` : ""}<p class="member-detail-status">${escapeHTML(status.message)}</p></section></div>`;
+}
+function membersPage() {
+  const members = memberStats();
+  const todayCount = members.filter((member) => memberTodayState(member).rows.length > 0).length;
+  const newCount = members.filter(isNewMember).length;
+  const sceneMembers = members.slice(0, 24);
+  const hiddenCount = Math.max(0, members.length - sceneMembers.length);
+  return `<main class="page page-members"><header class="feature-heading"><span class="feature-kicker">群友</span><h1>47猫猫健身房</h1><p>看看今天谁已经出动了</p></header>${connectionNotice()}<section class="member-stats" aria-label="群友统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="gym-card"><div class="gym-heading"><div><small>GABA 47 GYM</small><h2>猫猫健身房</h2></div><span>${icon("users-three")} ${members.length} 只猫</span></div><div class="gym-zone-rail" aria-hidden="true"><span>${icon("person-simple-run")}跑步区</span><span>${icon("barbell")}力量区</span><span>${icon("person-simple-tai-chi")}拉伸区</span><span>${icon("drop")}补水区</span></div><div class="gym-floor ${sceneMembers.length > 12 ? "is-expanded" : ""}"><span class="gym-machine machine-run">${icon("person-simple-run")}</span><span class="gym-machine machine-barbell">${icon("barbell")}</span><span class="gym-machine machine-water">${icon("drop")}</span><div class="gym-cat-grid">${sceneMembers.map((member) => memberCatCard(member)).join("")}</div></div>${hiddenCount ? `<p class="gym-overflow-note">场内先展示 24 位，还有 ${hiddenCount} 位群友在休息区。</p>` : ""}<button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member, true)).join("")}</div></section>` : ""}</main>`;
+}
+
+function catOptionGroup(label, field, options, draft) {
+  return `<section class="cat-option-group"><h3>${label}</h3><div class="cat-option-grid">${options.map((item) => `<button class="cat-option ${draft[field] === item.value ? "is-selected" : ""}" data-cat-field="${field}" data-cat-value="${item.value}" aria-pressed="${draft[field] === item.value}"><span>${field === "furType" ? "●" : field === "headwear" ? "⌒" : field === "outfit" ? "47" : "＋"}</span><strong>${item.label}</strong></button>`).join("")}</div></section>`;
+}
+function catEditorPanel(member, profile) {
+  if (!state.catEditor.open) return "";
+  const draft = normalizeCatProfile(state.catEditor.draft || profile, state.user.id);
+  const unlocked = unlockedFor(member);
+  return `<section class="cat-editor"><div class="cat-editor-preview">${catCharacter(draft, { action: memberTodayState(member).action, label: "猫咪换装预览" })}<div><span>实时预览</span><strong>换一身再出动</strong></div></div>${catOptionGroup("毛色", "furType", CAT_FUR_OPTIONS, draft)}${catOptionGroup("头部", "headwear", CAT_HEADWEAR_OPTIONS, draft)}${catOptionGroup("上衣", "outfit", CAT_OUTFIT_OPTIONS, draft)}${catOptionGroup("手持", "accessory", CAT_ACCESSORY_OPTIONS, draft)}<section class="cat-option-group title-picker"><h3>展示称号</h3><div class="title-choice-grid"><button class="title-choice ${!draft.selectedTitle ? "is-selected" : ""}" data-cat-title="">不展示</button>${CAT_TITLES.map((item) => { const available = unlocked.titles.some((title) => title.id === item.id); return `<button class="title-choice ${draft.selectedTitle === item.label ? "is-selected" : ""}" data-cat-title="${escapeHTML(item.label)}" ${available ? "" : "disabled"}><strong>${item.label}</strong><small>${available ? "已解锁" : item.rule}</small></button>`; }).join("")}</div></section>${state.catEditor.status ? `<p class="cat-save-status">${escapeHTML(state.catEditor.status)}</p>` : ""}<div class="cat-editor-actions"><button class="secondary-button" data-action="close-cat-editor">取消</button><button class="primary-button" data-action="save-cat" ${state.catEditor.saving ? "disabled" : ""}>${state.catEditor.saving ? "正在保存…" : "保存猫咪"}</button></div></section>`;
+}
+function catDenPage() {
+  const members = memberStats();
+  const me = currentMember(members) || { id: state.user.id, name: state.user.name, profileIds: new Set([state.user.id]), monthlyCount: 0, totalMinutes: 0, streak: 0, totalCount: 0, createdAt: new Date().toISOString() };
+  const profile = catProfileFor(me);
+  const today = memberTodayState(me);
+  const unlocked = unlockedFor(me);
+  const title = selectedTitleFor(me, profile);
+  return `<main class="page page-catden"><header class="feature-heading"><span class="feature-kicker">猫窝</span><h1>我的猫窝</h1><p>今天你的猫是什么状态？</p></header>${connectionNotice()}<section class="catden-hero"><div class="catden-label"><span>${escapeHTML(state.user.name)}</span>${title ? `<strong>${icon("seal-check")} ${escapeHTML(title)}</strong>` : ""}</div><div class="catden-character">${catCharacter(profile, { action: today.action, label: `${state.user.name}的猫咪` })}</div><p>${escapeHTML(today.message)}</p><div class="catden-metrics"><div><span>本月</span><strong>${me.monthlyCount}<small>次</small></strong></div><div><span>累计</span><strong>${formatReportHours(me.totalMinutes)}<small>小时</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div></div><button class="cat-change-button" data-action="open-cat-editor">${icon("t-shirt")} 换装</button></section>${catEditorPanel(me, profile)}<section class="catden-section"><div class="section-heading"><h2>我的称号</h2><span>${unlocked.titles.length} / ${CAT_TITLES.length} 已解锁</span></div><div class="current-title-card"><span>${icon("seal-check")}</span><div><small>当前展示</small><strong>${escapeHTML(title || "还没有选择称号")}</strong></div><button data-action="open-cat-editor">选择</button></div></section><section class="catden-section"><div class="section-heading"><h2>猫猫成就</h2><span>${unlocked.achievements.length} / ${CAT_ACHIEVEMENTS.length}</span></div><div class="achievement-grid">${CAT_ACHIEVEMENTS.map((item) => { const earned = unlocked.achievements.some((achievement) => achievement.id === item.id); return `<button class="achievement-card ${earned ? "is-earned" : ""}" data-achievement-rule="${escapeHTML(item.rule)}"><span>${icon(item.icon)}</span><strong>${item.label}</strong><small>${earned ? "已获得" : "未获得"}</small></button>`; }).join("")}</div></section></main>`;
+}
+
 function toolsPage() {
   const result = state.tools.diceIndex === null ? "等你掷骰子" : diceExercises[state.tools.diceIndex];
   const cubeClass = state.tools.diceIndex === null ? "show-face-0" : `show-face-${state.tools.diceIndex}`;
@@ -857,10 +1059,10 @@ function render() {
   if (state.booting) { app.innerHTML = loadingPage(); return; }
   if (state.identityIssue) { app.innerHTML = identityIssuePage(); return; }
   if (!state.user) { app.innerHTML = joinPage(); return; }
-  const pages = { home: homePage, ranking: rankingPage, tools: toolsPage, profile: profilePage, checkin: checkinPage };
+  const pages = { home: homePage, ranking: rankingPage, members: membersPage, catden: catDenPage, tools: toolsPage, profile: profilePage, checkin: checkinPage };
   const page = (pages[state.route] || homePage)();
   const openReport = state.reportModal ? reportById(state.reportModal) : null;
-  app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${openReport ? reportModal(openReport) : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
+  app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${openReport ? reportModal(openReport) : ""}${state.memberModal ? memberDetailModal() : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
   requestAnimationFrame(paintReportCanvases);
 }
 function showToast(message) {
@@ -874,10 +1076,21 @@ async function loadData() {
   const data = await state.service.listData();
   state.checkins = data.checkins;
   state.profiles = data.profiles;
+  state.catProfiles = data.catProfiles || [];
   const me = data.profiles.find((profile) => profile.id === state.service.userId);
   if (me && state.user) {
     state.user = { id: me.id, name: me.display_name, avatarPath: me.avatar_url || null, avatarUrl: me.avatar_url_signed || null };
     writeJSON(USER_KEY, state.user);
+  }
+  if (state.user) {
+    const cloudProfile = state.catProfiles.find((profile) => profile.userId === state.user.id);
+    const localProfile = normalizeCatProfile(readJSON(CAT_LOCAL_KEY) || {}, state.user.id);
+    if (cloudProfile) writeJSON(CAT_LOCAL_KEY, cloudProfile);
+    else if (readJSON(CAT_LOCAL_KEY)?.userId === state.user.id) replaceCatProfile(localProfile);
+    else {
+      const created = replaceCatProfile(defaultCatProfile(state.user.id));
+      writeJSON(CAT_LOCAL_KEY, created);
+    }
   }
 }
 async function connect() {
@@ -939,11 +1152,28 @@ app.addEventListener("click", async (event) => {
   if (routeButton) {
     if (routeButton.dataset.route === "checkin") state.checkinForm = emptyCheckinForm();
     state.reportModal = null;
+    state.memberModal = null;
+    state.showAllMembers = false;
+    if (routeButton.dataset.route !== "catden") state.catEditor = { open: false, draft: null, saving: false, status: "" };
     state.route = routeButton.dataset.route;
     window.scrollTo({ top: 0, behavior: "smooth" });
     render();
     return;
   }
+  const memberButton = event.target.closest("[data-member-id]");
+  if (memberButton) { state.memberModal = memberButton.dataset.memberId; render(); return; }
+  const catOptionButton = event.target.closest("[data-cat-field]");
+  if (catOptionButton && state.catEditor.open) {
+    state.catEditor.draft = { ...state.catEditor.draft, [catOptionButton.dataset.catField]: catOptionButton.dataset.catValue };
+    render(); return;
+  }
+  const catTitleButton = event.target.closest("[data-cat-title]");
+  if (catTitleButton && state.catEditor.open && !catTitleButton.disabled) {
+    state.catEditor.draft = { ...state.catEditor.draft, selectedTitle: catTitleButton.dataset.catTitle };
+    render(); return;
+  }
+  const achievementButton = event.target.closest("[data-achievement-rule]");
+  if (achievementButton) { showToast(`解锁条件：${achievementButton.dataset.achievementRule}`); return; }
   const editButton = event.target.closest("[data-edit-checkin]");
   if (editButton) { openEditCheckin(editButton.dataset.editCheckin); return; }
   const dateButton = event.target.closest("[data-date]");
@@ -977,6 +1207,39 @@ app.addEventListener("click", async (event) => {
   const actionButton = event.target.closest("[data-action]");
   if (!actionButton) return;
   const action = actionButton.dataset.action;
+  if (action === "close-member") { state.memberModal = null; render(); return; }
+  if (action === "toggle-member-list") { state.showAllMembers = !state.showAllMembers; render(); return; }
+  if (action === "open-cat-editor") {
+    const me = currentMember(memberStats());
+    state.catEditor = { open: true, draft: { ...catProfileFor(me || state.user.id) }, saving: false, status: "" };
+    render(); return;
+  }
+  if (action === "close-cat-editor") { state.catEditor = { open: false, draft: null, saving: false, status: "" }; render(); return; }
+  if (action === "save-cat" && state.catEditor.open && !state.catEditor.saving) {
+    const me = currentMember(memberStats());
+    const unlocked = me ? unlockedFor(me) : { achievements: [] };
+    const profile = normalizeCatProfile({
+      ...state.catEditor.draft,
+      userId: state.user.id,
+      unlockedAchievements: unlocked.achievements.map((item) => item.id),
+      updatedAt: new Date().toISOString(),
+    }, state.user.id);
+    state.catEditor.saving = true;
+    state.catEditor.status = "";
+    replaceCatProfile(profile);
+    writeJSON(CAT_LOCAL_KEY, profile);
+    render();
+    try {
+      const result = await state.service?.saveCatProfile(profile);
+      state.catEditor = { open: false, draft: null, saving: false, status: "" };
+      showToast(result?.synced === false ? "猫咪已保存在本机；运行猫咪数据库升级后可同步给群友" : "猫咪已保存，群友页同步更新");
+    } catch (error) {
+      console.error("猫咪云端保存失败", error);
+      state.catEditor = { ...state.catEditor, saving: false, status: "云端同步失败，本机形象已保留" };
+      render();
+    }
+    return;
+  }
   if (action === "open-report") {
     const report = reportById(actionButton.dataset.reportId);
     if (!report) { showToast("这期报表暂时不可用"); return; }
@@ -1138,6 +1401,7 @@ app.addEventListener("input", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && state.reportModal) { state.reportModal = null; render(); }
+  else if (event.key === "Escape" && state.memberModal) { state.memberModal = null; render(); }
 });
 
 if (PREVIEW_MODE) { previewData(); render(); }
