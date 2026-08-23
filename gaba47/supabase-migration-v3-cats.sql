@@ -4,10 +4,10 @@
 
 create table if not exists public.cat_profiles (
   user_id uuid primary key references public.profiles(id) on delete cascade,
-  fur_type text not null default 'orange' check (fur_type in ('orange', 'cow', 'black', 'white', 'tabby')),
-  headwear text not null default 'none' check (headwear in ('none', 'green-headband', 'black-cap', 'headphones', 'hairband')),
-  outfit text not null default 'black-vest' check (outfit in ('black-vest', 'green-vest', 'sport-tee', 'hoodie')),
-  accessory text not null default 'none' check (accessory in ('none', 'dumbbell', 'cup', 'shaker', 'phone')),
+  fur_type text not null default 'aries' check (fur_type in ('aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces')),
+  headwear text not null default 'none' check (headwear = 'none'),
+  outfit text not null default 'zodiac' check (outfit = 'zodiac'),
+  accessory text not null default 'none' check (accessory = 'none'),
   selected_title text not null default '' check (char_length(selected_title) <= 30),
   unlocked_items text[] not null default '{}',
   unlocked_achievements text[] not null default '{}',

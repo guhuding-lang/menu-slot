@@ -1,12 +1,10 @@
 import {
-  CAT_ACCESSORY_OPTIONS,
   CAT_FUR_OPTIONS,
-  CAT_HEADWEAR_OPTIONS,
-  CAT_OUTFIT_OPTIONS,
   catCharacter,
+  catProfileDescriptor,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./cat-ui.js?v=2";
+} from "./cat-zodiac-ui.js?v=1";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -27,9 +25,8 @@ const trainingOptions = [
 ];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
-  ["home", "动态", "activity"], ["ranking", "排行", "trophy"], ["members", "群友", "users-three"],
-  ["checkin", "去打卡", "lightning"], ["catden", "猫窝", "paw-print"],
-  ["tools", "工具", "toolbox"], ["profile", "我的", "user"],
+  ["home", "动态", "activity"], ["ranking", "排行榜", "trophy"],
+  ["checkin", "去打卡", "lightning"], ["plaza", "广场", "sparkle"], ["profile", "我的", "user"],
 ];
 
 const emptyCheckinForm = () => ({
@@ -49,7 +46,7 @@ const state = {
   showAllMembers: false,
   catEditor: { open: false, draft: null, saving: false, status: "" },
   rankingPeriod: "week",
-  tools: { diceIndex: null, diceRolling: false },
+  tools: { diceIndex: null, diceRolling: false, focus: null },
 };
 
 function readJSON(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
@@ -106,8 +103,8 @@ function relativeTime(value) {
 }
 function avatarMarkup(entity, className = "avatar") {
   const name = entity?.display_name || entity?.name || "47";
-  const url = entity?.avatarUrl || entity?.avatar_url_signed;
-  return url ? `<span class="${className} has-image"><img src="${escapeHTML(url)}" alt="${escapeHTML(name)}的头像" /></span>` : `<span class="${className}" aria-label="${escapeHTML(name)}的头像">${escapeHTML(initials(name))}</span>`;
+  const id = entity?.userId || entity?.user_id || entity?.id || entity;
+  return `<span class="${className} cat-avatar">${catCharacter(catProfileFor(id), { label: `${name}的星座猫头像` })}</span>`;
 }
 
 async function parseResponse(response) {
@@ -418,9 +415,9 @@ function previewData() {
     { id: "p10", userId: "preview", name: "阿飞不累", createdAt: previousMonth(5), type: "力量", details: "肩 + 核心 · 58分钟", parts: ["肩", "核心"], duration: 58, note: "", likes: 4, liked: true, photo: null, photoPath: null },
   ];
   state.catProfiles = [
-    { ...defaultCatProfile("preview"), furType: "orange", headwear: "green-headband", outfit: "black-vest", accessory: "dumbbell" },
-    { ...defaultCatProfile("friend-3"), furType: "cow", outfit: "green-vest", selectedTitle: "还活着" },
-    { ...defaultCatProfile("friend-12"), furType: "black", headwear: "black-cap", accessory: "shaker" },
+    { ...defaultCatProfile("preview"), furType: "leo" },
+    { ...defaultCatProfile("friend-3"), furType: "libra", selectedTitle: "还活着" },
+    { ...defaultCatProfile("friend-12"), furType: "scorpio" },
   ];
   state.service = {
     userId: "preview", toggleLike: async () => {}, supportsCats: true,
@@ -587,14 +584,15 @@ function recentDateOptions() {
 }
 
 function header(title = "") {
-  if (title !== "工具") return "";
-  return `<section class="tool-links" aria-label="常用链接"><a class="tool-link listen-link" href="https://guhuding-lang.github.io/menu-slot/j/" target="_blank" rel="noopener noreferrer">${icon("headphones")}<span><strong>随听机</strong><small>不开玩笑随机听</small></span>${icon("arrow-up-right")}</a><a class="tool-link coffee-link" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" target="_blank" rel="noopener noreferrer">${icon("coffee")}<span><strong>咖啡打卡</strong><small>记录今天这一杯</small></span>${icon("arrow-up-right")}</a></section>`;
+  return "";
 }
 function nav() {
-  return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName]) => route === "checkin"
-    ? `<button class="nav-primary" data-route="${route}" aria-label="${label}"><span class="primary-circle">${icon(iconName)}</span><span>${label}</span></button>`
-    : `<button class="nav-item ${state.route === route ? "is-active" : ""}" data-route="${route}" ${state.route === route ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`
-  ).join("")}</nav>`;
+  return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName]) => {
+    const active = state.route === route || (state.route === "tools" && route === "profile");
+    return route === "checkin"
+      ? `<button class="nav-primary" data-route="${route}" aria-label="${label}"><span class="primary-circle">${icon(iconName)}</span><span>${label}</span></button>`
+      : `<button class="nav-item ${active ? "is-active" : ""}" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
+  }).join("")}</nav>`;
 }
 function connectionNotice() {
   if (state.connection !== "error") return "";
@@ -967,11 +965,39 @@ function rankingPage() {
   }).join("") : `<div class="empty-state">${icon("trophy")}<strong>${period.label}还没人上榜</strong><p>完成一次打卡就会出现在这里。</p></div>`}</section></main>`;
 }
 
-function memberCatCard(member, compact = false, slot = 0) {
+function memberCatCard(member) {
   const profile = catProfileFor(member);
   const status = memberTodayState(member);
-  const slotClass = compact ? "" : ` gym-slot-${slot}`;
-  return `<button class="${compact ? "member-list-row" : "gym-cat"}${slotClass}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="member-cat-copy"><strong>${escapeHTML(member.name)}</strong><small class="cat-status status-${status.kind}">${status.label}</small></span>${compact ? icon("caret-right") : ""}</button>`;
+  return `<button class="member-list-row" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息">${catCharacter(profile, { label: `${member.name}的星座猫` })}<span class="member-cat-copy"><strong>${escapeHTML(member.name)}</strong><small class="cat-status status-${status.kind}">${status.label}</small></span>${icon("caret-right")}</button>`;
+}
+
+const PLAZA_SPOTS = [
+  [18, 43], [43, 41], [71, 44], [29, 50], [58, 51], [78, 53],
+  [15, 59], [41, 58], [68, 61], [25, 67], [53, 68], [77, 67],
+  [16, 75], [39, 77], [67, 76], [27, 84], [54, 83], [77, 84],
+  [20, 88], [46, 87], [72, 88], [10, 66], [86, 70], [48, 47],
+];
+
+function plazaMotion(member, index, count) {
+  const [baseX, baseY] = PLAZA_SPOTS[index % PLAZA_SPOTS.length];
+  const hash = stableIndex(`${member.id}:${member.name}`, 100003);
+  const layer = Math.floor(index / PLAZA_SPOTS.length);
+  const x = Math.max(8, Math.min(88, baseX + ((hash % 7) - 3) + (layer % 2 ? 3 : -2)));
+  const y = Math.max(41, Math.min(89, baseY + ((Math.floor(hash / 7) % 7) - 3)));
+  const dx1 = (hash % 17) - 8;
+  const dy1 = (Math.floor(hash / 17) % 15) - 7;
+  const dx2 = (Math.floor(hash / 31) % 19) - 9;
+  const dy2 = (Math.floor(hash / 53) % 17) - 8;
+  const duration = 13 + (hash % 9);
+  const delay = -(hash % 12);
+  const size = count <= 12 ? 23 : count <= 18 ? 20 : count <= 24 ? 17 : 15;
+  return `--x:${x}%;--y:${y}%;--dx1:${dx1}px;--dy1:${dy1}px;--dx2:${dx2}px;--dy2:${dy2}px;--wander-duration:${duration}s;--wander-delay:${delay}s;--cat-size:${size}%;--depth:${100 + Math.round(y)}`;
+}
+
+function plazaCatCard(member, index, count) {
+  const profile = catProfileFor(member);
+  const weeklyCrown = member.weeklyCount > 0 ? `<span class="weekly-crown" aria-label="本周已打卡">${icon("crown")}</span>` : "";
+  return `<button class="plaza-cat" style="${plazaMotion(member, index, count)}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息${member.weeklyCount > 0 ? "，本周已打卡" : ""}"><span class="plaza-cat-motion">${weeklyCrown}<span class="plaza-cat-sprite">${catCharacter(profile, { label: `${member.name}的星座猫` })}</span><strong class="plaza-cat-name">${escapeHTML(member.name)}</strong></span></button>`;
 }
 function memberDetailModal() {
   const member = memberStats().find((item) => item.id === state.memberModal);
@@ -986,28 +1012,22 @@ function memberDetailModal() {
   ].filter(Boolean).join("");
   return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-detail-cat">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="cat-status status-${status.kind}">${status.label}</span></div><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}${metrics ? `<div class="member-detail-metrics">${metrics}</div>` : ""}<p class="member-detail-status">${escapeHTML(status.message)}</p></section></div>`;
 }
-function membersPage() {
+function plazaPage() {
   const members = memberStats();
   const todayCount = members.filter((member) => memberTodayState(member).rows.length > 0).length;
   const newCount = members.filter(isNewMember).length;
-  const sceneMembers = members.slice(0, 24);
-  const hiddenCount = Math.max(0, members.length - sceneMembers.length);
-  const floorGroups = sceneMembers.length > 12
-    ? [sceneMembers.slice(0, Math.ceil(sceneMembers.length / 2)), sceneMembers.slice(Math.ceil(sceneMembers.length / 2))]
-    : [sceneMembers];
-  const gymScenes = floorGroups.filter((group) => group.length).map((group, floorIndex) => `<div class="gym-scene" aria-label="${floorIndex ? "猫猫健身房休息区" : "猫猫健身房训练区"}"><span class="gym-floor-label">${floorIndex ? "休息区" : "训练区"}</span>${group.map((member, index) => { const slot = group.length === 1 ? 5 : Math.round(index * 11 / (group.length - 1)); return memberCatCard(member, false, slot); }).join("")}</div>`).join("");
-  return `<main class="page page-members"><header class="feature-heading"><span class="feature-kicker">群友</span><h1>47猫猫健身房</h1><p>看看今天谁已经出动了</p></header>${connectionNotice()}<section class="member-stats" aria-label="群友统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="gym-card"><div class="gym-heading"><div><small>GABA 47 GYM</small><h2>猫猫健身房</h2></div><span>${icon("users-three")} ${members.length} 只猫</span></div><div class="gym-zone-rail" aria-hidden="true"><span>${icon("person-simple-run")}跑步</span><span>${icon("barbell")}力量</span><span>${icon("person-simple-tai-chi")}拉伸</span><span>${icon("drop")}补水</span></div><div class="gym-scenes">${gymScenes || `<div class="gym-empty"><strong>健身房还空着</strong><span>第一只猫打卡后就会出现。</span></div>`}</div>${hiddenCount ? `<p class="gym-overflow-note">场内先展示 24 位，还有 ${hiddenCount} 位群友在休息区。</p>` : ""}<button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member, true)).join("")}</div></section>` : ""}</main>`;
+  const scene = members.length
+    ? members.map((member, index) => plazaCatCard(member, index, members.length)).join("")
+    : `<div class="plaza-empty"><strong>广场还空着</strong><span>第一只星座猫加入后就会出现。</span></div>`;
+  return `<main class="page page-plaza"><header class="feature-heading plaza-heading"><span class="feature-kicker">广场</span><h1>奇幻健身广场</h1><p>猫猫们正在这里自由活动</p></header>${connectionNotice()}<section class="member-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="fantasy-plaza-card"><div class="plaza-meta"><div><small>GABA 47</small><h2>星辉训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
 }
 
-function catOptionGroup(label, field, options, draft) {
-  const fieldIcon = { furType: "palette", headwear: "headphones", outfit: "t-shirt", accessory: "barbell" }[field] || "paw-print";
-  return `<section class="cat-option-group"><h3>${label}</h3><div class="cat-option-grid">${options.map((item) => `<button class="cat-option ${draft[field] === item.value ? "is-selected" : ""}" data-cat-field="${field}" data-cat-value="${item.value}" aria-pressed="${draft[field] === item.value}"><span>${icon(fieldIcon)}</span><strong>${item.label}</strong></button>`).join("")}</div></section>`;
-}
 function catEditorPanel(member, profile) {
   if (!state.catEditor.open) return "";
   const draft = normalizeCatProfile(state.catEditor.draft || profile, state.user.id);
-  const unlocked = unlockedFor(member);
-  return `<section class="cat-editor"><div class="cat-editor-preview">${catCharacter(draft, { action: memberTodayState(member).action, label: "猫咪换装预览" })}<div><span>实时预览</span><strong>换一身再出动</strong></div></div>${catOptionGroup("毛色", "furType", CAT_FUR_OPTIONS, draft)}${catOptionGroup("头部", "headwear", CAT_HEADWEAR_OPTIONS, draft)}${catOptionGroup("上衣", "outfit", CAT_OUTFIT_OPTIONS, draft)}${catOptionGroup("手持", "accessory", CAT_ACCESSORY_OPTIONS, draft)}<section class="cat-option-group title-picker"><h3>展示称号</h3><div class="title-choice-grid"><button class="title-choice ${!draft.selectedTitle ? "is-selected" : ""}" data-cat-title="">不展示</button>${CAT_TITLES.map((item) => { const available = unlocked.titles.some((title) => title.id === item.id); return `<button class="title-choice ${draft.selectedTitle === item.label ? "is-selected" : ""}" data-cat-title="${escapeHTML(item.label)}" ${available ? "" : "disabled"}><strong>${item.label}</strong><small>${available ? "已解锁" : item.rule}</small></button>`; }).join("")}</div></section>${state.catEditor.status ? `<p class="cat-save-status">${escapeHTML(state.catEditor.status)}</p>` : ""}<div class="cat-editor-actions"><button class="secondary-button" data-action="close-cat-editor">取消</button><button class="primary-button" data-action="save-cat" ${state.catEditor.saving ? "disabled" : ""}>${state.catEditor.saving ? "正在保存…" : "保存猫咪"}</button></div></section>`;
+  const selected = catProfileDescriptor(draft);
+  const options = CAT_FUR_OPTIONS.map((item) => `<button class="zodiac-choice ${draft.furType === item.value ? "is-selected" : ""}" data-cat-field="furType" data-cat-value="${item.value}" aria-pressed="${draft.furType === item.value}"><img src="${item.asset}" alt="" loading="lazy" decoding="async" /><span><strong>${item.label}</strong><small>${item.breed}</small></span></button>`).join("");
+  return `<section class="cat-editor"><div class="cat-editor-preview">${catCharacter(draft, { label: "星座猫形象预览" })}<div><span>当前选择</span><strong>${selected.label} · ${selected.breed}</strong><small>保存后会同步成为全站头像</small></div></div><section class="cat-option-group"><h3>选择你的星座猫</h3><div class="zodiac-choice-grid">${options}</div></section>${state.catEditor.status ? `<p class="cat-save-status">${escapeHTML(state.catEditor.status)}</p>` : ""}<div class="cat-editor-actions"><button class="secondary-button" data-action="close-cat-editor">取消</button><button class="primary-button" data-action="save-cat" ${state.catEditor.saving ? "disabled" : ""}>${state.catEditor.saving ? "正在保存…" : "保存形象"}</button></div></section>`;
 }
 function catDenPage() {
   const members = memberStats();
@@ -1025,6 +1045,14 @@ function toolsPage() {
   return `<main class="page page-tools">${header("工具")}<section class="tool-card dice-tool"><div class="tool-heading"><span class="tool-number">01</span><div><h2>掷骰子随机运动</h2><p>胸、背、臀腿、肩、手臂、核心，交给骰子。</p></div></div><div class="dice-layout"><div class="dice-stage" aria-hidden="true"><div class="exercise-dice ${cubeClass} ${state.tools.diceRolling ? "is-rolling" : ""}">${diceExercises.map((exercise, index) => `<span class="dice-face face-${index}">${exercise}</span>`).join("")}</div></div><div class="dice-result" aria-live="polite"><span>今天练</span><strong>${escapeHTML(result)}</strong></div></div><button class="tool-action" data-action="roll-dice" ${state.tools.diceRolling ? "disabled" : ""}>${icon("dice-six")}<span>${state.tools.diceRolling ? "正在掷…" : "掷一下"}</span>${icon("arrow-clockwise")}</button></section><section class="tool-card heart-tool"><div class="tool-heading"><span class="tool-number">02</span><div><h2>最佳燃脂心率</h2><p>按最大心率的 60%–70% 估算参考区间。</p></div></div><div class="tool-input-row"><label class="tool-field"><span>年龄</span><span class="input-with-unit"><input id="age-input" type="number" min="12" max="100" inputmode="numeric" placeholder="例如 30" /><em>岁</em></span></label><button class="calculate-button" data-action="calculate-heart">计算</button></div><div class="tool-output" id="heart-output" aria-live="polite"><span>参考燃脂心率</span><strong>—</strong><small>次 / 分钟</small></div><p class="tool-formula">公式：（220 − 年龄）× 60%～70%</p></section><section class="tool-card bmi-tool"><div class="tool-heading"><span class="tool-number">03</span><div><h2>BMI 计算</h2><p>输入身高和体重，看看现在处在哪个区间。</p></div></div><div class="bmi-fields"><label class="tool-field"><span>身高</span><span class="input-with-unit"><input id="height-input" type="number" min="100" max="230" inputmode="decimal" placeholder="例如 170" /><em>cm</em></span></label><label class="tool-field"><span>体重</span><span class="input-with-unit"><input id="weight-input" type="number" min="25" max="300" step="0.1" inputmode="decimal" placeholder="例如 65" /><em>kg</em></span></label></div><button class="calculate-button bmi-calculate" data-action="calculate-bmi">计算 BMI</button><div class="tool-output bmi-output" id="bmi-output" aria-live="polite"><span>你的 BMI</span><strong>—</strong><small>等待计算</small></div><p class="tool-formula">BMI ＝ 体重（kg）÷ 身高²（m²）</p></section><p class="tools-note">心率和 BMI 仅作日常运动参考；如有心脏疾病、正在服药或运动不适，请先咨询专业医生。</p></main>`;
 }
 
+function integratedToolsPage() {
+  return toolsPage()
+    .replace('<main class="page page-tools">', `<main class="page page-tools"><header class="edit-header tool-page-header"><button class="icon-button" data-route="profile" aria-label="返回我的">${icon("arrow-left")}</button><h1>运动工具</h1><span></span></header>`)
+    .replace('<section class="tool-card dice-tool">', `<section id="tool-dice" class="tool-card dice-tool ${state.tools.focus === "dice" ? "is-focused" : ""}">`)
+    .replace('<section class="tool-card heart-tool">', `<section id="tool-heart" class="tool-card heart-tool ${state.tools.focus === "heart" ? "is-focused" : ""}">`)
+    .replace('<section class="tool-card bmi-tool">', `<section id="tool-bmi" class="tool-card bmi-tool ${state.tools.focus === "bmi" ? "is-focused" : ""}">`);
+}
+
 function profileEditorModal() {
   const form = state.profileEditor;
   const preview = form.removeAvatar ? "" : (form.avatarUrl || state.user?.avatarUrl || "");
@@ -1039,6 +1067,29 @@ function profilePage() {
   const offset = (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7;
   const cells = Math.ceil((offset + days) / 7) * 7;
   return `<main class="page">${header("我的")}<section class="profile-card"><div class="profile-head">${avatarMarkup(state.user, "profile-avatar")}<div class="profile-copy"><h1>${escapeHTML(state.user?.name)}</h1><p>每一次坚持，都算你的。</p></div><button class="outline-button" data-action="open-profile-editor">编辑资料</button></div><div class="profile-metrics"><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月</span><strong>${me.monthlyCount}<small>次</small></strong></div><div><span>本月</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="calendar-panel"><div class="section-heading"><h2>${now.getMonth() + 1}月训练日历</h2><span>${me.monthlyCount} 次</span></div><div class="weekdays">${["一", "二", "三", "四", "五", "六", "日"].map((day) => `<span>${day}</span>`).join("")}</div><div class="training-calendar">${Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; const key = day > 0 && day <= days ? localDateKey(new Date(now.getFullYear(), now.getMonth(), day)) : ""; return `<span class="${key && me.dates?.has(key) ? "trained" : ""}">${day > 0 && day <= days ? day : ""}</span>`; }).join("")}</div></div></section>${connectionNotice()}<section class="settings-list"><button class="action-row" data-action="open-profile-editor">${icon("user-circle")}<span>修改昵称和头像</span>${icon("caret-right")}</button><button class="action-row" data-action="retry">${icon("cloud-check")}<span>数据连接</span><small>${state.connection === "ready" || state.connection === "preview" ? "云端正常" : "点击重试"}</small></button><button class="action-row" data-route="checkin">${icon("calendar-plus")}<span>补一条训练记录</span>${icon("caret-right")}</button></section></main>${state.profileEditor.open ? profileEditorModal() : ""}`;
+}
+
+function nicknameEditorModal() {
+  const form = state.profileEditor;
+  return `<div class="modal-backdrop" role="presentation"><section class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="profile-editor-title"><div class="modal-head"><h2 id="profile-editor-title">修改昵称</h2><button class="icon-button" data-action="close-profile-editor" aria-label="关闭">${icon("x")}</button></div><p class="nickname-editor-note">头像由你选择的星座猫自动生成。</p><label class="field-label"><span>昵称</span><input id="profile-name-input" maxlength="20" value="${escapeHTML(form.name)}" autocomplete="nickname" /></label>${form.status ? `<p class="form-status">${escapeHTML(form.status)}</p>` : ""}<button class="primary-button" data-action="save-profile" ${form.saving ? "disabled" : ""}>${form.saving ? "正在保存…" : "保存昵称"}</button></section></div>`;
+}
+
+function integratedProfilePage() {
+  const members = memberStats();
+  const me = currentMember(members) || { id: state.user.id, name: state.user.name, nameKey: displayNameKey(state.user.name), profileIds: new Set([state.user.id]), monthlyCount: 0, monthlyMinutes: 0, totalMinutes: 0, weeklyCount: 0, streak: 0, dates: new Set(), createdAt: new Date().toISOString() };
+  const profile = catProfileFor(me);
+  const descriptor = catProfileDescriptor(profile);
+  const now = new Date();
+  const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const offset = (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7;
+  const cells = Math.ceil((offset + days) / 7) * 7;
+  const calendar = Array.from({ length: cells }, (_, i) => {
+    const day = i - offset + 1;
+    const key = day > 0 && day <= days ? localDateKey(new Date(now.getFullYear(), now.getMonth(), day)) : "";
+    return `<span class="${key && me.dates?.has(key) ? "trained" : ""}">${day > 0 && day <= days ? day : ""}</span>`;
+  }).join("");
+  const tools = `<section class="profile-tools"><div class="section-heading"><h2>工具</h2><span>常用功能都在这里</span></div><div class="profile-tool-grid"><button class="profile-tool-button tool-dice-button" data-route="tools" data-tool-focus="dice">${icon("dice-six")}<span><strong>训练骰子</strong><small>随机决定练什么</small></span>${icon("caret-right")}</button><button class="profile-tool-button tool-heart-button" data-route="tools" data-tool-focus="heart">${icon("heartbeat")}<span><strong>燃脂心率</strong><small>估算运动区间</small></span>${icon("caret-right")}</button><button class="profile-tool-button tool-bmi-button" data-route="tools" data-tool-focus="bmi">${icon("calculator")}<span><strong>BMI 计算</strong><small>查看体重区间</small></span>${icon("caret-right")}</button><a class="profile-tool-button coffee-link" href="https://docs.qq.com/sheet/DZXZ6WXBZc0t0TnZt" target="_blank" rel="noopener noreferrer">${icon("coffee")}<span><strong>咖啡打卡</strong><small>记录今天这一杯</small></span>${icon("arrow-up-right")}</a><a class="profile-tool-button listen-link" href="https://guhuding-lang.github.io/menu-slot/j/" target="_blank" rel="noopener noreferrer">${icon("headphones")}<span><strong>随听机</strong><small>随机听点不一样的</small></span>${icon("arrow-up-right")}</a></div></section>`;
+  return `<main class="page page-profile"><section class="profile-zodiac-card"><div class="profile-zodiac-cat">${catCharacter(profile, { label: `${state.user.name}的${descriptor.label}猫` })}</div><div class="profile-zodiac-copy"><span class="profile-zodiac-chip">${descriptor.label} · ${descriptor.breed}</span><h1>${escapeHTML(state.user.name)}</h1><p>这只猫会成为你在嘎巴47里的统一头像。</p><div class="profile-zodiac-actions"><button data-action="open-cat-editor">${icon("sparkle")} 选择形象</button><button data-action="open-profile-editor">修改昵称</button></div></div></section>${catEditorPanel(me, profile)}<section class="profile-metrics"><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月</span><strong>${me.monthlyCount}<small>次</small></strong></div><div><span>本月</span><strong>${formatReportHours(me.monthlyMinutes)}<small>小时</small></strong></div></section><section class="calendar-panel"><div class="section-heading"><h2>${now.getMonth() + 1}月训练日历</h2><span>${me.monthlyCount} 次</span></div><div class="weekdays">${["一", "二", "三", "四", "五", "六", "日"].map((day) => `<span>${day}</span>`).join("")}</div><div class="training-calendar">${calendar}</div></section>${connectionNotice()}${tools}<section class="settings-list"><button class="action-row" data-action="retry">${icon("cloud-check")}<span>数据连接</span><small>${state.connection === "ready" || state.connection === "preview" ? "云端正常" : "点击重试"}</small></button><button class="action-row" data-route="checkin">${icon("calendar-plus")}<span>补一条训练记录</span>${icon("caret-right")}</button></section></main>${state.profileEditor.open ? nicknameEditorModal() : ""}`;
 }
 
 function deleteDialog() {
@@ -1065,7 +1116,7 @@ function render() {
   if (state.booting) { app.innerHTML = loadingPage(); return; }
   if (state.identityIssue) { app.innerHTML = identityIssuePage(); return; }
   if (!state.user) { app.innerHTML = joinPage(); return; }
-  const pages = { home: homePage, ranking: rankingPage, members: membersPage, catden: catDenPage, tools: toolsPage, profile: profilePage, checkin: checkinPage };
+  const pages = { home: homePage, ranking: rankingPage, plaza: plazaPage, tools: integratedToolsPage, profile: integratedProfilePage, checkin: checkinPage };
   const page = (pages[state.route] || homePage)();
   const openReport = state.reportModal ? reportById(state.reportModal) : null;
   app.innerHTML = `<div class="app-shell">${page}${state.route !== "checkin" ? nav() : ""}${openReport ? reportModal(openReport) : ""}${state.memberModal ? memberDetailModal() : ""}${state.toast ? `<div class="toast" role="status">${escapeHTML(state.toast)}</div>` : ""}</div>`;
@@ -1157,13 +1208,15 @@ app.addEventListener("click", async (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
     if (routeButton.dataset.route === "checkin") state.checkinForm = emptyCheckinForm();
+    if (routeButton.dataset.toolFocus) state.tools.focus = routeButton.dataset.toolFocus;
     state.reportModal = null;
     state.memberModal = null;
     state.showAllMembers = false;
-    if (routeButton.dataset.route !== "catden") state.catEditor = { open: false, draft: null, saving: false, status: "" };
+    if (routeButton.dataset.route !== "profile") state.catEditor = { open: false, draft: null, saving: false, status: "" };
     state.route = routeButton.dataset.route;
     window.scrollTo({ top: 0, behavior: "smooth" });
     render();
+    if (state.route === "tools" && state.tools.focus) requestAnimationFrame(() => document.querySelector(`#tool-${state.tools.focus}`)?.scrollIntoView({ block: "start", behavior: "smooth" }));
     return;
   }
   const memberButton = event.target.closest("[data-member-id]");
@@ -1238,7 +1291,7 @@ app.addEventListener("click", async (event) => {
     try {
       const result = await state.service?.saveCatProfile(profile);
       state.catEditor = { open: false, draft: null, saving: false, status: "" };
-      showToast(result?.synced === false ? "猫咪已保存在本机；运行猫咪数据库升级后可同步给群友" : "猫咪已保存，群友页同步更新");
+      showToast(result?.synced === false ? "形象已保存在本机；运行猫咪数据库升级后可同步" : "星座猫已保存，广场和头像同步更新");
     } catch (error) {
       console.error("猫咪云端保存失败", error);
       state.catEditor = { ...state.catEditor, saving: false, status: "云端同步失败，本机形象已保留" };
