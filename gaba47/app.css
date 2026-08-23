@@ -746,19 +746,30 @@ img { display: block; max-width: 100%; }
 .member-list-row .member-cat-copy { justify-items: start; }
 .member-list-row .member-cat-copy strong { font-size: 13px; }
 .member-list-row > i { justify-self: end; font-size: 18px; }
-.member-sheet { position: relative; text-align: center; }
+.member-backdrop.modal-backdrop { place-items: start center; padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
+.member-sheet { position: relative; max-height: calc(100dvh - max(34px, env(safe-area-inset-top))); overflow-y: auto; text-align: left; }
 .member-close { position: absolute; z-index: 2; top: 14px; right: 14px; display: grid; place-items: center; width: 36px; height: 36px; border: 1.5px solid var(--ink); border-radius: 50%; background: #fff; }
-.member-detail-cat { position: relative; width: 150px; margin: -8px auto 0; }
-.member-detail-cat .cat-status { position: absolute; right: -14px; bottom: 14px; }
-.member-sheet h2 { margin: 2px 0 8px; font-size: 27px; letter-spacing: -.05em; }
+.member-sheet-head { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 100px; padding-right: 38px; }
+.member-detail-cat { position: relative; width: 96px; margin: 0; }
+.member-detail-cat .cat-status { position: absolute; right: -5px; bottom: 5px; }
+.member-detail-copy { min-width: 0; }
+.member-detail-copy > small { display: block; margin-bottom: 3px; color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .12em; }
+.member-sheet h2 { margin: 0 0 7px; overflow-wrap: anywhere; font-size: 25px; line-height: 1.05; letter-spacing: -.05em; }
 .member-title-badge { display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 6px 10px; border: 1px solid var(--ink); border-radius: 999px; background: var(--lime); font-size: 10px; font-weight: 900; }
-.member-detail-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); margin-top: 18px; overflow: hidden; border: 1.5px solid var(--ink); border-radius: 17px; }
-.member-detail-metrics > div { padding: 13px 6px; border-left: 1px solid var(--line); }
-.member-detail-metrics > div:first-child { border-left: 0; }
-.member-detail-metrics span { display: block; color: var(--muted); font-size: 9px; }
-.member-detail-metrics strong { display: block; margin-top: 4px; font-size: 23px; }
-.member-detail-metrics small { margin-left: 3px; font-size: 8px; }
-.member-detail-status { margin: 16px 0 0; font-size: 12px; font-weight: 900; }
+.member-period-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.member-period-card { min-width: 0; padding: 11px 12px; border: 1.5px solid var(--ink); border-radius: 15px; background: #f5f5ef; box-shadow: 3px 3px 0 var(--ink); }
+.member-period-card span { display: block; color: var(--muted); font-size: 9px; font-weight: 800; }
+.member-period-card strong { display: block; margin-top: 4px; font-size: 23px; font-variant-numeric: tabular-nums; line-height: 1; }
+.member-period-card strong small { margin-left: 3px; font-size: 8px; }
+.member-period-card em { display: block; margin-top: 6px; color: #4f4f49; font-size: 9px; font-style: normal; font-weight: 800; }
+.member-insights { display: grid; gap: 7px; margin-top: 15px; }
+.member-insight { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 9px; min-height: 51px; padding: 7px 10px; border: 1px solid var(--ink); border-radius: 14px; }
+.member-insight > i { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--ink); border-radius: 10px; background: var(--lime); font-size: 17px; }
+.member-insight span { min-width: 0; }
+.member-insight small, .member-insight strong { display: block; }
+.member-insight small { color: var(--muted); font-size: 8px; }
+.member-insight strong { margin-top: 2px; overflow-wrap: anywhere; font-size: 11px; }
+.member-detail-status { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--ink); color: #fff; text-align: center; font-size: 11px; font-weight: 900; }
 
 .catden-hero { position: relative; padding: 16px 16px 18px; border: 2px solid var(--ink); border-radius: 28px; background: var(--lime); box-shadow: 7px 7px 0 var(--ink); }
 .catden-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

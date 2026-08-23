@@ -489,6 +489,27 @@ function memberRows(member) {
   if (!member) return [];
   return state.checkins.filter((item) => member.profileIds?.has(item.userId) || displayNameKey(item.name) === member.nameKey);
 }
+function memberFirstCheckin(rows = []) {
+  const first = rows
+    .map((item) => new Date(item.createdAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => a - b)[0];
+  if (!first) return "暂无打卡";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric", month: "numeric", day: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(first);
+}
+function memberFavoriteTraining(rows = []) {
+  const counts = new Map();
+  for (const row of rows) {
+    const parts = parseParts(row).filter(Boolean);
+    const selections = parts.length ? parts : [row.type].filter(Boolean);
+    for (const item of new Set(selections)) counts.set(item, (counts.get(item) || 0) + 1);
+  }
+  const favorite = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-CN"))[0];
+  return favorite ? `${favorite[0]} · ${favorite[1]}次` : "暂无记录";
+}
 function stableIndex(value, length) {
   let hash = 0;
   for (const character of String(value || "47")) hash = ((hash << 5) - hash + character.codePointAt(0)) | 0;
@@ -1005,12 +1026,14 @@ function memberDetailModal() {
   const profile = catProfileFor(member);
   const status = memberTodayState(member);
   const title = selectedTitleFor(member, profile);
-  const metrics = [
-    member.weeklyCount > 0 ? `<div><span>本周训练</span><strong>${member.weeklyCount}<small>次</small></strong></div>` : "",
-    member.weeklyMinutes > 0 ? `<div><span>本周时长</span><strong>${formatReportHours(member.weeklyMinutes)}<small>小时</small></strong></div>` : "",
-    member.streak > 0 ? `<div><span>连续打卡</span><strong>${member.streak}<small>天</small></strong></div>` : "",
-  ].filter(Boolean).join("");
-  return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-detail-cat">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="cat-status status-${status.kind}">${status.label}</span></div><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}${metrics ? `<div class="member-detail-metrics">${metrics}</div>` : ""}<p class="member-detail-status">${escapeHTML(status.message)}</p></section></div>`;
+  const rows = memberRows(member);
+  const periods = [
+    ["累计", member.totalMinutes, member.totalCount],
+    ["今年", member.yearlyMinutes, member.yearlyCount],
+    ["本月", member.monthlyMinutes, member.monthlyCount],
+    ["本周", member.weeklyMinutes, member.weeklyCount],
+  ].map(([label, minutes, count]) => `<article class="member-period-card"><span>${label}</span><strong>${formatReportHours(minutes)}<small>小时</small></strong><em>${count} 次训练</em></article>`).join("");
+  return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-sheet-head"><div class="member-detail-cat">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="cat-status status-${status.kind}">${status.label}</span></div><div class="member-detail-copy"><small>群友训练档案</small><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}</div></div><div class="member-period-grid" aria-label="训练时长与次数">${periods}</div><div class="member-insights"><div class="member-insight"><i>${icon("calendar-check")}</i><span><small>首次打卡时间</small><strong>${escapeHTML(memberFirstCheckin(rows))}</strong></span></div><div class="member-insight"><i>${icon("barbell")}</i><span><small>最喜欢训练</small><strong>${escapeHTML(memberFavoriteTraining(rows))}</strong></span></div><div class="member-insight"><i>${icon("fire")}</i><span><small>当前连续打卡</small><strong>${member.streak} 天</strong></span></div></div><p class="member-detail-status">${escapeHTML(status.message)}</p></section></div>`;
 }
 function plazaPage() {
   const members = memberStats();
@@ -1019,7 +1042,7 @@ function plazaPage() {
   const scene = members.length
     ? members.map((member, index) => plazaCatCard(member, index, members.length)).join("")
     : `<div class="plaza-empty"><strong>广场还空着</strong><span>第一只星座猫加入后就会出现。</span></div>`;
-  return `<main class="page page-plaza">${connectionNotice()}<section class="fantasy-plaza-card"><div class="plaza-card-head"><div class="plaza-meta"><div><small>GABA 47</small><h2>星辉训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="plaza-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></div></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
+  return `<main class="page page-plaza">${connectionNotice()}<section class="fantasy-plaza-card"><div class="plaza-card-head"><div class="plaza-meta"><div><small>GABA 47</small><h2>嘎巴训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="plaza-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></div></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
 }
 
 function catEditorPanel(member, profile) {
