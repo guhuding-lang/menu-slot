@@ -746,8 +746,8 @@ img { display: block; max-width: 100%; }
 .member-list-row .member-cat-copy { justify-items: start; }
 .member-list-row .member-cat-copy strong { font-size: 13px; }
 .member-list-row > i { justify-self: end; font-size: 18px; }
-.member-backdrop.modal-backdrop { place-items: start center; padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
-.member-sheet { position: relative; max-height: calc(100dvh - max(34px, env(safe-area-inset-top))); overflow-y: auto; text-align: left; }
+.member-backdrop.modal-backdrop { z-index: 1000; place-items: end center; padding-top: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
+.member-sheet { position: relative; z-index: 1; max-height: calc(100dvh - 32px); overflow-y: auto; text-align: left; }
 .member-close { position: absolute; z-index: 2; top: 14px; right: 14px; display: grid; place-items: center; width: 36px; height: 36px; border: 1.5px solid var(--ink); border-radius: 50%; background: #fff; }
 .member-sheet-head { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 100px; padding-right: 38px; }
 .member-detail-cat { position: relative; width: 96px; margin: 0; }
