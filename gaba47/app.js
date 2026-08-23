@@ -990,7 +990,7 @@ function plazaMotion(member, index, count) {
   const dy2 = (Math.floor(hash / 53) % 17) - 8;
   const duration = 13 + (hash % 9);
   const delay = -(hash % 12);
-  const size = count <= 12 ? 23 : count <= 18 ? 20 : count <= 24 ? 17 : 15;
+  const size = count <= 12 ? 11.5 : count <= 18 ? 10 : count <= 24 ? 8.5 : 7.5;
   return `--x:${x}%;--y:${y}%;--dx1:${dx1}px;--dy1:${dy1}px;--dx2:${dx2}px;--dy2:${dy2}px;--wander-duration:${duration}s;--wander-delay:${delay}s;--cat-size:${size}%;--depth:${100 + Math.round(y)}`;
 }
 
@@ -1019,7 +1019,7 @@ function plazaPage() {
   const scene = members.length
     ? members.map((member, index) => plazaCatCard(member, index, members.length)).join("")
     : `<div class="plaza-empty"><strong>广场还空着</strong><span>第一只星座猫加入后就会出现。</span></div>`;
-  return `<main class="page page-plaza"><header class="feature-heading plaza-heading"><span class="feature-kicker">广场</span><h1>奇幻健身广场</h1><p>猫猫们正在这里自由活动</p></header>${connectionNotice()}<section class="member-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></section><section class="fantasy-plaza-card"><div class="plaza-meta"><div><small>GABA 47</small><h2>星辉训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
+  return `<main class="page page-plaza">${connectionNotice()}<section class="fantasy-plaza-card"><div class="plaza-card-head"><div class="plaza-meta"><div><small>GABA 47</small><h2>星辉训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="plaza-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></div></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
 }
 
 function catEditorPanel(member, profile) {
