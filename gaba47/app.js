@@ -13,6 +13,7 @@ const USER_KEY = "gaba47-user-v2";
 const CAT_LOCAL_KEY = "gaba47-cat-profile-v1";
 const PREVIEW_MODE = new URLSearchParams(location.search).get("preview") === "1";
 const GROUP_CODE = "47GYM";
+const REPORT_PUBLISH_HOUR = 1;
 
 const app = document.querySelector("#app");
 const initialUser = PREVIEW_MODE ? { id: "preview", name: "阿飞不累", avatarPath: null, avatarUrl: null } : readJSON(USER_KEY);
@@ -693,7 +694,7 @@ function scheduledReports(now = new Date()) {
     const end = addDays(currentWeek, -7 * index);
     const start = addDays(end, -7);
     const publishedAt = new Date(end);
-    publishedAt.setHours(12, 0, 0, 0);
+    publishedAt.setHours(REPORT_PUBLISH_HOUR, 0, 0, 0);
     if (publishedAt <= now) reports.push(createReport("week", start, end, publishedAt));
   }
   const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -701,7 +702,7 @@ function scheduledReports(now = new Date()) {
     const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - index, 1);
     const start = new Date(end.getFullYear(), end.getMonth() - 1, 1);
     const publishedAt = new Date(end);
-    publishedAt.setHours(12, 0, 0, 0);
+    publishedAt.setHours(REPORT_PUBLISH_HOUR, 0, 0, 0);
     if (publishedAt <= now) reports.push(createReport("month", start, end, publishedAt));
   }
   return reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

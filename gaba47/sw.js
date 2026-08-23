@@ -1,10 +1,10 @@
-const CACHE = 'gaba47-v35'
+const CACHE = 'gaba47-v36'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
   './app.css?v=22',
   './photo-fix.js?v=1',
-  './app.js?v=28',
+  './app.js?v=29',
   './cat-zodiac-ui.js?v=1',
   './assets/zodiac-plaza/fantasy-plaza.webp',
   './assets/zodiac-plaza/aries.webp',
