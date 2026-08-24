@@ -951,7 +951,7 @@ button:focus-visible, label:focus-within { outline: 3px solid var(--lime); outli
 .plaza-stats > div:first-child { border-left: 0; }
 .plaza-stats span { display: block; color: #dce9ff; font-size: 8px; font-weight: 800; }
 .plaza-stats strong { display: block; margin-top: 2px; color: #fff; font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
-.fantasy-plaza { position: relative; width: 100%; aspect-ratio: 2 / 3; overflow: hidden; background: #7fc9fb url("./assets/zodiac-plaza/fantasy-plaza.webp") center / 100% 100% no-repeat; image-rendering: pixelated; }
+.fantasy-plaza { position: relative; isolation: isolate; width: 100%; aspect-ratio: 2 / 3; overflow: hidden; background: #7fc9fb url("./assets/zodiac-plaza/fantasy-plaza.webp") center / 100% 100% no-repeat; image-rendering: pixelated; }
 .plaza-cat { position: absolute; z-index: var(--depth); top: var(--y); left: var(--x); width: var(--cat-size); padding: 0; transform: translate(-50%, -50%); border: 0; background: transparent; text-align: center; }
 .plaza-cat-motion { position: relative; display: block; animation: plaza-wander var(--wander-duration) ease-in-out var(--wander-delay) infinite alternate; }
 .plaza-cat-sprite { display: block; animation: plaza-bob 1.7s ease-in-out infinite alternate; }
