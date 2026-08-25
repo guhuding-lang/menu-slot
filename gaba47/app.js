@@ -23,7 +23,8 @@ const trainingOptions = [
   ["核心", "person-simple-tai-chi"], ["跑步", "person-simple-run"], ["骑行", "bicycle"],
   ["游泳", "waves"], ["爬坡", "trend-up"], ["爬楼", "stairs"],
   ["椭圆机", "person-simple-run"], ["拉伸", "person-simple-tai-chi"], ["滑冰", "person-simple-ski"],
-  ["篮球", "basketball"], ["跳操", "person-arms-spread"], ["其他", "dots-three"],
+  ["篮球", "basketball"], ["跳操", "person-arms-spread"], ["攀岩", "person-simple-hike"],
+  ["其他", "dots-three"],
 ];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
