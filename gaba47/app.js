@@ -22,7 +22,8 @@ const trainingOptions = [
   ["腿", "barbell"], ["二头", "barbell"], ["三头", "barbell"],
   ["核心", "person-simple-tai-chi"], ["跑步", "person-simple-run"], ["骑行", "bicycle"],
   ["游泳", "waves"], ["爬坡", "trend-up"], ["爬楼", "stairs"],
-  ["椭圆机", "person-simple-run"], ["拉伸", "person-simple-tai-chi"], ["其他", "dots-three"],
+  ["椭圆机", "person-simple-run"], ["拉伸", "person-simple-tai-chi"], ["滑冰", "person-simple-ski"],
+  ["篮球", "basketball"], ["跳操", "person-arms-spread"], ["其他", "dots-three"],
 ];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
@@ -538,7 +539,7 @@ function memberTodayState(member) {
   const text = `${parts.join(" ")} ${rows.map((item) => item.type).join(" ")}`;
   const trained = rows.length > 0;
   let action = trained
-    ? (/跑步|爬坡|爬楼|椭圆机|骑行/.test(text) ? "run" : /拉伸|瑜伽/.test(text) ? "stretch" : /游泳/.test(text) ? "water" : "strength")
+    ? (/跑步|爬坡|爬楼|椭圆机|骑行|滑冰|篮球|跳操/.test(text) ? "run" : /拉伸|瑜伽/.test(text) ? "stretch" : /游泳/.test(text) ? "water" : "strength")
     : ["sit", "phone", "water"][stableIndex(member?.id, 3)];
   if (minutes >= 90) action = "rest";
   const kind = isNewMember(member) ? "new" : trained ? "trained" : "watching";
