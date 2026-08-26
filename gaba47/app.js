@@ -380,6 +380,9 @@ async function compressImage(file, maxBytes = 500 * 1024) {
 function previewData() {
   const now = new Date();
   const ago = (hours) => new Date(now.getTime() - hours * 3600000).toISOString();
+  const [plazaYear, plazaMonth, plazaDay] = plazaDayKey(now).split("-").map(Number);
+  const plazaTodayAt = (hour, minute = 0) => new Date(plazaYear, plazaMonth - 1, plazaDay, hour, minute).toISOString();
+  const dayAgo = (days, hour = 18) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - days, hour).toISOString();
   const weekStart = new Date(now);
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
@@ -399,21 +402,30 @@ function previewData() {
     { id: "friend-10", display_name: "柚子", avatar_url_signed: null, created_at: ago(20) },
     { id: "friend-11", display_name: "Luna", avatar_url_signed: null, created_at: ago(4600) },
     { id: "friend-12", display_name: "阿豪", avatar_url_signed: null, created_at: ago(5600) },
+    { id: "friend-15", display_name: "白日梦", avatar_url_signed: null, created_at: ago(2600) },
   ];
   state.checkins = [
-    { id: "p1", userId: "friend-1", name: "朱紫瑶（见过张杰版）", createdAt: ago(1), type: "力量", details: "背 + 二头 · 48分钟", parts: ["背", "二头"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
-    { id: "p11", userId: "preview", name: "阿飞不累", createdAt: ago(4), type: "其他", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
-    { id: "p12", userId: "friend-2", name: "老周", createdAt: ago(7), type: "爬楼", details: "爬楼 · 85分钟", parts: ["爬楼"], duration: 85, note: "一步一步往上。", likes: 6, liked: false, photo: null, photoPath: null },
-    { id: "p13", userId: "friend-3", name: "青鱼", createdAt: ago(2), type: "跑步", details: "跑步 · 95分钟", parts: ["跑步"], duration: 95, note: "", likes: 2, liked: false, photo: null, photoPath: null },
-    { id: "p14", userId: "friend-8", name: "源氏的小钢刀", createdAt: ago(3), type: "力量", details: "腿 · 70分钟", parts: ["腿"], duration: 70, note: "", likes: 2, liked: false, photo: null, photoPath: null },
-    { id: "p15", userId: "friend-12", name: "阿豪", createdAt: ago(5), type: "力量", details: "胸 · 45分钟", parts: ["胸"], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p16", userId: "friend-11", name: "Luna", createdAt: plazaTodayAt(14, 40), type: "游泳", details: "游泳 · 40分钟", parts: ["游泳"], duration: 40, note: "泳池打卡。", likes: 3, liked: false, photo: null, photoPath: null },
+    { id: "p17", userId: "friend-6", name: "天蝎-1", createdAt: plazaTodayAt(15, 5), type: "力量", details: "核心 · 35分钟", parts: ["核心"], duration: 35, note: "消失一阵，重新开机。", likes: 7, liked: false, photo: null, photoPath: null },
+    { id: "p18", userId: "friend-6", name: "天蝎-1", createdAt: ago(24 * 20 + 2), type: "跑步", details: "跑步 · 30分钟", parts: ["跑步"], duration: 30, note: "", likes: 1, liked: false, photo: null, photoPath: null },
+    { id: "p1", userId: "friend-1", name: "朱紫瑶（见过张杰版）", createdAt: plazaTodayAt(14, 5), type: "其他", details: "背 + 二头 + 核心 · 48分钟", parts: ["背", "二头", "核心"], duration: 48, note: "今天状态不错。", likes: 3, liked: false, photo: null, photoPath: null },
+    { id: "p11", userId: "preview", name: "阿飞不累", createdAt: plazaTodayAt(23, 18), type: "其他", details: "胸 + 跑步 · 62分钟", parts: ["胸", "跑步"], duration: 62, note: "力量和有氧都完成了。", likes: 4, liked: true, photo: null, photoPath: null },
+    { id: "p12", userId: "friend-2", name: "老周", createdAt: plazaTodayAt(12, 5), type: "爬楼", details: "爬楼 · 85分钟", parts: ["爬楼"], duration: 85, note: "一步一步往上。", likes: 6, liked: false, photo: null, photoPath: null },
+    { id: "p13", userId: "friend-3", name: "青鱼", createdAt: plazaTodayAt(13, 10), type: "跑步", details: "跑步 · 95分钟", parts: ["跑步"], duration: 95, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p14", userId: "friend-8", name: "源氏的小钢刀", createdAt: plazaTodayAt(14, 15), type: "力量", details: "腿 · 70分钟", parts: ["腿"], duration: 70, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p15", userId: "friend-12", name: "阿豪", createdAt: plazaTodayAt(15, 20), type: "滑冰", details: "滑冰 · 45分钟", parts: ["滑冰"], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p19", userId: "friend-7", name: "小鹿同学", createdAt: plazaTodayAt(6, 20), type: "力量", details: "肩 · 42分钟", parts: ["肩"], duration: 42, note: "太阳还没站岗，我先练完。", likes: 3, liked: false, photo: null, photoPath: null },
+    { id: "p20", userId: "friend-4", name: "蛙蛙", createdAt: plazaTodayAt(10, 10), type: "力量", details: "胸 · 50分钟", parts: ["胸"], duration: 50, note: "第三天，继续烧。", likes: 5, liked: false, photo: null, photoPath: null },
+    { id: "p21", userId: "friend-4", name: "蛙蛙", createdAt: dayAgo(1), type: "力量", details: "背 · 45分钟", parts: ["背"], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
+    { id: "p22", userId: "friend-4", name: "蛙蛙", createdAt: dayAgo(2), type: "力量", details: "肩 · 38分钟", parts: ["肩"], duration: 38, note: "", likes: 1, liked: false, photo: null, photoPath: null },
+    { id: "p23", userId: "friend-5", name: "故梦", createdAt: plazaTodayAt(9, 35), type: "力量", details: "胸 · 35分钟", parts: ["胸"], duration: 35, note: "还能再来一组。", likes: 2, liked: false, photo: null, photoPath: null },
     { id: "p2", userId: "preview", name: "阿飞不累", createdAt: previousWeek(6, 20), type: "跑步", details: "跑步 · 36分钟", parts: [], duration: 36, note: "慢慢跑，也算到场。", likes: 5, liked: true, photo: null, photoPath: null },
     { id: "p3", userId: "preview", name: "阿飞不累", createdAt: previousWeek(4), type: "力量", details: "胸 + 三头 · 60分钟", parts: ["胸", "三头"], duration: 60, note: "", likes: 2, liked: false, photo: null, photoPath: null },
-    { id: "p4", userId: "friend-1", name: "小鹿同学", createdAt: previousWeek(3), type: "力量", details: "臀腿 · 55分钟", parts: ["腿"], duration: 55, note: "", likes: 4, liked: false, photo: null, photoPath: null },
+    { id: "p4", userId: "friend-7", name: "小鹿同学", createdAt: previousWeek(3), type: "力量", details: "臀腿 · 55分钟", parts: ["腿"], duration: 55, note: "", likes: 4, liked: false, photo: null, photoPath: null },
     { id: "p5", userId: "friend-2", name: "老周", createdAt: previousWeek(2), type: "骑行", details: "骑行 · 72分钟", parts: [], duration: 72, note: "风有点大，还是骑完了。", likes: 6, liked: false, photo: null, photoPath: null },
     { id: "p6", userId: "preview", name: "阿飞不累", createdAt: previousWeek(1), type: "力量", details: "背 + 二头 · 50分钟", parts: ["背", "二头"], duration: 50, note: "", likes: 3, liked: true, photo: null, photoPath: null },
     { id: "p7", userId: "preview", name: "阿飞不累", createdAt: previousMonth(23), type: "跑步", details: "跑步 · 45分钟", parts: [], duration: 45, note: "", likes: 2, liked: false, photo: null, photoPath: null },
-    { id: "p8", userId: "friend-1", name: "小鹿同学", createdAt: previousMonth(18), type: "力量", details: "核心 · 40分钟", parts: ["核心"], duration: 40, note: "", likes: 1, liked: false, photo: null, photoPath: null },
+    { id: "p8", userId: "friend-7", name: "小鹿同学", createdAt: previousMonth(18), type: "力量", details: "核心 · 40分钟", parts: ["核心"], duration: 40, note: "", likes: 1, liked: false, photo: null, photoPath: null },
     { id: "p9", userId: "friend-2", name: "老周", createdAt: previousMonth(12), type: "游泳", details: "游泳 · 65分钟", parts: [], duration: 65, note: "", likes: 5, liked: false, photo: null, photoPath: null },
     { id: "p10", userId: "preview", name: "阿飞不累", createdAt: previousMonth(5), type: "力量", details: "肩 + 核心 · 58分钟", parts: ["肩", "核心"], duration: 58, note: "", likes: 4, liked: true, photo: null, photoPath: null },
   ];
@@ -518,66 +530,49 @@ function stableIndex(value, length) {
   for (const character of String(value || "47")) hash = ((hash << 5) - hash + character.codePointAt(0)) | 0;
   return Math.abs(hash) % Math.max(1, length);
 }
-const PLAZA_BOSSES = [
-  { name: "周一困兽", icon: "bed", taunt: "专门吞掉那些还没开始的计划" },
-  { name: "脂肪魔王", icon: "hamburger", taunt: "每一分钟训练都会让它掉血" },
-  { name: "摸鱼幽灵", icon: "ghost", taunt: "最擅长把今晚训练拖到明天" },
-  { name: "惰性史莱姆", icon: "drop", taunt: "看起来软乎乎，实际非常耐打" },
-  { name: "深夜零食怪", icon: "cookie", taunt: "每天夜里都在广场外面徘徊" },
-  { name: "电量吞噬者", icon: "battery-empty", taunt: "只有全群出动才能让大厅亮起来" },
-];
-const DAILY_PLAZA_RULES = [
-  { icon: "clock", text: "今天第一位打卡的人负责开门" },
-  { icon: "fire", text: "训练满60分钟，猫咪会开始冒烟" },
-  { icon: "crown", text: "今天练腿的猫拥有临时王位" },
-  { icon: "person-simple-run", text: "今天所有猫禁止直线行走" },
-  { icon: "moon-stars", text: "今天最后打卡的人负责关灯" },
-  { icon: "lightning", text: "今天有氧猫获得风之祝福" },
-  { icon: "barbell", text: "今天多练一项，系统就多震一下" },
-];
-function groupEntertainmentState(members = memberStats(), now = new Date()) {
-  const weekStart = startOfWeek(now);
-  const weekEnd = addDays(weekStart, 7);
-  const rows = state.checkins.filter((item) => {
-    const date = new Date(item.createdAt);
-    return !Number.isNaN(date.getTime()) && date >= weekStart && date < weekEnd;
-  });
-  const totalMinutes = rows.reduce((sum, item) => sum + parseMinutes(item), 0);
-  const targetMinutes = Math.max(300, Math.ceil((Math.max(1, members.length) * 45) / 60) * 60);
-  const percent = Math.min(100, Math.round((totalMinutes / targetMinutes) * 100));
-  const level = percent === 0 ? "off" : percent < 25 ? "low" : percent < 60 ? "charging" : percent < 100 ? "bright" : "overdrive";
-  const levelLabel = { off: "全馆停电", low: "勉强通电", charging: "正在充能", bright: "稳定运转", overdrive: "魔力过载" }[level];
-  const boss = PLAZA_BOSSES[stableIndex(localDateKey(weekStart), PLAZA_BOSSES.length)];
-  const remainingMinutes = Math.max(0, targetMinutes - totalMinutes);
-  const dailyRule = DAILY_PLAZA_RULES[stableIndex(localDateKey(now), DAILY_PLAZA_RULES.length)];
-  return {
-    weekStart,
-    rows,
-    totalMinutes,
-    targetMinutes,
-    percent,
-    level,
-    levelLabel,
-    boss,
-    remainingMinutes,
-    defeated: remainingMinutes === 0,
-    dailyRule,
-  };
+function plazaDayKey(value = new Date()) {
+  const date = value instanceof Date ? new Date(value) : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  date.setHours(date.getHours() - 1);
+  return localDateKey(date);
 }
-function trainingAftereffect(rows = [], minutes = 0, text = "") {
+function currentResurrection(allRows = [], todayRows = []) {
+  if (!todayRows.length) return false;
+  const currentKey = plazaDayKey();
+  const previousKeys = [...new Set(allRows
+    .map((item) => plazaDayKey(item.createdAt))
+    .filter((key) => key && key < currentKey))]
+    .sort();
+  const previousKey = previousKeys[previousKeys.length - 1];
+  if (!previousKey) return false;
+  const currentDate = new Date(`${currentKey}T12:00:00`);
+  const previousDate = new Date(`${previousKey}T12:00:00`);
+  return (currentDate - previousDate) / 86400000 >= 14;
+}
+function trainingAftereffect(rows = [], minutes = 0, text = "", { resurrected = false, streak = 0 } = {}) {
   if (!rows.length) return null;
-  const latestHour = rows.reduce((latest, item) => {
-    const date = new Date(item.createdAt);
-    return Number.isNaN(date.getTime()) ? latest : Math.max(latest, date.getHours());
-  }, -1);
-  const selections = [...new Set(rows.flatMap(parseParts).filter(Boolean))];
-  if (minutes >= 90) return { key: "shutdown", icon: "battery-empty", label: "练到关机，灵魂正在追赶身体" };
-  if (/攀岩/.test(text)) return { key: "climbing", icon: "person-simple-hike", label: "挂墙待援，暂时拒绝落地" };
-  if (/腿|臀|爬楼|爬坡/.test(text)) return { key: "soft-legs", icon: "person-simple-walk", label: "腿部离线，只能扶墙移动" };
-  if (/游泳/.test(text)) return { key: "soaked", icon: "waves", label: "全身湿漉漉，正在甩水" };
-  if (latestHour >= 23) return { key: "night", icon: "moon-stars", label: "深夜出动，黑眼圈获得强化" };
-  if (selections.length >= 3) return { key: "overload", icon: "warning-circle", label: "项目太多，系统已经过载" };
-  return { key: "charged", icon: "lightning", label: "能量上头，还想再来一组" };
+  if (resurrected) return { key: "resurrection", icon: "sparkle", label: "诈尸成功：休眠14天后突然从土里打卡" };
+  if (minutes >= 90) return { key: "shutdown", icon: "ghost", label: "练到关机：身体已躺平，灵魂还在赶路" };
+  if (/腿|臀|爬楼|爬坡/.test(text)) return { key: "wheelchair", icon: "wheelchair", label: "腿部离线：今日移动工具临时切换为轮椅" };
+  if (/游泳/.test(text)) return { key: "wet", icon: "waves", label: "落汤猫：泳池已签收，正在广场滴水" };
+  const overloaded = rows.some((row) => {
+    const selections = parseParts(row);
+    return new Set(selections.length ? selections : [row.type].filter(Boolean)).size >= 3;
+  });
+  if (overloaded) return { key: "overload", icon: "warning", label: "系统过载：一次练太多，脑内任务栏已经爆红" };
+  const hours = rows.map((row) => new Date(row.createdAt).getHours()).filter(Number.isFinite);
+  if (hours.some((hour) => hour >= 23)) return { key: "night", icon: "moon-stars", label: "夜猫子上线：深夜训练，黑眼圈获得强化" };
+  if (hours.some((hour) => hour < 8)) return { key: "early", icon: "sun-horizon", label: "早八战士：太阳还没站岗，猫已经练完" };
+  if (/跑步|骑行|滑冰|篮球|跳操|椭圆机/.test(text)) return { key: "cardio", icon: "wind", label: "有氧暴走：速度太快，尾巴后面开始冒烟" };
+  if (streak >= 3) return { key: "streak", icon: "fire", label: "连续燃烧：坚持训练，猫咪已经烧起来了" };
+  return { key: "charged", icon: "lightning", label: "满电猫：今天已经出动，还想再来一组" };
+}
+function idleAftereffect(member) {
+  return [
+    { key: "idle-phone", icon: "device-mobile", label: "围观中：正在刷手机研究别人为什么这么自律" },
+    { key: "idle-sleep", icon: "bed", label: "围观中：训练计划已盖好被子" },
+    { key: "idle-daze", icon: "butterfly", label: "围观中：身体在广场，灵魂正在发呆" },
+  ][stableIndex(member?.id, 3)];
 }
 function catProfileFor(memberOrId) {
   const id = typeof memberOrId === "string" ? memberOrId : (memberOrId?.profileIds?.has(state.user?.id) ? state.user.id : memberOrId?.id);
@@ -595,12 +590,15 @@ function isNewMember(member) {
   return !Number.isNaN(joined.getTime()) && Date.now() - joined.getTime() <= 3 * 86400000;
 }
 function memberTodayState(member) {
-  const rows = memberRows(member).filter((item) => localDateKey(item.createdAt) === localDateKey());
+  const allRows = memberRows(member);
+  const rows = allRows.filter((item) => plazaDayKey(item.createdAt) === plazaDayKey());
   const minutes = rows.reduce((sum, item) => sum + parseMinutes(item), 0);
   const parts = rows.flatMap(parseParts);
   const text = `${parts.join(" ")} ${rows.map((item) => item.type).join(" ")}`;
   const trained = rows.length > 0;
-  const effect = trainingAftereffect(rows, minutes, text);
+  const effect = trained
+    ? trainingAftereffect(rows, minutes, text, { resurrected: currentResurrection(allRows, rows), streak: member?.streak || 0 })
+    : idleAftereffect(member);
   let action = trained
     ? (/跑步|爬坡|爬楼|椭圆机|骑行|滑冰|篮球|跳操/.test(text) ? "run" : /拉伸|瑜伽/.test(text) ? "stretch" : /游泳/.test(text) ? "water" : "strength")
     : ["sit", "phone", "water"][stableIndex(member?.id, 3)];
@@ -613,7 +611,7 @@ function memberTodayState(member) {
     effect,
     rows,
     minutes,
-    message: trained ? `今日后遗症：${effect.label}` : "今天还在窝着",
+    message: effect.label,
   };
 }
 function hasResurrection(rows) {
@@ -714,29 +712,6 @@ function reportPeriodLabel(start, end, type) {
   const lastDay = addDays(end, -1);
   return `${start.getMonth() + 1}/${start.getDate()}–${lastDay.getMonth() + 1}/${lastDay.getDate()}`;
 }
-function reportFavoriteTraining(rows = []) {
-  const counts = new Map();
-  for (const row of rows) {
-    const parts = parseParts(row).filter(Boolean);
-    const selections = parts.length ? parts : [row.type].filter(Boolean);
-    for (const item of new Set(selections)) counts.set(item, (counts.get(item) || 0) + 1);
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-CN"))[0]?.[0] || "训练";
-}
-function reportCatDiary({ id, rows, ranking, totalMinutes, activeCount, checkinCount }) {
-  if (!rows.length) return "本期全员进入省电模式，训练大厅安静得能听见猫打呼。";
-  const leader = ranking[0]?.name || "神秘群友";
-  const favorite = reportFavoriteTraining(rows);
-  const longSessions = rows.filter((item) => parseMinutes(item) >= 90).length;
-  const templates = [
-    `${leader}负责带头出动，全群累计${formatReportHours(totalMinutes)}小时；大厅地板已申请工伤。`,
-    `本期最常出现的是${favorite}，猫咪们显然已经形成了某种秘密组织。`,
-    `${activeCount}只猫完成${checkinCount}次训练，大家不是在练，就是在准备去练。`,
-  ];
-  if (/腿|臀|爬楼|爬坡/.test(favorite)) templates.push("本期腿部受害者较多，广场扶手使用率明显上升。");
-  if (longSessions) templates.push(`本期有${longSessions}次训练超过90分钟，猫咪灵魂暂时还没跟上身体。`);
-  return templates[stableIndex(id, templates.length)];
-}
 function createReport(type, start, end, publishedAt) {
   const grouped = new Map();
   const rows = state.checkins.filter((item) => {
@@ -759,9 +734,8 @@ function createReport(type, start, end, publishedAt) {
   const timedRanking = ranking.filter((member) => member.minutes > 0);
   const periodLabel = reportPeriodLabel(start, end, type);
   const reportName = type === "week" ? "上周周报" : `${start.getMonth() + 1}月月报`;
-  const id = `report-${type}-${localDateKey(start)}`;
   return {
-    id,
+    id: `report-${type}-${localDateKey(start)}`,
     feedKind: "report",
     reportType: type,
     reportName,
@@ -774,7 +748,6 @@ function createReport(type, start, end, publishedAt) {
     checkinCount: rows.length,
     top3: timedRanking.slice(0, 3),
     ranking: timedRanking,
-    diary: reportCatDiary({ id, rows, ranking: timedRanking, totalMinutes, activeCount: ranking.length, checkinCount: rows.length }),
   };
 }
 function scheduledReports(now = new Date()) {
@@ -839,27 +812,6 @@ function drawPosterText(ctx, value, x, y, maxWidth, options = {}) {
   const text = ctx.measureText(original).width <= maxWidth ? original : shortPosterText(ctx, original, maxWidth);
   ctx.fillText(text, x, y);
 }
-function drawPosterWrappedText(ctx, value, x, y, maxWidth, options = {}) {
-  const { weight = 800, size = 12, lineHeight = 17, maxLines = 2, color = "#090909" } = options;
-  const characters = [...String(value || "—")];
-  const lines = [];
-  let line = "";
-  ctx.textAlign = "left";
-  ctx.fillStyle = color;
-  ctx.font = posterFont(weight, size);
-  for (const character of characters) {
-    const candidate = `${line}${character}`;
-    if (line && ctx.measureText(candidate).width > maxWidth) {
-      lines.push(line);
-      line = character;
-      if (lines.length === maxLines) break;
-    } else line = candidate;
-  }
-  if (lines.length < maxLines && line) lines.push(line);
-  const consumed = lines.join("").length;
-  if (consumed < characters.length && lines.length) lines[lines.length - 1] = shortPosterText(ctx, `${lines[lines.length - 1]}${characters.slice(consumed).join("")}`, maxWidth);
-  lines.slice(0, maxLines).forEach((text, index) => ctx.fillText(text, x, y + index * lineHeight));
-}
 function drawLightning(ctx, x, y, radius = 22) {
   ctx.fillStyle = "#b8ff26";
   ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
@@ -890,16 +842,12 @@ function reportPosterLayout(report) {
   const remainingRows = Math.ceil(Math.max(0, ranking.length - 3) / 3);
   const rankingTop = 382;
   const rankingBottom = remainingRows ? 806 + remainingRows * 74 + 20 : 790;
-  const diaryTop = rankingBottom + 22;
-  const diaryHeight = 72;
-  const footerY = diaryTop + diaryHeight + 42;
+  const footerY = rankingBottom + 48;
   return {
     ranking,
     remainingRows,
     rankingTop,
     rankingBottom,
-    diaryTop,
-    diaryHeight,
     footerY,
     height: Math.max(960, footerY + 34),
   };
@@ -1004,13 +952,6 @@ function drawReportPoster(canvas, report) {
     });
   }
 
-  ctx.fillStyle = "#090909"; roundedPath(ctx, 34, layout.diaryTop + 5, 478, layout.diaryHeight, 18); ctx.fill();
-  ctx.fillStyle = "#fff1c9"; roundedPath(ctx, 28, layout.diaryTop, 478, layout.diaryHeight, 18); ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = "#090909"; ctx.stroke();
-  ctx.fillStyle = "#090909"; roundedPath(ctx, 42, layout.diaryTop + 18, 82, 32, 16); ctx.fill();
-  drawPosterText(ctx, "猫猫周记", 83, layout.diaryTop + 35, 66, { weight: 900, size: 11, minSize: 9, align: "center", color: "#ffffff" });
-  drawPosterWrappedText(ctx, report.diary, 138, layout.diaryTop + 27, 344, { weight: 850, size: 12, lineHeight: 18, maxLines: 2 });
-
   drawLightning(ctx, 49, layout.footerY, 17);
   drawPosterText(ctx, "每一次打卡，都算数。", 78, layout.footerY - 5, 250, { weight: 950, size: 16 });
   drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, layout.footerY + 5, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
@@ -1052,7 +993,7 @@ function saveReportImage(report) {
 }
 
 function reportCard(report) {
-  return `<article class="feed-card system-feed-card"><div class="feed-main"><span class="feed-avatar system-avatar">${icon("lightning")}</span><div class="feed-copy"><div class="feed-name-row"><strong>嘎巴47系统</strong><span class="feed-type">${report.reportType === "week" ? "周报" : "月报"}</span></div><p>${escapeHTML(report.reportName)}已生成 · ${escapeHTML(report.periodLabel)}</p><small>${escapeHTML(relativeTime(report.createdAt))}</small></div></div><p class="report-diary-line">${icon("sparkle")}<span><small>猫猫周记</small><strong>${escapeHTML(report.diary)}</strong></span></p><button class="report-preview" data-action="open-report" data-report-id="${escapeHTML(report.id)}" aria-label="放大查看${escapeHTML(report.reportName)}"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas><span>${icon("arrows-out-simple")} 点击放大查看并保存</span></button></article>`;
+  return `<article class="feed-card system-feed-card"><div class="feed-main"><span class="feed-avatar system-avatar">${icon("lightning")}</span><div class="feed-copy"><div class="feed-name-row"><strong>嘎巴47系统</strong><span class="feed-type">${report.reportType === "week" ? "周报" : "月报"}</span></div><p>${escapeHTML(report.reportName)}已生成 · ${escapeHTML(report.periodLabel)}</p><small>${escapeHTML(relativeTime(report.createdAt))}</small></div></div><button class="report-preview" data-action="open-report" data-report-id="${escapeHTML(report.id)}" aria-label="放大查看${escapeHTML(report.reportName)}"><canvas width="540" height="960" data-report-canvas="${escapeHTML(report.id)}"></canvas><span>${icon("arrows-out-simple")} 点击放大查看并保存</span></button></article>`;
 }
 function reportModal(report) {
   if (!report) return "";
@@ -1138,13 +1079,18 @@ function plazaMotion(member, index, count) {
   return `--x:${x}%;--y:${y}%;--dx1:${dx1}px;--dy1:${dy1}px;--dx2:${dx2}px;--dy2:${dy2}px;--wander-duration:${duration}s;--wander-delay:${delay}s;--cat-size:${size}%;--depth:${100 + Math.round(y)}`;
 }
 
+function catStateVisual(profile, status, { label = "嘎巴47星座猫", detail = false } = {}) {
+  const bodyState = status?.effect?.key || "normal";
+  const props = bodyState === "normal" ? "" : `<span class="cat-state-prop cat-state-prop-back" aria-hidden="true"></span><span class="cat-state-prop cat-state-prop-front" aria-hidden="true"></span>`;
+  return `<span class="cat-state-visual state-${bodyState}${detail ? " is-detail" : ""}">${props}<span class="cat-state-character">${catCharacter(profile, { label })}</span></span>`;
+}
+
 function plazaCatCard(member, index, count) {
   const profile = catProfileFor(member);
   const status = memberTodayState(member);
   const weeklyCrown = member.weeklyCount > 0 ? `<span class="weekly-crown" aria-label="本周已打卡">${icon("crown")}</span>` : "";
-  const aftereffect = status.effect ? `<span class="plaza-aftereffect" aria-label="${escapeHTML(status.effect.label)}">${icon(status.effect.icon)}</span>` : "";
   const effectClass = status.effect ? ` effect-${status.effect.key}` : "";
-  return `<button class="plaza-cat${effectClass}" style="${plazaMotion(member, index, count)}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息${member.weeklyCount > 0 ? "，本周已打卡" : ""}${status.effect ? `，${status.effect.label}` : ""}"><span class="plaza-cat-motion">${weeklyCrown}${aftereffect}<span class="plaza-cat-sprite">${catCharacter(profile, { label: `${member.name}的星座猫` })}</span><strong class="plaza-cat-name">${escapeHTML(member.name)}</strong></span></button>`;
+  return `<button class="plaza-cat${effectClass}" style="${plazaMotion(member, index, count)}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息${member.weeklyCount > 0 ? "，本周已打卡" : ""}${status.effect ? `，${status.effect.label}` : ""}"><span class="plaza-cat-motion">${weeklyCrown}<span class="plaza-cat-sprite">${catStateVisual(profile, status, { label: `${member.name}的星座猫` })}</span><strong class="plaza-cat-name">${escapeHTML(member.name)}</strong></span></button>`;
 }
 function memberDetailModal() {
   const member = memberStats().find((item) => item.id === state.memberModal);
@@ -1159,20 +1105,16 @@ function memberDetailModal() {
     ["本月", member.monthlyMinutes, member.monthlyCount],
     ["本周", member.weeklyMinutes, member.weeklyCount],
   ].map(([label, minutes, count]) => `<article class="member-period-card"><span>${label}</span><strong>${formatReportHours(minutes)}<small>小时</small></strong><em>${count} 次训练</em></article>`).join("");
-  return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-sheet-head"><div class="member-detail-cat">${catCharacter(profile, { action: status.action, label: `${member.name}的猫咪` })}<span class="cat-status status-${status.kind}">${status.label}</span></div><div class="member-detail-copy"><small>群友训练档案</small><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}</div></div><div class="member-period-grid" aria-label="训练时长与次数">${periods}</div><div class="member-insights"><div class="member-insight"><i>${icon("calendar-check")}</i><span><small>首次打卡时间</small><strong>${escapeHTML(memberFirstCheckin(rows))}</strong></span></div><div class="member-insight"><i>${icon("barbell")}</i><span><small>最喜欢训练</small><strong>${escapeHTML(memberFavoriteTraining(rows))}</strong></span></div><div class="member-insight"><i>${icon("fire")}</i><span><small>当前连续打卡</small><strong>${member.streak} 天</strong></span></div></div><p class="member-detail-status">${status.effect ? icon(status.effect.icon) : ""}${escapeHTML(status.message)}</p></section></div>`;
+  return `<div class="modal-backdrop member-backdrop" role="presentation"><section class="modal-sheet member-sheet" role="dialog" aria-modal="true" aria-labelledby="member-title"><button class="member-close" data-action="close-member" aria-label="关闭">${icon("x")}</button><div class="member-sheet-head"><div class="member-detail-cat">${catStateVisual(profile, status, { label: `${member.name}的猫咪`, detail: true })}<span class="cat-status status-${status.kind}">${status.label}</span></div><div class="member-detail-copy"><small>群友训练档案</small><h2 id="member-title">${escapeHTML(member.name)}</h2>${title ? `<p class="member-title-badge">${icon("seal-check")} ${escapeHTML(title)}</p>` : ""}</div></div><div class="member-period-grid" aria-label="训练时长与次数">${periods}</div><div class="member-insights"><div class="member-insight"><i>${icon("calendar-check")}</i><span><small>首次打卡时间</small><strong>${escapeHTML(memberFirstCheckin(rows))}</strong></span></div><div class="member-insight"><i>${icon("barbell")}</i><span><small>最喜欢训练</small><strong>${escapeHTML(memberFavoriteTraining(rows))}</strong></span></div><div class="member-insight"><i>${icon("fire")}</i><span><small>当前连续打卡</small><strong>${member.streak} 天</strong></span></div></div><p class="member-detail-status">${status.effect ? icon(status.effect.icon) : ""}${escapeHTML(status.message)}</p></section></div>`;
 }
 function plazaPage() {
   const members = memberStats();
   const todayCount = members.filter((member) => memberTodayState(member).rows.length > 0).length;
   const newCount = members.filter(isNewMember).length;
-  const entertainment = groupEntertainmentState(members);
-  const bossMessage = entertainment.defeated
-    ? `${entertainment.boss.name}已经被击败，本周大厅进入庆功模式。`
-    : `${entertainment.boss.name}还剩${entertainment.remainingMinutes}点生命，全群再训练${entertainment.remainingMinutes}分钟即可击败。`;
   const scene = members.length
     ? members.map((member, index) => plazaCatCard(member, index, members.length)).join("")
     : `<div class="plaza-empty"><strong>广场还空着</strong><span>第一只星座猫加入后就会出现。</span></div>`;
-  return `<main class="page page-plaza">${connectionNotice()}<section class="fantasy-plaza-card"><div class="plaza-card-head"><div class="plaza-meta"><div><small>GABA 47</small><h2>嘎巴训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="plaza-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></div><section class="plaza-control-panel" aria-label="训练大厅实时状态"><div class="plaza-power"><div class="plaza-power-copy"><span>${icon("lightning")} 大厅电量</span><strong>${entertainment.percent}% · ${entertainment.levelLabel}</strong></div><div class="plaza-progress" role="progressbar" aria-label="大厅电量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${entertainment.percent}"><i style="width:${entertainment.percent}%"></i></div></div><div class="plaza-daily-rule">${icon(entertainment.dailyRule.icon)}<span>今日规则</span><strong>${escapeHTML(entertainment.dailyRule.text)}</strong></div><button class="plaza-boss ${entertainment.defeated ? "is-defeated" : ""}" data-action="boss-status" data-boss-message="${escapeHTML(bossMessage)}"><span class="plaza-boss-icon">${icon(entertainment.boss.icon)}</span><span class="plaza-boss-copy"><small>本周共同 BOSS</small><strong>${escapeHTML(entertainment.boss.name)}</strong><em>${escapeHTML(entertainment.boss.taunt)}</em></span><span class="plaza-boss-score"><strong>${entertainment.defeated ? "击败" : entertainment.remainingMinutes}</strong><small>${entertainment.defeated ? "本周胜利" : "剩余生命"}</small></span></button></section></div><div class="fantasy-plaza power-${entertainment.level}" aria-label="47群友星座猫奇幻健身广场，大厅电量${entertainment.percent}%"><span class="plaza-ambient" aria-hidden="true"></span>${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
+  return `<main class="page page-plaza">${connectionNotice()}<section class="fantasy-plaza-card"><div class="plaza-card-head"><div class="plaza-meta"><div><small>GABA 47</small><h2>嘎巴训练大厅</h2></div><span>${icon("crown")} 本周打卡戴皇冠</span></div><div class="plaza-stats" aria-label="广场统计"><div><span>群友</span><strong>${members.length}</strong></div><div><span>今日打卡</span><strong>${todayCount}</strong></div><div><span>新加入</span><strong>${newCount}</strong></div></div></div><div class="fantasy-plaza" aria-label="47群友星座猫奇幻健身广场">${scene}</div><button class="view-members-button" data-action="toggle-member-list">${icon("list-dashes")}<span>${state.showAllMembers ? "收起群友列表" : "查看全部群友"}</span>${icon(state.showAllMembers ? "caret-up" : "caret-down")}</button></section>${state.showAllMembers ? `<section class="all-members"><div class="section-heading"><h2>全部群友</h2><span>${members.length} 人</span></div><div class="member-list">${members.map((member) => memberCatCard(member)).join("")}</div></section>` : ""}</main>`;
 }
 
 function catEditorPanel(member, profile) {
@@ -1421,7 +1363,6 @@ app.addEventListener("click", async (event) => {
   const action = actionButton.dataset.action;
   if (action === "close-member") { state.memberModal = null; render(); return; }
   if (action === "toggle-member-list") { state.showAllMembers = !state.showAllMembers; render(); return; }
-  if (action === "boss-status") { showToast(actionButton.dataset.bossMessage || "本周 Boss 正在等待群友围攻"); return; }
   if (action === "open-cat-editor") {
     const me = currentMember(memberStats());
     state.catEditor = { open: true, draft: { ...catProfileFor(me || state.user.id) }, saving: false, status: "" };
