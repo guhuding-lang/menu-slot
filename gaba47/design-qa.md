@@ -1,4 +1,4 @@
-# 嘎巴47周报 / 月报 Design QA（v44）
+# 嘎巴47周报 / 月报 Design QA（v45）
 
 ## 视觉真值与实现证据
 
@@ -10,12 +10,14 @@
 - 月报浏览器截图：`/workspace/scratch/gaba47-monthly-v44.jpg`（489 × 732）
 - 周报同尺寸对比：`/workspace/scratch/62206c759608/project_reports_exact/gaba47-weekly-comparison-v44.jpg`
 - 月报同尺寸对比：`/workspace/scratch/62206c759608/project_reports_exact/gaba47-monthly-comparison-v44.jpg`
+- 周报线上问题截图：`/workspace/scratch/62206c759608/upload/01-1000205694.png`（1024 × 1536）
+- 周报对齐修复截图：`/workspace/scratch/gaba47-weekly-v45-aligned.jpg`
 
 ## 视口与状态
 
 - 本地正式静态页面：`http://terminal.local:4173/gaba47/`
-- 周报状态：`?preview=1&report=week&qa=v44`
-- 月报状态：`?preview=1&report=month&qa=v44`
+- 周报状态：`?report=week&qa=v45`
+- 月报状态：`?preview=1&report=month&qa=v45`
 - 海报 Canvas：1080 × 1620，2:3；浏览器内按 489 × 732.5 CSS px 展示。
 - 对比归一化：参考图统一缩放到 489 × 732，与浏览器截图水平拼接；截图密度为 1。
 
@@ -45,7 +47,7 @@
 
 - 周报、月报均能通过预览参数打开报告弹层。
 - 高清海报图生成完成，`naturalWidth=1080`、`naturalHeight=1620`。
-- 正式应用脚本为 `app.js?v=44`。
+- 正式应用脚本为 `app.js?v=45`。
 - 应用本身无控制台错误；仅出现云端浏览器扩展自身的 metadata 日志，与项目代码无关。
 - “保存图片”按钮点击后，云端测试浏览器未捕获到下载事件；海报渲染与按钮仍正常，移动端长按图片保存路径不受影响。
 
@@ -54,6 +56,7 @@
 1. v42：背景与框位已准确替换，但周报冒险奖励仍为通用星形徽章，记为 P2。
 2. v43：从用户参考图提取五枚真实奖励素材，加入预加载与离线缓存；复核后该 P2 已关闭。
 3. v44：补齐月报无榜单数据时的三个“等待上榜”空状态；周报、月报均完成最终复核。
+4. v45：依据真实周报成品截图重新校准所有密集文本。TOP 3 昵称、时长与次数整体上移并限制长昵称；奖励图标、名称与归属值全部收回紫色奖励框；其他成员次数上移并限制长昵称；底部标语移入卷轴可见区域。
 
 ## 允许的 P3 差异
 
