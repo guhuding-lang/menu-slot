@@ -136,18 +136,36 @@ async function parseResponse(response) {
   try { return JSON.parse(text); } catch { return text; }
 }
 
-async function getSession() {
+async function getSession({ forceRefresh = false, allowNewSession = true } = {}) {
   let session = readJSON(SESSION_KEY);
-  if (session?.access_token && (!session.expires_at || session.expires_at > Date.now() / 1000 + 60)) return session;
+  if (!forceRefresh && session?.access_token && (!session.expires_at || session.expires_at > Date.now() / 1000 + 60)) return session;
   if (session?.refresh_token) {
     try {
       const refreshed = await parseResponse(await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
         method: "POST", headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: session.refresh_token }),
       }));
-      session = refreshed.session || refreshed;
+      const nextSession = refreshed.session || refreshed;
+      if (!nextSession?.access_token) throw new Error("会话刷新没有返回访问凭证");
+      if (session.user?.id && nextSession.user?.id && session.user.id !== nextSession.user.id) {
+        const identityError = new Error("刷新后的用户身份发生变化");
+        identityError.code = "IDENTITY_CHANGED";
+        throw identityError;
+      }
+      session = nextSession;
       writeJSON(SESSION_KEY, session);
       return session;
-    } catch (error) { console.warn("会话刷新失败，将创建新的本机匿名会话", error); }
+    } catch (error) {
+      if (!allowNewSession) {
+        error.code ||= "SESSION_REFRESH_FAILED";
+        throw error;
+      }
+      console.warn("会话刷新失败，将创建新的本机匿名会话", error);
+    }
+  }
+  if (!allowNewSession) {
+    const error = new Error("当前登录会话已经失效");
+    error.code = "SESSION_REFRESH_FAILED";
+    throw error;
   }
   const created = await parseResponse(await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
     method: "POST", headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ data: {} }),
@@ -159,12 +177,28 @@ async function getSession() {
 }
 
 async function createService() {
-  const session = await getSession();
+  let session = await getSession();
   const userId = session.user?.id;
   if (!userId) throw new Error("没有取得用户身份");
-  const api = async (path, { method = "GET", headers = {}, body } = {}) => parseResponse(await fetch(`${SUPABASE_URL}${path}`, {
+  const request = (path, { method = "GET", headers = {}, body } = {}) => fetch(`${SUPABASE_URL}${path}`, {
     method, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${session.access_token}`, ...headers }, body,
-  }));
+  });
+  const api = async (path, options = {}) => {
+    try {
+      return await parseResponse(await request(path, options));
+    } catch (error) {
+      const expired = error.status === 401 || /jwt.*expired|invalid jwt|token.*expired/i.test(`${error.code || ""} ${error.message || ""}`);
+      if (!expired) throw error;
+      const refreshed = await getSession({ forceRefresh: true, allowNewSession: false });
+      if (refreshed.user?.id !== userId) {
+        const identityError = new Error("登录身份已发生变化");
+        identityError.code = "IDENTITY_CHANGED";
+        throw identityError;
+      }
+      session = refreshed;
+      return parseResponse(await request(path, options));
+    }
+  };
   const encodePath = (value) => value.split("/").map(encodeURIComponent).join("/");
   const signedCache = new Map();
   let supportsAvatar = true;
@@ -1916,8 +1950,10 @@ app.addEventListener("click", async (event) => {
       const detail = `${error.code || ""} ${error.message || ""}`;
       const message = /23514|training_type|check constraint/i.test(detail)
         ? "训练内容不兼容，请刷新页面后重试"
-        : /policy|permission|42501/i.test(detail)
+        : /SESSION_REFRESH_FAILED|IDENTITY_CHANGED|jwt.*expired|invalid jwt|(^|\s)401(\s|$)/i.test(detail)
           ? "登录状态失效，请重新打开页面"
+          : /policy|permission|42501|insufficient privilege/i.test(detail)
+            ? "修改权限尚未完成升级，请联系管理员"
           : /fetch|network|timeout/i.test(detail)
             ? "网络连接失败，请检查网络后重试"
             : /storage|bucket|mime|file size/i.test(detail)
