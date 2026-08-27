@@ -11,7 +11,9 @@ const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
 const SESSION_KEY = "gaba47-supabase-session-v1";
 const USER_KEY = "gaba47-user-v2";
 const CAT_LOCAL_KEY = "gaba47-cat-profile-v1";
-const PREVIEW_MODE = new URLSearchParams(location.search).get("preview") === "1";
+const PAGE_PARAMS = new URLSearchParams(location.search);
+const PREVIEW_MODE = PAGE_PARAMS.get("preview") === "1";
+const PREVIEW_REPORT = PAGE_PARAMS.get("report");
 const GROUP_CODE = "47GYM";
 const REPORT_PUBLISH_HOUR = 1;
 
@@ -87,6 +89,14 @@ function trainingTypeFor(parts = []) {
   if (selections.length && selections.every((part) => strengthParts.has(part))) return "力量";
   if (selections.length === 1 && trainingOptions.some(([label]) => label === selections[0])) return selections[0];
   return "其他";
+}
+function storageTrainingTypeFor(parts = []) {
+  const type = trainingTypeFor(parts);
+  return new Set(["力量", "跑步", "骑行", "游泳", "拉伸", "其他"]).has(type) ? type : "其他";
+}
+function displayTrainingType(item = {}) {
+  const selections = parseParts(item);
+  return selections.length ? trainingTypeFor(selections) : (item.type || "训练");
 }
 function activitySummary(item) {
   const selections = parseParts(item);
@@ -261,7 +271,7 @@ async function createService() {
         if (input.photo) photoPath = await uploadObject(input.photo, "checkin");
         await api("/rest/v1/checkins", {
           method: "POST", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ user_id: userId, training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
+          body: JSON.stringify({ user_id: userId, training_type: storageTrainingTypeFor(input.parts), body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
         });
       } catch (error) {
         if (photoPath) await deleteObject(photoPath).catch(() => {});
@@ -281,7 +291,7 @@ async function createService() {
       try {
         await api(`/rest/v1/checkins?id=eq.${encodeURIComponent(input.id)}&user_id=eq.${encodeURIComponent(userId)}`, {
           method: "PATCH", headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ training_type: input.type, body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
+          body: JSON.stringify({ training_type: storageTrainingTypeFor(input.parts), body_parts: input.parts, duration_minutes: input.duration, note: input.note, photo_url: photoPath, created_at: input.createdAt }),
         });
       } catch (error) {
         if (uploadedPhotoPath) await deleteObject(uploadedPhotoPath).catch(() => {});
@@ -712,6 +722,20 @@ function reportPeriodLabel(start, end, type) {
   const lastDay = addDays(end, -1);
   return `${start.getMonth() + 1}/${start.getDate()}–${lastDay.getMonth() + 1}/${lastDay.getDate()}`;
 }
+function longestDateRun(dateKeys = []) {
+  const dates = [...new Set(dateKeys)].sort();
+  let longest = 0;
+  let current = 0;
+  let previous = null;
+  for (const key of dates) {
+    const date = new Date(`${key}T12:00:00`);
+    if (Number.isNaN(date.getTime())) continue;
+    current = previous && (date - previous) / 86400000 === 1 ? current + 1 : 1;
+    longest = Math.max(longest, current);
+    previous = date;
+  }
+  return longest;
+}
 function createReport(type, start, end, publishedAt) {
   const grouped = new Map();
   const rows = state.checkins.filter((item) => {
@@ -721,19 +745,26 @@ function createReport(type, start, end, publishedAt) {
   for (const item of rows) {
     const name = cleanDisplayName(item.name) || "47群友";
     const key = displayNameKey(name) || `id:${item.userId}`;
-    if (!grouped.has(key)) grouped.set(key, { name, minutes: 0, checkins: 0, days: new Set() });
+    if (!grouped.has(key)) grouped.set(key, { name, minutes: 0, checkins: 0, days: new Set(), profileIds: new Set() });
     const member = grouped.get(key);
     member.minutes += parseMinutes(item);
     member.checkins += 1;
     member.days.add(localDateKey(item.createdAt));
+    if (item.userId) member.profileIds.add(item.userId);
   }
   const ranking = [...grouped.values()]
-    .map((member) => ({ ...member, activeDays: member.days.size }))
+    .map((member) => ({ ...member, activeDays: member.days.size, longestStreak: longestDateRun(member.days) }))
     .sort((a, b) => b.minutes - a.minutes || b.activeDays - a.activeDays || a.name.localeCompare(b.name, "zh-CN"));
   const totalMinutes = ranking.reduce((sum, member) => sum + member.minutes, 0);
   const timedRanking = ranking.filter((member) => member.minutes > 0);
   const periodLabel = reportPeriodLabel(start, end, type);
   const reportName = type === "week" ? "上周周报" : `${start.getMonth() + 1}月月报`;
+  const daily = [];
+  for (let cursor = new Date(start); cursor < end; cursor = addDays(cursor, 1)) {
+    const key = localDateKey(cursor);
+    const dayRows = rows.filter((item) => localDateKey(item.createdAt) === key);
+    daily.push({ key, day: cursor.getDate(), minutes: dayRows.reduce((sum, item) => sum + parseMinutes(item), 0), checkins: dayRows.length });
+  }
   return {
     id: `report-${type}-${localDateKey(start)}`,
     feedKind: "report",
@@ -746,6 +777,8 @@ function createReport(type, start, end, publishedAt) {
     totalMinutes,
     activeCount: ranking.length,
     checkinCount: rows.length,
+    maxStreak: ranking.reduce((max, member) => Math.max(max, member.longestStreak || 0), 0),
+    daily,
     top3: timedRanking.slice(0, 3),
     ranking: timedRanking,
   };
@@ -840,19 +873,159 @@ function formatReportHours(minutes) {
 function reportPosterLayout(report) {
   const ranking = (report.ranking || report.top3 || []).filter((member) => Number(member?.minutes) > 0);
   const remainingRows = Math.ceil(Math.max(0, ranking.length - 3) / 3);
-  const rankingTop = 382;
-  const rankingBottom = remainingRows ? 806 + remainingRows * 74 + 20 : 790;
-  const footerY = rankingBottom + 48;
+  const month = report.reportType === "month";
+  const rankingTop = month ? 464 : 252;
+  const otherTop = month ? 784 : 568;
+  const rankingBottom = otherTop + (remainingRows ? 36 + remainingRows * 58 : 0);
+  const footerY = remainingRows ? rankingBottom + 38 : (month ? 880 : 646);
   return {
     ranking,
     remainingRows,
     rankingTop,
     rankingBottom,
     footerY,
-    height: Math.max(960, footerY + 34),
+    height: Math.max(810, footerY + 32),
   };
 }
-function drawReportPoster(canvas, report) {
+
+const REPORT_BACKGROUNDS = {
+  week: "./assets/zodiac-plaza/report-week-scroll.webp",
+  month: "./assets/zodiac-plaza/report-month-scroll.webp",
+};
+const reportAssetCache = new Map();
+function reportAssetRecord(src) {
+  if (!src || typeof Image === "undefined") return null;
+  if (reportAssetCache.has(src)) return reportAssetCache.get(src);
+  const image = new Image();
+  const record = { image, loaded: false, failed: false, promise: null };
+  record.promise = new Promise((resolve) => {
+    image.onload = () => {
+      record.loaded = true;
+      resolve(record);
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(paintReportCanvases);
+    };
+    image.onerror = () => { record.failed = true; resolve(record); };
+  });
+  image.src = src;
+  reportAssetCache.set(src, record);
+  return record;
+}
+function reportMemberVisual(member) {
+  const ids = member?.profileIds instanceof Set ? member.profileIds : new Set(member?.profileIds || []);
+  const known = memberStats().find((candidate) => candidate.nameKey === displayNameKey(member?.name)
+    || [...ids].some((id) => candidate.profileIds?.has(id)));
+  const profile = catProfileFor(known || [...ids][0] || member?.name || "47");
+  return { profile, descriptor: catProfileDescriptor(profile) };
+}
+function monthlyZodiacStats(report) {
+  const stats = new Map(CAT_FUR_OPTIONS.map((option) => [option.value, {
+    ...option,
+    minutes: 0,
+    checkins: 0,
+    members: 0,
+  }]));
+  for (const member of report.ranking || []) {
+    const { descriptor } = reportMemberVisual(member);
+    const zodiac = stats.get(descriptor.value);
+    if (!zodiac) continue;
+    zodiac.minutes += Number(member.minutes) || 0;
+    zodiac.checkins += Number(member.checkins) || 0;
+    zodiac.members += 1;
+  }
+  const values = [...stats.values()];
+  const winner = [...values].sort((a, b) => b.minutes - a.minutes || b.checkins - a.checkins)[0] || null;
+  return { values, winner: winner?.minutes > 0 ? winner : null };
+}
+function reportAssetSources(report) {
+  const sources = [REPORT_BACKGROUNDS[report.reportType] || REPORT_BACKGROUNDS.week];
+  for (const member of report.ranking || []) sources.push(reportMemberVisual(member).descriptor.asset);
+  if (report.reportType === "month") sources.push(...CAT_FUR_OPTIONS.map((option) => option.asset));
+  return [...new Set(sources.filter(Boolean))];
+}
+async function preloadReportAssets(report) {
+  const records = reportAssetSources(report).map(reportAssetRecord).filter(Boolean);
+  await Promise.all(records.map((record) => record.promise));
+}
+function drawContainedAsset(ctx, src, x, y, width, height, { crop = false } = {}) {
+  const record = reportAssetRecord(src);
+  if (!record?.loaded) return false;
+  const image = record.image;
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const scale = crop ? Math.max(width / sourceWidth, height / sourceHeight) : Math.min(width / sourceWidth, height / sourceHeight);
+  const drawWidth = sourceWidth * scale;
+  const drawHeight = sourceHeight * scale;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  return true;
+}
+function drawFantasyPanel(ctx, x, y, width, height, { fill = "rgba(249,225,174,.9)", stroke = "#7b5331", radius = 10, shadow = true } = {}) {
+  if (shadow) {
+    ctx.fillStyle = "rgba(55,31,20,.2)";
+    roundedPath(ctx, x + 2, y + 3, width, height, radius); ctx.fill();
+  }
+  ctx.fillStyle = fill; roundedPath(ctx, x, y, width, height, radius); ctx.fill();
+  ctx.lineWidth = 1.4; ctx.strokeStyle = stroke; ctx.stroke();
+  ctx.strokeStyle = "rgba(255,244,203,.65)"; ctx.lineWidth = .8;
+  roundedPath(ctx, x + 3, y + 3, width - 6, height - 6, Math.max(2, radius - 3)); ctx.stroke();
+}
+function drawFantasyRibbon(ctx, label, centerX, centerY, width = 190) {
+  const height = 28;
+  ctx.fillStyle = "rgba(55,31,78,.95)";
+  roundedPath(ctx, centerX - width / 2, centerY - height / 2, width, height, 5); ctx.fill();
+  ctx.lineWidth = 1.6; ctx.strokeStyle = "#d5a84d"; ctx.stroke();
+  drawPosterText(ctx, label, centerX, centerY + 1, width - 18, { weight: 900, size: 14, minSize: 10, align: "center", color: "#ffe183" });
+}
+function drawReportCat(ctx, member, x, y, width, height) {
+  const { descriptor } = reportMemberVisual(member || { name: "47" });
+  if (!drawContainedAsset(ctx, descriptor.asset, x, y, width, height)) {
+    drawPosterText(ctx, member ? initials(member.name) : "—", x + width / 2, y + height / 2, width - 8, { weight: 900, size: Math.max(12, Math.round(width * .32)), align: "center", color: "#3c2519" });
+  }
+}
+function drawReportTitle(ctx, report) {
+  const month = report.reportType === "month";
+  if (!month) drawPosterText(ctx, "WEEKLY REPORT", 270, 73, 360, { weight: 900, size: 12, align: "center", color: "#5b3a22" });
+  drawPosterText(ctx, month ? "本月训练月报" : "上周训练周报", 270, 106, 430, { weight: 950, size: month ? 34 : 38, minSize: 28, align: "center", color: "#3b2519" });
+  ctx.fillStyle = "rgba(61,39,91,.95)"; roundedPath(ctx, 165, 125, 210, 26, 6); ctx.fill();
+  ctx.lineWidth = 1.4; ctx.strokeStyle = "#d5a84d"; ctx.stroke();
+  drawPosterText(ctx, report.periodLabel, 270, 139, 190, { weight: 900, size: 13, minSize: 10, align: "center", color: "#ffe1a0" });
+}
+function drawReportMetrics(ctx, report) {
+  const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
+  const metrics = report.reportType === "month"
+    ? [["总训练时长", formatReportHours(report.totalMinutes), "小时"], ["活跃人数", report.activeCount, "人"], ["总打卡数", report.checkinCount, "次"], ["最长连续", report.maxStreak || 0, "天"], ["人均时长", formatReportHours(averageMinutes), "小时"]]
+    : [["累计时长", formatReportHours(report.totalMinutes), "小时"], ["活跃人数", report.activeCount, "人"], ["打卡次数", report.checkinCount, "次"], ["人均时长", formatReportHours(averageMinutes), "小时"]];
+  const left = 46;
+  const gap = 6;
+  const width = (448 - gap * (metrics.length - 1)) / metrics.length;
+  metrics.forEach(([label, value, unit], index) => {
+    const x = left + index * (width + gap);
+    drawFantasyPanel(ctx, x, 164, width, 68, { radius: 7, shadow: false });
+    drawPosterText(ctx, label, x + width / 2, 179, width - 8, { weight: 800, size: 8.5, minSize: 7, align: "center", color: "#68452d" });
+    drawPosterText(ctx, value, x + width / 2, 205, width - 8, { weight: 950, size: metrics.length === 5 ? 21 : 25, minSize: 14, align: "center", color: "#40281c" });
+    drawPosterText(ctx, unit, x + width / 2, 222, width - 8, { weight: 800, size: 8, minSize: 7, align: "center", color: "#68452d" });
+  });
+}
+function drawCompactMemberRows(ctx, report, top) {
+  const remaining = (report.ranking || []).slice(3);
+  drawFantasyRibbon(ctx, "其他训练成员", 270, top - 17, 176);
+  if (!remaining.length) {
+    drawFantasyPanel(ctx, 46, top, 448, 50, { radius: 7, shadow: false, fill: "rgba(248,224,174,.88)" });
+    drawPosterText(ctx, "本期暂无其他有训练时长的成员", 270, top + 26, 410, { weight: 800, size: 10, align: "center", color: "#735039" });
+    return;
+  }
+  remaining.forEach((member, index) => {
+    const column = index % 3;
+    const row = Math.floor(index / 3);
+    const width = 146;
+    const x = 46 + column * 151;
+    const y = top + row * 58;
+    drawFantasyPanel(ctx, x, y, width, 50, { radius: 7, shadow: false, fill: "rgba(248,224,174,.88)" });
+    drawReportCat(ctx, member, x + 4, y + 5, 38, 38);
+    drawPosterText(ctx, member.name, x + 45, y + 17, width - 50, { weight: 900, size: 10, minSize: 7, color: "#3b2519" });
+    drawPosterText(ctx, `${formatReportHours(member.minutes)}小时 · ${member.checkins}次`, x + 45, y + 35, width - 50, { weight: 750, size: 8, minSize: 6, color: "#735039" });
+  });
+}
+function drawLegacyReportPoster(canvas, report) {
   const baseWidth = 540;
   const layout = reportPosterLayout(report);
   const scale = canvas.width / baseWidth;
@@ -956,6 +1129,212 @@ function drawReportPoster(canvas, report) {
   drawPosterText(ctx, "每一次打卡，都算数。", 78, layout.footerY - 5, 250, { weight: 950, size: 16 });
   drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, layout.footerY + 5, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
 }
+
+function drawWeeklyPodium(ctx, report) {
+  drawFantasyRibbon(ctx, "时长 TOP 3", 270, 252, 176);
+  const slots = [
+    { rank: 2, x: 48, y: 307, width: 134, height: 138, catY: 287, catSize: 72, tint: "rgba(220,225,232,.93)" },
+    { rank: 1, x: 188, y: 284, width: 164, height: 164, catY: 270, catSize: 88, tint: "rgba(247,217,145,.96)" },
+    { rank: 3, x: 358, y: 317, width: 134, height: 128, catY: 297, catSize: 68, tint: "rgba(226,177,140,.93)" },
+  ];
+  slots.forEach((slot) => {
+    const member = report.top3?.[slot.rank - 1] || null;
+    drawFantasyPanel(ctx, slot.x, slot.y, slot.width, slot.height, { fill: slot.tint, stroke: slot.rank === 1 ? "#8a571b" : "#7b5331", radius: 8 });
+    ctx.fillStyle = slot.rank === 1 ? "#9a5b16" : slot.rank === 2 ? "#5d6e85" : "#954d31";
+    roundedPath(ctx, slot.x + 8, slot.y + 7, 28, 28, 7); ctx.fill();
+    drawPosterText(ctx, slot.rank, slot.x + 22, slot.y + 22, 20, { weight: 950, size: 16, align: "center", color: "#fff4d2" });
+    drawReportCat(ctx, member, slot.x + (slot.width - slot.catSize) / 2, slot.catY, slot.catSize, slot.catSize);
+    drawPosterText(ctx, member?.name || "等待上榜", slot.x + slot.width / 2, slot.y + slot.height - 48, slot.width - 16, { weight: 900, size: slot.rank === 1 ? 12 : 10, minSize: 7, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, member ? `${formatReportHours(member.minutes)} 小时` : "—", slot.x + slot.width / 2, slot.y + slot.height - 25, slot.width - 16, { weight: 950, size: slot.rank === 1 ? 20 : 17, minSize: 11, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", slot.x + slot.width / 2, slot.y + slot.height - 9, slot.width - 16, { weight: 750, size: 8, minSize: 6, align: "center", color: "#6f4d35" });
+  });
+}
+function drawWeeklyRewards(ctx, report) {
+  const ranking = report.ranking || [];
+  const mostCheckins = [...ranking].sort((a, b) => b.checkins - a.checkins || b.minutes - a.minutes)[0];
+  const mostActive = [...ranking].sort((a, b) => b.activeDays - a.activeDays || b.minutes - a.minutes)[0];
+  drawFantasyRibbon(ctx, "冒险奖励", 270, 466, 146);
+  drawFantasyPanel(ctx, 46, 482, 448, 62, { fill: "rgba(65,38,91,.93)", stroke: "#d5a84d", radius: 8 });
+  const rewards = [
+    ["时长冠军", ranking[0]?.name || "待解锁"],
+    ["打卡先锋", mostCheckins?.name || "待解锁"],
+    ["坚持之星", mostActive?.name || "待解锁"],
+    ["群体经验", `${formatReportHours(report.totalMinutes)}小时`],
+  ];
+  rewards.forEach(([label, value], index) => {
+    const x = 46 + index * 112;
+    if (index) { ctx.beginPath(); ctx.moveTo(x, 493); ctx.lineTo(x, 533); ctx.strokeStyle = "rgba(255,222,132,.35)"; ctx.lineWidth = 1; ctx.stroke(); }
+    drawPosterText(ctx, label, x + 56, 500, 100, { weight: 850, size: 8, minSize: 7, align: "center", color: "#e7bb66" });
+    drawPosterText(ctx, value, x + 56, 523, 96, { weight: 900, size: 10, minSize: 7, align: "center", color: "#fff1be" });
+  });
+}
+function drawMonthlyStarAndRing(ctx, report) {
+  const star = report.top3?.[0] || null;
+  drawFantasyPanel(ctx, 46, 252, 166, 190, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawFantasyRibbon(ctx, "本月之星", 129, 255, 124);
+  drawReportCat(ctx, star, 76, 273, 106, 106);
+  drawPosterText(ctx, star?.name || "等待上榜", 129, 386, 140, { weight: 900, size: 12, minSize: 8, align: "center", color: "#3b2519" });
+  drawPosterText(ctx, star ? `${formatReportHours(star.minutes)}小时 · ${star.checkins}次打卡` : "完成一次训练", 129, 408, 140, { weight: 800, size: 9, minSize: 6, align: "center", color: "#6e4930" });
+  drawPosterText(ctx, star ? `最长连续 ${star.longestStreak || 0} 天` : "等待本月之星", 129, 426, 140, { weight: 800, size: 8, minSize: 6, align: "center", color: "#6e4930" });
+
+  drawFantasyPanel(ctx, 222, 252, 272, 190, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawFantasyRibbon(ctx, "星座参与环", 358, 255, 146);
+  const { values: zodiacStats, winner } = monthlyZodiacStats(report);
+  const positions = [
+    [250, 275], [304, 275], [358, 275], [412, 275],
+    [230, 315], [230, 363], [450, 315], [450, 363],
+    [250, 407], [304, 407], [358, 407], [412, 407],
+  ];
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(358, 357, 104, 64, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(85,51,105,.64)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([2, 4]);
+  ctx.beginPath();
+  ctx.ellipse(358, 357, 82, 48, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(210,163,62,.58)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+  zodiacStats.forEach((zodiac, index) => {
+    const [x, y] = positions[index] || positions[positions.length - 1];
+    const winning = winner?.value === zodiac.value;
+    ctx.save();
+    if (winning) {
+      ctx.shadowColor = "rgba(255,238,91,.98)";
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = "rgba(255,226,88,.72)";
+      roundedPath(ctx, x - 3, y - 3, 48, 38, 9); ctx.fill();
+      ctx.shadowBlur = 7;
+    }
+    ctx.fillStyle = winning ? "rgba(91,54,116,.96)" : "rgba(255,239,198,.94)";
+    roundedPath(ctx, x, y, 42, 32, 7); ctx.fill();
+    ctx.lineWidth = winning ? 2 : 1;
+    ctx.strokeStyle = winning ? "#ffd84e" : "rgba(111,76,45,.72)";
+    ctx.stroke();
+    ctx.restore();
+    drawContainedAsset(ctx, zodiac.asset, x + 2, y + 4, 20, 20);
+    drawPosterText(ctx, zodiac.label.replace("座", ""), x + 23, y + 10, 17, { weight: 900, size: 6.5, minSize: 5.5, color: winning ? "#fff0a0" : "#4b2e20" });
+    drawPosterText(ctx, `${formatReportHours(zodiac.minutes)}h`, x + 23, y + 20, 17, { weight: 900, size: 6.5, minSize: 5, color: winning ? "#fff" : "#4b3068" });
+    drawPosterText(ctx, `${zodiac.checkins}次`, x + 23, y + 28, 17, { weight: 800, size: 5.8, minSize: 5, color: winning ? "#ffe083" : "#765438" });
+  });
+  drawPosterText(ctx, winner ? "时长之冠" : "本月待出动", 358, 335, 92, { weight: 900, size: 9, align: "center", color: "#6d397d" });
+  drawPosterText(ctx, winner?.label || "十二星座", 358, 355, 88, { weight: 950, size: 15, minSize: 10, align: "center", color: "#3f2454" });
+  drawPosterText(ctx, winner ? `${formatReportHours(winner.minutes)}小时 · ${winner.checkins}次` : "0小时 · 0次", 358, 375, 98, { weight: 850, size: 8, minSize: 6, align: "center", color: "#714d32" });
+  drawPosterText(ctx, "按星座汇总真实训练", 358, 392, 104, { weight: 750, size: 6.5, minSize: 5.5, align: "center", color: "#876448" });
+}
+function drawMonthlyTop3(ctx, report) {
+  drawFantasyPanel(ctx, 46, 464, 218, 142, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawFantasyRibbon(ctx, "本月 TOP 3", 155, 467, 148);
+  (report.top3 || []).forEach((member, index) => {
+    const width = 66;
+    const x = 53 + index * 69;
+    drawReportCat(ctx, member, x + 6, 484, 54, 54);
+    ctx.fillStyle = index === 0 ? "#8f5719" : index === 1 ? "#607086" : "#955037";
+    ctx.beginPath(); ctx.arc(x + 11, 492, 9, 0, Math.PI * 2); ctx.fill();
+    drawPosterText(ctx, index + 1, x + 11, 492, 14, { weight: 900, size: 9, align: "center", color: "#fff" });
+    drawPosterText(ctx, member.name, x + width / 2, 552, width - 5, { weight: 900, size: 8, minSize: 6, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, `${formatReportHours(member.minutes)}小时`, x + width / 2, 576, width - 5, { weight: 950, size: 12, minSize: 8, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, `${member.checkins}次`, x + width / 2, 591, width - 5, { weight: 750, size: 7, align: "center", color: "#6e4930" });
+  });
+}
+function drawMonthlyTrend(ctx, report) {
+  drawFantasyPanel(ctx, 276, 464, 218, 142, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawPosterText(ctx, "每日训练时长趋势（小时）", 289, 481, 190, { weight: 850, size: 9, minSize: 7, color: "#4b3068" });
+  const daily = report.daily || [];
+  const values = daily.map((day) => day.minutes / 60);
+  const max = Math.max(1, ...values);
+  const left = 290; const top = 496; const width = 188; const height = 84;
+  ctx.beginPath(); ctx.moveTo(left, top + height); ctx.lineTo(left + width, top + height); ctx.strokeStyle = "rgba(90,61,42,.55)"; ctx.lineWidth = 1; ctx.stroke();
+  if (values.length) {
+    ctx.beginPath();
+    values.forEach((value, index) => {
+      const x = left + (values.length === 1 ? width / 2 : index * width / (values.length - 1));
+      const y = top + height - value / max * (height - 8);
+      if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#5b3577"; ctx.lineWidth = 2; ctx.stroke();
+    values.forEach((value, index) => {
+      if (!value) return;
+      const x = left + (values.length === 1 ? width / 2 : index * width / (values.length - 1));
+      const y = top + height - value / max * (height - 8);
+      ctx.fillStyle = "#d1a13e"; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+  drawPosterText(ctx, `峰值 ${formatReportHours(max * 60)} 小时`, 478, 592, 100, { weight: 800, size: 7, align: "right", color: "#6e4930" });
+}
+function drawMonthlyDistribution(ctx, report) {
+  drawFantasyPanel(ctx, 46, 624, 218, 138, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawPosterText(ctx, "打卡连续天数分布", 155, 641, 190, { weight: 900, size: 11, align: "center", color: "#4b3068" });
+  const groups = [["1–2天", 1, 2], ["3–4天", 3, 4], ["5–7天", 5, 7], ["8天以上", 8, Infinity]];
+  const ranking = report.ranking || [];
+  const counts = groups.map(([, min, max]) => ranking.filter((member) => member.longestStreak >= min && member.longestStreak <= max).length);
+  const maxCount = Math.max(1, ...counts);
+  groups.forEach(([label], index) => {
+    const y = 664 + index * 22;
+    drawPosterText(ctx, label, 60, y, 52, { weight: 800, size: 8, minSize: 7, color: "#6e4930" });
+    ctx.fillStyle = "rgba(92,52,112,.16)"; roundedPath(ctx, 112, y - 5, 112, 10, 5); ctx.fill();
+    ctx.fillStyle = index === 3 ? "#9d6bd0" : "#5c3470"; roundedPath(ctx, 112, y - 5, Math.max(5, 112 * counts[index] / maxCount), 10, 5); ctx.fill();
+    drawPosterText(ctx, `${counts[index]}人`, 248, y, 30, { weight: 850, size: 8, align: "right", color: "#3b2519" });
+  });
+}
+function drawMonthlyCalendar(ctx, report) {
+  drawFantasyPanel(ctx, 276, 624, 218, 138, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  const activeRate = report.daily?.length ? Math.round(report.daily.filter((day) => day.minutes > 0).length / report.daily.length * 100) : 0;
+  drawPosterText(ctx, `本月打卡日历 · ${activeRate}%`, 385, 641, 190, { weight: 900, size: 10, align: "center", color: "#4b3068" });
+  const days = report.daily || [];
+  const first = new Date(report.periodStart);
+  const offset = (first.getDay() + 6) % 7;
+  const cellWidth = 24;
+  days.forEach((day, index) => {
+    const slot = offset + index;
+    const column = slot % 7;
+    const row = Math.floor(slot / 7);
+    const x = 291 + column * 27;
+    const y = 660 + row * 18;
+    ctx.fillStyle = day.minutes > 0 ? "#67407d" : "rgba(118,82,50,.11)";
+    roundedPath(ctx, x, y, cellWidth, 15, 3); ctx.fill();
+    drawPosterText(ctx, day.day, x + cellWidth / 2, y + 8, cellWidth - 3, { weight: 850, size: 7, align: "center", color: day.minutes > 0 ? "#fff0b6" : "#765a44" });
+  });
+}
+function drawReportPoster(canvas, report) {
+  const baseWidth = 540;
+  const layout = reportPosterLayout(report);
+  const scale = canvas.width / baseWidth;
+  const targetHeight = Math.round(layout.height * scale);
+  if (canvas.height !== targetHeight) canvas.height = targetHeight;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) return;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.clearRect(0, 0, baseWidth, layout.height);
+  ctx.fillStyle = "#17396d"; ctx.fillRect(0, 0, baseWidth, layout.height);
+  ctx.imageSmoothingEnabled = false;
+  const background = reportAssetRecord(REPORT_BACKGROUNDS[report.reportType] || REPORT_BACKGROUNDS.week);
+  if (background?.loaded) ctx.drawImage(background.image, 0, 0, baseWidth, layout.height);
+  else {
+    ctx.fillStyle = "#e7c98e"; roundedPath(ctx, 34, 40, 472, layout.height - 72, 14); ctx.fill();
+  }
+  ctx.textBaseline = "middle";
+  drawReportTitle(ctx, report);
+  drawReportMetrics(ctx, report);
+  if (report.reportType === "month") {
+    drawMonthlyStarAndRing(ctx, report);
+    drawMonthlyTop3(ctx, report);
+    drawMonthlyTrend(ctx, report);
+    drawMonthlyDistribution(ctx, report);
+    drawMonthlyCalendar(ctx, report);
+    drawCompactMemberRows(ctx, report, 784);
+  } else {
+    drawWeeklyPodium(ctx, report);
+    drawWeeklyRewards(ctx, report);
+    drawCompactMemberRows(ctx, report, 568);
+  }
+  ctx.fillStyle = "rgba(236,207,147,.92)"; roundedPath(ctx, 138, layout.footerY - 15, 264, 30, 6); ctx.fill();
+  ctx.lineWidth = 1.2; ctx.strokeStyle = "#83552e"; ctx.stroke();
+  drawPosterText(ctx, "每一次打卡，都是成长的足迹！", 270, layout.footerY + 1, 240, { weight: 900, size: 12, minSize: 9, align: "center", color: "#43291c" });
+}
 function paintReportCanvases() {
   const reports = new Map(scheduledReports().map((report) => [report.id, report]));
   document.querySelectorAll("canvas[data-report-canvas]").forEach((canvas) => {
@@ -972,7 +1351,8 @@ function paintReportCanvases() {
     image.src = canvas.toDataURL("image/png");
   });
 }
-function saveReportImage(report) {
+async function saveReportImage(report) {
+  await preloadReportAssets(report);
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
   canvas.height = 1920;
@@ -1003,7 +1383,7 @@ function reportModal(report) {
 function activityCard(item) {
   const own = item.userId === state.user?.id;
   const heart = item.liked ? `<span class="liked-heart" aria-hidden="true">♥</span>` : icon("heart-straight");
-  return `<article class="feed-card"><div class="feed-main">${avatarMarkup(item, "feed-avatar")}<div class="feed-copy"><div class="feed-name-row"><strong>${escapeHTML(item.name)}</strong><span class="feed-type">${escapeHTML(item.type)}</span></div><p>${escapeHTML(activitySummary(item))}</p><small>${escapeHTML(relativeTime(item.createdAt))}</small></div><div class="feed-controls"><button class="like-button ${item.liked ? "is-liked" : ""}" data-like="${escapeHTML(item.id)}" aria-label="${item.liked ? "取消点赞" : "点赞"}">${heart}<span>${item.likes}</span></button>${own ? `<button class="edit-button" data-edit-checkin="${escapeHTML(item.id)}" aria-label="编辑这条打卡">${icon("pencil-simple")}</button>` : ""}</div></div>${item.note ? `<p class="feed-note">${escapeHTML(item.note)}</p>` : ""}${item.photo ? `<img class="feed-photo" src="${escapeHTML(item.photo)}" alt="${escapeHTML(item.name)}的训练照片" loading="lazy" />` : ""}</article>`;
+  return `<article class="feed-card"><div class="feed-main">${avatarMarkup(item, "feed-avatar")}<div class="feed-copy"><div class="feed-name-row"><strong>${escapeHTML(item.name)}</strong><span class="feed-type">${escapeHTML(displayTrainingType(item))}</span></div><p>${escapeHTML(activitySummary(item))}</p><small>${escapeHTML(relativeTime(item.createdAt))}</small></div><div class="feed-controls"><button class="like-button ${item.liked ? "is-liked" : ""}" data-like="${escapeHTML(item.id)}" aria-label="${item.liked ? "取消点赞" : "点赞"}">${heart}<span>${item.likes}</span></button>${own ? `<button class="edit-button" data-edit-checkin="${escapeHTML(item.id)}" aria-label="编辑这条打卡">${icon("pencil-simple")}</button>` : ""}</div></div>${item.note ? `<p class="feed-note">${escapeHTML(item.note)}</p>` : ""}${item.photo ? `<img class="feed-photo" src="${escapeHTML(item.photo)}" alt="${escapeHTML(item.name)}的训练照片" loading="lazy" />` : ""}</article>`;
 }
 
 function homePage() {
@@ -1087,10 +1467,8 @@ function catStateVisual(profile, status, { label = "嘎巴47星座猫", detail =
 
 function plazaCatCard(member, index, count) {
   const profile = catProfileFor(member);
-  const status = memberTodayState(member);
   const weeklyCrown = member.weeklyCount > 0 ? `<span class="weekly-crown" aria-label="本周已打卡">${icon("crown")}</span>` : "";
-  const effectClass = status.effect ? ` effect-${status.effect.key}` : "";
-  return `<button class="plaza-cat${effectClass}" style="${plazaMotion(member, index, count)}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息${member.weeklyCount > 0 ? "，本周已打卡" : ""}${status.effect ? `，${status.effect.label}` : ""}"><span class="plaza-cat-motion">${weeklyCrown}<span class="plaza-cat-sprite">${catStateVisual(profile, status, { label: `${member.name}的星座猫` })}</span><strong class="plaza-cat-name">${escapeHTML(member.name)}</strong></span></button>`;
+  return `<button class="plaza-cat" style="${plazaMotion(member, index, count)}" data-member-id="${escapeHTML(member.id)}" aria-label="查看${escapeHTML(member.name)}的训练信息${member.weeklyCount > 0 ? "，本周已打卡" : ""}"><span class="plaza-cat-motion">${weeklyCrown}<span class="plaza-cat-sprite">${catCharacter(profile, { label: `${member.name}的星座猫` })}</span><strong class="plaza-cat-name">${escapeHTML(member.name)}</strong></span></button>`;
 }
 function memberDetailModal() {
   const member = memberStats().find((item) => item.id === state.memberModal);
@@ -1558,7 +1936,13 @@ document.addEventListener("keydown", (event) => {
   else if (event.key === "Escape" && state.memberModal) { state.memberModal = null; render(); }
 });
 
-if (PREVIEW_MODE) { previewData(); render(); }
+if (PREVIEW_MODE) {
+  previewData();
+  if (PREVIEW_REPORT === "week" || PREVIEW_REPORT === "month") {
+    state.reportModal = scheduledReports().find((report) => report.reportType === PREVIEW_REPORT)?.id || null;
+  }
+  render();
+}
 else { render(); connect(); }
 
 if ("serviceWorker" in navigator && !PREVIEW_MODE) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
