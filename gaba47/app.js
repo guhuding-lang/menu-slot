@@ -872,19 +872,14 @@ function formatReportHours(minutes) {
 }
 function reportPosterLayout(report) {
   const ranking = (report.ranking || report.top3 || []).filter((member) => Number(member?.minutes) > 0);
-  const remainingRows = Math.ceil(Math.max(0, ranking.length - 3) / 3);
-  const month = report.reportType === "month";
-  const rankingTop = month ? 464 : 252;
-  const otherTop = month ? 784 : 568;
-  const rankingBottom = otherTop + (remainingRows ? 36 + remainingRows * 58 : 0);
-  const footerY = remainingRows ? rankingBottom + 38 : (month ? 880 : 646);
+  const remainingRows = Math.ceil(Math.min(8, Math.max(0, ranking.length - 3)) / 4);
   return {
     ranking,
     remainingRows,
-    rankingTop,
-    rankingBottom,
-    footerY,
-    height: Math.max(810, footerY + 32),
+    rankingTop: 246,
+    rankingBottom: report.reportType === "month" ? 782 : 746,
+    footerY: report.reportType === "month" ? 798 : 782,
+    height: 810,
   };
 }
 
@@ -975,6 +970,46 @@ function drawFantasyRibbon(ctx, label, centerX, centerY, width = 190) {
   ctx.lineWidth = 1.6; ctx.strokeStyle = "#d5a84d"; ctx.stroke();
   drawPosterText(ctx, label, centerX, centerY + 1, width - 18, { weight: 900, size: 14, minSize: 10, align: "center", color: "#ffe183" });
 }
+function drawSpark(ctx, x, y, radius = 5, color = "#ffe681") {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -radius); ctx.lineTo(radius * .28, -radius * .28); ctx.lineTo(radius, 0);
+  ctx.lineTo(radius * .28, radius * .28); ctx.lineTo(0, radius); ctx.lineTo(-radius * .28, radius * .28);
+  ctx.lineTo(-radius, 0); ctx.lineTo(-radius * .28, -radius * .28); ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+function drawPawTrail(ctx, points) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(102,64,43,.5)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([3, 8]);
+  ctx.beginPath();
+  points.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  points.slice(1, -1).forEach(([x, y], index) => {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(index % 2 ? -.26 : .26);
+    ctx.fillStyle = "rgba(92,54,36,.58)";
+    ctx.beginPath(); ctx.ellipse(0, 2, 4.5, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+    [[-4, -3], [0, -5], [4, -3]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(dx, dy, 1.8, 0, Math.PI * 2); ctx.fill(); });
+    ctx.restore();
+  });
+  ctx.restore();
+}
+function drawRankShield(ctx, rank, centerX, centerY, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(centerX - 13, centerY - 12); ctx.lineTo(centerX + 13, centerY - 12);
+  ctx.lineTo(centerX + 11, centerY + 7); ctx.lineTo(centerX, centerY + 15);
+  ctx.lineTo(centerX - 11, centerY + 7); ctx.closePath(); ctx.fill();
+  ctx.lineWidth = 1.4; ctx.strokeStyle = "#f7df9a"; ctx.stroke();
+  drawPosterText(ctx, rank, centerX, centerY - 1, 20, { weight: 950, size: 14, align: "center", color: "#fff5d0" });
+  ctx.restore();
+}
 function drawReportCat(ctx, member, x, y, width, height) {
   const { descriptor } = reportMemberVisual(member || { name: "47" });
   if (!drawContainedAsset(ctx, descriptor.asset, x, y, width, height)) {
@@ -983,11 +1018,12 @@ function drawReportCat(ctx, member, x, y, width, height) {
 }
 function drawReportTitle(ctx, report) {
   const month = report.reportType === "month";
-  if (!month) drawPosterText(ctx, "WEEKLY REPORT", 270, 73, 360, { weight: 900, size: 12, align: "center", color: "#5b3a22" });
-  drawPosterText(ctx, month ? "本月训练月报" : "上周训练周报", 270, 106, 430, { weight: 950, size: month ? 34 : 38, minSize: 28, align: "center", color: "#3b2519" });
-  ctx.fillStyle = "rgba(61,39,91,.95)"; roundedPath(ctx, 165, 125, 210, 26, 6); ctx.fill();
+  drawPosterText(ctx, month ? "MONTHLY TRAINING REPORT" : "WEEKLY REPORT", 270, 72, 330, { weight: 900, size: 10, align: "center", color: "#604127" });
+  drawPosterText(ctx, month ? "本月训练月报" : "上周训练周报", 270, 108, 420, { weight: 950, size: month ? 34 : 38, minSize: 28, align: "center", color: "#352017" });
+  drawSpark(ctx, 115, 106, 5); drawSpark(ctx, 425, 106, 5);
+  ctx.fillStyle = "rgba(61,39,91,.98)"; roundedPath(ctx, 164, 126, 212, 27, 5); ctx.fill();
   ctx.lineWidth = 1.4; ctx.strokeStyle = "#d5a84d"; ctx.stroke();
-  drawPosterText(ctx, report.periodLabel, 270, 139, 190, { weight: 900, size: 13, minSize: 10, align: "center", color: "#ffe1a0" });
+  drawPosterText(ctx, report.periodLabel, 270, 140, 190, { weight: 900, size: 13, minSize: 10, align: "center", color: "#ffe1a0" });
 }
 function drawReportMetrics(ctx, report) {
   const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
@@ -1007,23 +1043,28 @@ function drawReportMetrics(ctx, report) {
 }
 function drawCompactMemberRows(ctx, report, top) {
   const remaining = (report.ranking || []).slice(3);
-  drawFantasyRibbon(ctx, "其他训练成员", 270, top - 17, 176);
+  const month = report.reportType === "month";
+  const visible = remaining.slice(0, 8);
+  const rowHeight = month ? 19 : 43;
+  const panelHeight = visible.length ? Math.ceil(visible.length / 4) * rowHeight + 8 : (month ? 28 : 38);
+  drawFantasyRibbon(ctx, "其他训练成员", 270, top - 12, 178);
+  drawFantasyPanel(ctx, 46, top, 448, panelHeight, { radius: 7, shadow: false, fill: "rgba(248,224,174,.9)" });
   if (!remaining.length) {
-    drawFantasyPanel(ctx, 46, top, 448, 50, { radius: 7, shadow: false, fill: "rgba(248,224,174,.88)" });
-    drawPosterText(ctx, "本期暂无其他有训练时长的成员", 270, top + 26, 410, { weight: 800, size: 10, align: "center", color: "#735039" });
+    drawPosterText(ctx, "本期暂无其他有训练时长的成员", 270, top + panelHeight / 2 + 1, 410, { weight: 800, size: 9, align: "center", color: "#735039" });
     return;
   }
-  remaining.forEach((member, index) => {
-    const column = index % 3;
-    const row = Math.floor(index / 3);
-    const width = 146;
-    const x = 46 + column * 151;
-    const y = top + row * 58;
-    drawFantasyPanel(ctx, x, y, width, 50, { radius: 7, shadow: false, fill: "rgba(248,224,174,.88)" });
-    drawReportCat(ctx, member, x + 4, y + 5, 38, 38);
-    drawPosterText(ctx, member.name, x + 45, y + 17, width - 50, { weight: 900, size: 10, minSize: 7, color: "#3b2519" });
-    drawPosterText(ctx, `${formatReportHours(member.minutes)}小时 · ${member.checkins}次`, x + 45, y + 35, width - 50, { weight: 750, size: 8, minSize: 6, color: "#735039" });
+  visible.forEach((member, index) => {
+    const column = index % 4;
+    const row = Math.floor(index / 4);
+    const width = 110;
+    const x = 50 + column * 111;
+    const y = top + 4 + row * rowHeight;
+    if (column) { ctx.beginPath(); ctx.moveTo(x - 3, y + 3); ctx.lineTo(x - 3, y + rowHeight - 4); ctx.strokeStyle = "rgba(111,75,45,.2)"; ctx.lineWidth = 1; ctx.stroke(); }
+    drawReportCat(ctx, member, x, y + (month ? 1 : 3), month ? 17 : 32, month ? 17 : 32);
+    drawPosterText(ctx, member.name, x + (month ? 20 : 35), y + (month ? 6 : 13), width - (month ? 22 : 37), { weight: 900, size: month ? 5.8 : 8.5, minSize: 4.8, color: "#3b2519" });
+    drawPosterText(ctx, `${formatReportHours(member.minutes)}h · ${member.checkins}次`, x + (month ? 20 : 35), y + (month ? 14 : 29), width - (month ? 22 : 37), { weight: 800, size: month ? 5.2 : 7, minSize: 4.5, color: "#735039" });
   });
+  if (remaining.length > visible.length) drawPosterText(ctx, `另有 ${remaining.length - visible.length} 位成员`, 486, top + panelHeight - 5, 90, { weight: 800, size: 5.8, align: "right", color: "#765239" });
 }
 function drawLegacyReportPoster(canvas, report) {
   const baseWidth = 540;
@@ -1131,122 +1172,126 @@ function drawLegacyReportPoster(canvas, report) {
 }
 
 function drawWeeklyPodium(ctx, report) {
-  drawFantasyRibbon(ctx, "时长 TOP 3", 270, 252, 176);
+  drawFantasyRibbon(ctx, "★  时长 TOP 3  ★", 270, 252, 190);
+  drawPawTrail(ctx, [[76, 438], [128, 388], [201, 342], [270, 304], [346, 350], [423, 400], [476, 443]]);
   const slots = [
-    { rank: 2, x: 48, y: 307, width: 134, height: 138, catY: 287, catSize: 72, tint: "rgba(220,225,232,.93)" },
-    { rank: 1, x: 188, y: 284, width: 164, height: 164, catY: 270, catSize: 88, tint: "rgba(247,217,145,.96)" },
-    { rank: 3, x: 358, y: 317, width: 134, height: 128, catY: 297, catSize: 68, tint: "rgba(226,177,140,.93)" },
+    { rank: 2, x: 51, y: 317, width: 140, height: 173, catY: 330, catSize: 82, tint: "rgba(219,225,232,.96)", badge: "#63758d" },
+    { rank: 1, x: 194, y: 280, width: 152, height: 218, catY: 293, catSize: 103, tint: "rgba(250,224,160,.97)", badge: "#a56218" },
+    { rank: 3, x: 349, y: 326, width: 140, height: 164, catY: 339, catSize: 79, tint: "rgba(231,185,151,.96)", badge: "#985139" },
   ];
   slots.forEach((slot) => {
     const member = report.top3?.[slot.rank - 1] || null;
-    drawFantasyPanel(ctx, slot.x, slot.y, slot.width, slot.height, { fill: slot.tint, stroke: slot.rank === 1 ? "#8a571b" : "#7b5331", radius: 8 });
-    ctx.fillStyle = slot.rank === 1 ? "#9a5b16" : slot.rank === 2 ? "#5d6e85" : "#954d31";
-    roundedPath(ctx, slot.x + 8, slot.y + 7, 28, 28, 7); ctx.fill();
-    drawPosterText(ctx, slot.rank, slot.x + 22, slot.y + 22, 20, { weight: 950, size: 16, align: "center", color: "#fff4d2" });
+    ctx.save();
+    if (slot.rank === 1) { ctx.shadowColor = "rgba(255,206,68,.8)"; ctx.shadowBlur = 14; }
+    drawFantasyPanel(ctx, slot.x, slot.y, slot.width, slot.height, { fill: slot.tint, stroke: slot.rank === 1 ? "#a56b1d" : "#7b5331", radius: 7 });
+    ctx.restore();
+    drawRankShield(ctx, slot.rank, slot.x + 18, slot.y + 17, slot.badge);
+    if (slot.rank === 1) { drawSpark(ctx, slot.x + 27, slot.y + 48, 5); drawSpark(ctx, slot.x + slot.width - 25, slot.y + 37, 4); }
     drawReportCat(ctx, member, slot.x + (slot.width - slot.catSize) / 2, slot.catY, slot.catSize, slot.catSize);
-    drawPosterText(ctx, member?.name || "等待上榜", slot.x + slot.width / 2, slot.y + slot.height - 48, slot.width - 16, { weight: 900, size: slot.rank === 1 ? 12 : 10, minSize: 7, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, member ? `${formatReportHours(member.minutes)} 小时` : "—", slot.x + slot.width / 2, slot.y + slot.height - 25, slot.width - 16, { weight: 950, size: slot.rank === 1 ? 20 : 17, minSize: 11, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", slot.x + slot.width / 2, slot.y + slot.height - 9, slot.width - 16, { weight: 750, size: 8, minSize: 6, align: "center", color: "#6f4d35" });
+    const nameY = slot.rank === 1 ? slot.y + 139 : slot.y + 114;
+    ctx.fillStyle = "rgba(74,44,28,.12)"; roundedPath(ctx, slot.x + 9, nameY - 15, slot.width - 18, 30, 4); ctx.fill();
+    drawPosterText(ctx, member?.name || "等待上榜", slot.x + slot.width / 2, nameY, slot.width - 24, { weight: 900, size: slot.rank === 1 ? 11 : 9.5, minSize: 7, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, member ? formatReportHours(member.minutes) : "—", slot.x + slot.width / 2 - 5, slot.y + slot.height - 35, slot.width - 34, { weight: 950, size: slot.rank === 1 ? 24 : 19, minSize: 12, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, member ? "小时" : "待挑战", slot.x + slot.width - 22, slot.y + slot.height - 34, 35, { weight: 800, size: 7, minSize: 6, align: "center", color: "#6f4d35" });
+    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", slot.x + slot.width / 2, slot.y + slot.height - 13, slot.width - 20, { weight: 750, size: 7.5, minSize: 6, align: "center", color: "#6f4d35" });
   });
 }
 function drawWeeklyRewards(ctx, report) {
   const ranking = report.ranking || [];
   const mostCheckins = [...ranking].sort((a, b) => b.checkins - a.checkins || b.minutes - a.minutes)[0];
   const mostActive = [...ranking].sort((a, b) => b.activeDays - a.activeDays || b.minutes - a.minutes)[0];
-  drawFantasyRibbon(ctx, "冒险奖励", 270, 466, 146);
-  drawFantasyPanel(ctx, 46, 482, 448, 62, { fill: "rgba(65,38,91,.93)", stroke: "#d5a84d", radius: 8 });
+  drawFantasyRibbon(ctx, "✦  冒险奖励  ✦", 270, 520, 164);
+  drawFantasyPanel(ctx, 46, 536, 448, 75, { fill: "rgba(65,38,91,.96)", stroke: "#d5a84d", radius: 7 });
   const rewards = [
-    ["时长冠军", ranking[0]?.name || "待解锁"],
-    ["打卡先锋", mostCheckins?.name || "待解锁"],
-    ["坚持之星", mostActive?.name || "待解锁"],
-    ["群体经验", `${formatReportHours(report.totalMinutes)}小时`],
+    ["勇气水晶", ranking[0]?.name || "待解锁", "#8c57dc"],
+    ["坚持勋章", mostActive?.name || "待解锁", "#d69a27"],
+    ["猫爪金币", mostCheckins?.name || "待解锁", "#d5b34b"],
+    ["力量徽章", `${report.checkinCount}次`, "#59687e"],
+    ["群体经验", `${formatReportHours(report.totalMinutes)}h`, "#b97c52"],
   ];
-  rewards.forEach(([label, value], index) => {
-    const x = 46 + index * 112;
-    if (index) { ctx.beginPath(); ctx.moveTo(x, 493); ctx.lineTo(x, 533); ctx.strokeStyle = "rgba(255,222,132,.35)"; ctx.lineWidth = 1; ctx.stroke(); }
-    drawPosterText(ctx, label, x + 56, 500, 100, { weight: 850, size: 8, minSize: 7, align: "center", color: "#e7bb66" });
-    drawPosterText(ctx, value, x + 56, 523, 96, { weight: 900, size: 10, minSize: 7, align: "center", color: "#fff1be" });
+  rewards.forEach(([label, value, color], index) => {
+    const centerX = 90 + index * 90;
+    ctx.save(); ctx.shadowColor = color; ctx.shadowBlur = 8;
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(centerX, 560, 15, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "#f5d985"; ctx.beginPath(); ctx.arc(centerX, 560, 15, 0, Math.PI * 2); ctx.stroke();
+    drawSpark(ctx, centerX, 560, 7, "#fff0a8");
+    drawPosterText(ctx, label, centerX, 585, 78, { weight: 850, size: 7, minSize: 6, align: "center", color: "#e7bb66" });
+    drawPosterText(ctx, value, centerX, 599, 78, { weight: 900, size: 7.5, minSize: 5.5, align: "center", color: "#fff1be" });
   });
 }
 function drawMonthlyStarAndRing(ctx, report) {
   const star = report.top3?.[0] || null;
-  drawFantasyPanel(ctx, 46, 252, 166, 190, { fill: "rgba(246,220,169,.9)", radius: 9 });
-  drawFantasyRibbon(ctx, "本月之星", 129, 255, 124);
-  drawReportCat(ctx, star, 76, 273, 106, 106);
-  drawPosterText(ctx, star?.name || "等待上榜", 129, 386, 140, { weight: 900, size: 12, minSize: 8, align: "center", color: "#3b2519" });
-  drawPosterText(ctx, star ? `${formatReportHours(star.minutes)}小时 · ${star.checkins}次打卡` : "完成一次训练", 129, 408, 140, { weight: 800, size: 9, minSize: 6, align: "center", color: "#6e4930" });
-  drawPosterText(ctx, star ? `最长连续 ${star.longestStreak || 0} 天` : "等待本月之星", 129, 426, 140, { weight: 800, size: 8, minSize: 6, align: "center", color: "#6e4930" });
-
-  drawFantasyPanel(ctx, 222, 252, 272, 190, { fill: "rgba(246,220,169,.9)", radius: 9 });
-  drawFantasyRibbon(ctx, "星座参与环", 358, 255, 146);
-  const { values: zodiacStats, winner } = monthlyZodiacStats(report);
-  const positions = [
-    [250, 275], [304, 275], [358, 275], [412, 275],
-    [230, 315], [230, 363], [450, 315], [450, 363],
-    [250, 407], [304, 407], [358, 407], [412, 407],
-  ];
+  drawFantasyPanel(ctx, 46, 246, 174, 226, { fill: "rgba(246,220,169,.93)", radius: 8 });
+  drawFantasyRibbon(ctx, "✦  本月之星  ✦", 133, 250, 142);
   ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(358, 357, 104, 64, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(85,51,105,.64)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.setLineDash([2, 4]);
-  ctx.beginPath();
-  ctx.ellipse(358, 357, 82, 48, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(210,163,62,.58)";
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.fillStyle = "rgba(45,33,87,.94)"; ctx.beginPath(); ctx.arc(133, 333, 63, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(255,220,102,.8)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(133, 333, 56, 0, Math.PI * 2); ctx.stroke();
+  [[91,306,3],[174,299,4],[101,365,3],[168,356,2],[143,288,2]].forEach(([x,y,r]) => drawSpark(ctx,x,y,r));
+  ctx.shadowColor = "rgba(255,211,65,.75)"; ctx.shadowBlur = 16;
+  drawReportCat(ctx, star, 80, 282, 106, 106);
+  ctx.restore();
+  drawPosterText(ctx, star?.name || "等待上榜", 133, 402, 146, { weight: 900, size: 11.5, minSize: 8, align: "center", color: "#3b2519" });
+  ctx.fillStyle = "rgba(89,53,112,.12)"; roundedPath(ctx, 59, 416, 148, 43, 5); ctx.fill();
+  drawPosterText(ctx, star ? `${formatReportHours(star.minutes)} 小时 · ${star.checkins} 次` : "完成一次训练", 133, 429, 138, { weight: 850, size: 8.5, minSize: 6, align: "center", color: "#503364" });
+  drawPosterText(ctx, star ? `最长连续 ${star.longestStreak || 0} 天` : "等待本月之星", 133, 447, 138, { weight: 800, size: 7.5, minSize: 6, align: "center", color: "#6e4930" });
+
+  drawFantasyPanel(ctx, 230, 246, 264, 226, { fill: "rgba(246,220,169,.93)", radius: 8 });
+  drawFantasyRibbon(ctx, "★  星座参与环  ★", 362, 250, 166);
+  const { values: zodiacStats, winner } = monthlyZodiacStats(report);
+  ctx.save();
+  ctx.fillStyle = "rgba(47,39,88,.94)"; ctx.beginPath(); ctx.arc(362, 361, 58, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "#cfa74c"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(362, 361, 66, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "rgba(102,63,121,.6)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(362, 361, 94, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 12; i += 1) { const angle = i / 12 * Math.PI * 2 - Math.PI / 2; ctx.beginPath(); ctx.moveTo(362 + Math.cos(angle) * 58, 361 + Math.sin(angle) * 58); ctx.lineTo(362 + Math.cos(angle) * 94, 361 + Math.sin(angle) * 94); ctx.stroke(); }
   ctx.restore();
   zodiacStats.forEach((zodiac, index) => {
-    const [x, y] = positions[index] || positions[positions.length - 1];
+    const angle = index / 12 * Math.PI * 2 - Math.PI / 2;
+    const x = 362 + Math.cos(angle) * 96;
+    const y = 361 + Math.sin(angle) * 96;
     const winning = winner?.value === zodiac.value;
     ctx.save();
     if (winning) {
-      ctx.shadowColor = "rgba(255,238,91,.98)";
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = "rgba(255,226,88,.72)";
-      roundedPath(ctx, x - 3, y - 3, 48, 38, 9); ctx.fill();
-      ctx.shadowBlur = 7;
+      ctx.shadowColor = "rgba(255,238,91,.98)"; ctx.shadowBlur = 20;
+      ctx.fillStyle = "rgba(255,224,77,.75)"; ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.fillStyle = winning ? "rgba(91,54,116,.96)" : "rgba(255,239,198,.94)";
-    roundedPath(ctx, x, y, 42, 32, 7); ctx.fill();
+    ctx.fillStyle = winning ? "rgba(83,48,110,.98)" : "rgba(255,238,196,.97)"; ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = winning ? 2 : 1;
-    ctx.strokeStyle = winning ? "#ffd84e" : "rgba(111,76,45,.72)";
-    ctx.stroke();
+    ctx.strokeStyle = winning ? "#ffd84e" : "rgba(111,76,45,.78)"; ctx.stroke();
     ctx.restore();
-    drawContainedAsset(ctx, zodiac.asset, x + 2, y + 4, 20, 20);
-    drawPosterText(ctx, zodiac.label.replace("座", ""), x + 23, y + 10, 17, { weight: 900, size: 6.5, minSize: 5.5, color: winning ? "#fff0a0" : "#4b2e20" });
-    drawPosterText(ctx, `${formatReportHours(zodiac.minutes)}h`, x + 23, y + 20, 17, { weight: 900, size: 6.5, minSize: 5, color: winning ? "#fff" : "#4b3068" });
-    drawPosterText(ctx, `${zodiac.checkins}次`, x + 23, y + 28, 17, { weight: 800, size: 5.8, minSize: 5, color: winning ? "#ffe083" : "#765438" });
+    drawContainedAsset(ctx, zodiac.asset, x - 15, y - 15, 30, 30);
+    ctx.fillStyle = winning ? "#6d3f88" : "rgba(246,218,162,.96)"; roundedPath(ctx, x - 17, y + 14, 34, 11, 4); ctx.fill();
+    drawPosterText(ctx, `${zodiac.label.replace("座", "")} ${formatReportHours(zodiac.minutes)}h`, x, y + 20, 32, { weight: 900, size: 5.2, minSize: 4.6, align: "center", color: winning ? "#fff0a0" : "#4b2e20" });
   });
-  drawPosterText(ctx, winner ? "时长之冠" : "本月待出动", 358, 335, 92, { weight: 900, size: 9, align: "center", color: "#6d397d" });
-  drawPosterText(ctx, winner?.label || "十二星座", 358, 355, 88, { weight: 950, size: 15, minSize: 10, align: "center", color: "#3f2454" });
-  drawPosterText(ctx, winner ? `${formatReportHours(winner.minutes)}小时 · ${winner.checkins}次` : "0小时 · 0次", 358, 375, 98, { weight: 850, size: 8, minSize: 6, align: "center", color: "#714d32" });
-  drawPosterText(ctx, "按星座汇总真实训练", 358, 392, 104, { weight: 750, size: 6.5, minSize: 5.5, align: "center", color: "#876448" });
+  drawPosterText(ctx, winner ? "时长之冠" : "本月待出动", 362, 337, 94, { weight: 900, size: 8, align: "center", color: "#d7a953" });
+  drawPosterText(ctx, winner?.label || "十二星座", 362, 359, 94, { weight: 950, size: 15, minSize: 10, align: "center", color: "#fff0ae" });
+  drawPosterText(ctx, winner ? `${formatReportHours(winner.minutes)}小时 · ${winner.checkins}次` : "0小时 · 0次", 362, 380, 98, { weight: 850, size: 7.5, minSize: 6, align: "center", color: "#f1cf82" });
+  drawPosterText(ctx, "按星座汇总真实训练", 362, 397, 104, { weight: 750, size: 6.2, minSize: 5.5, align: "center", color: "#c6a56c" });
 }
 function drawMonthlyTop3(ctx, report) {
-  drawFantasyPanel(ctx, 46, 464, 218, 142, { fill: "rgba(246,220,169,.9)", radius: 9 });
-  drawFantasyRibbon(ctx, "本月 TOP 3", 155, 467, 148);
+  drawFantasyPanel(ctx, 46, 486, 218, 126, { fill: "rgba(246,220,169,.93)", radius: 8 });
+  drawFantasyRibbon(ctx, "本月 TOP 3", 155, 489, 148);
   (report.top3 || []).forEach((member, index) => {
     const width = 66;
     const x = 53 + index * 69;
-    drawReportCat(ctx, member, x + 6, 484, 54, 54);
+    const y = index === 0 ? 504 : 513;
+    drawReportCat(ctx, member, x + 6, y, 54, 54);
     ctx.fillStyle = index === 0 ? "#8f5719" : index === 1 ? "#607086" : "#955037";
-    ctx.beginPath(); ctx.arc(x + 11, 492, 9, 0, Math.PI * 2); ctx.fill();
-    drawPosterText(ctx, index + 1, x + 11, 492, 14, { weight: 900, size: 9, align: "center", color: "#fff" });
-    drawPosterText(ctx, member.name, x + width / 2, 552, width - 5, { weight: 900, size: 8, minSize: 6, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, `${formatReportHours(member.minutes)}小时`, x + width / 2, 576, width - 5, { weight: 950, size: 12, minSize: 8, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, `${member.checkins}次`, x + width / 2, 591, width - 5, { weight: 750, size: 7, align: "center", color: "#6e4930" });
+    ctx.beginPath(); ctx.arc(x + 11, y + 7, 9, 0, Math.PI * 2); ctx.fill();
+    drawPosterText(ctx, index + 1, x + 11, y + 7, 14, { weight: 900, size: 9, align: "center", color: "#fff" });
+    drawPosterText(ctx, member.name, x + width / 2, 574, width - 5, { weight: 900, size: 7.5, minSize: 5.5, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, `${formatReportHours(member.minutes)}小时`, x + width / 2, 595, width - 5, { weight: 950, size: 11, minSize: 7, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, `${member.checkins}次`, x + width / 2, 606, width - 5, { weight: 750, size: 6.5, align: "center", color: "#6e4930" });
   });
 }
 function drawMonthlyTrend(ctx, report) {
-  drawFantasyPanel(ctx, 276, 464, 218, 142, { fill: "rgba(246,220,169,.9)", radius: 9 });
-  drawPosterText(ctx, "每日训练时长趋势（小时）", 289, 481, 190, { weight: 850, size: 9, minSize: 7, color: "#4b3068" });
+  drawFantasyPanel(ctx, 276, 486, 218, 126, { fill: "rgba(246,220,169,.93)", radius: 8 });
+  drawPosterText(ctx, "每日训练时长趋势（小时）", 289, 502, 190, { weight: 850, size: 9, minSize: 7, color: "#4b3068" });
   const daily = report.daily || [];
   const values = daily.map((day) => day.minutes / 60);
   const max = Math.max(1, ...values);
-  const left = 290; const top = 496; const width = 188; const height = 84;
+  const left = 290; const top = 517; const width = 188; const height = 69;
+  for (let index = 0; index < 3; index += 1) { const y = top + index * height / 2; ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(left + width, y); ctx.strokeStyle = "rgba(91,55,112,.12)"; ctx.lineWidth = 1; ctx.stroke(); }
   ctx.beginPath(); ctx.moveTo(left, top + height); ctx.lineTo(left + width, top + height); ctx.strokeStyle = "rgba(90,61,42,.55)"; ctx.lineWidth = 1; ctx.stroke();
   if (values.length) {
     ctx.beginPath();
@@ -1255,7 +1300,7 @@ function drawMonthlyTrend(ctx, report) {
       const y = top + height - value / max * (height - 8);
       if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = "#5b3577"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = "#5b3577"; ctx.lineWidth = 2.3; ctx.stroke();
     values.forEach((value, index) => {
       if (!value) return;
       const x = left + (values.length === 1 ? width / 2 : index * width / (values.length - 1));
@@ -1263,40 +1308,40 @@ function drawMonthlyTrend(ctx, report) {
       ctx.fillStyle = "#d1a13e"; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
     });
   }
-  drawPosterText(ctx, `峰值 ${formatReportHours(max * 60)} 小时`, 478, 592, 100, { weight: 800, size: 7, align: "right", color: "#6e4930" });
+  drawPosterText(ctx, `峰值 ${formatReportHours(max * 60)} 小时`, 478, 600, 100, { weight: 800, size: 7, align: "right", color: "#6e4930" });
 }
 function drawMonthlyDistribution(ctx, report) {
-  drawFantasyPanel(ctx, 46, 624, 218, 138, { fill: "rgba(246,220,169,.9)", radius: 9 });
-  drawPosterText(ctx, "打卡连续天数分布", 155, 641, 190, { weight: 900, size: 11, align: "center", color: "#4b3068" });
+  drawFantasyPanel(ctx, 46, 624, 218, 98, { fill: "rgba(246,220,169,.93)", radius: 8 });
+  drawPosterText(ctx, "打卡连续天数分布", 155, 638, 190, { weight: 900, size: 10, align: "center", color: "#4b3068" });
   const groups = [["1–2天", 1, 2], ["3–4天", 3, 4], ["5–7天", 5, 7], ["8天以上", 8, Infinity]];
   const ranking = report.ranking || [];
   const counts = groups.map(([, min, max]) => ranking.filter((member) => member.longestStreak >= min && member.longestStreak <= max).length);
   const maxCount = Math.max(1, ...counts);
   groups.forEach(([label], index) => {
-    const y = 664 + index * 22;
-    drawPosterText(ctx, label, 60, y, 52, { weight: 800, size: 8, minSize: 7, color: "#6e4930" });
-    ctx.fillStyle = "rgba(92,52,112,.16)"; roundedPath(ctx, 112, y - 5, 112, 10, 5); ctx.fill();
-    ctx.fillStyle = index === 3 ? "#9d6bd0" : "#5c3470"; roundedPath(ctx, 112, y - 5, Math.max(5, 112 * counts[index] / maxCount), 10, 5); ctx.fill();
-    drawPosterText(ctx, `${counts[index]}人`, 248, y, 30, { weight: 850, size: 8, align: "right", color: "#3b2519" });
+    const y = 657 + index * 15;
+    drawPosterText(ctx, label, 60, y, 48, { weight: 800, size: 7.2, minSize: 6, color: "#6e4930" });
+    ctx.fillStyle = "rgba(92,52,112,.16)"; roundedPath(ctx, 107, y - 4, 116, 8, 4); ctx.fill();
+    ctx.fillStyle = index === 3 ? "#9d6bd0" : "#5c3470"; roundedPath(ctx, 107, y - 4, Math.max(5, 116 * counts[index] / maxCount), 8, 4); ctx.fill();
+    drawPosterText(ctx, `${counts[index]}人`, 248, y, 25, { weight: 850, size: 7, align: "right", color: "#3b2519" });
   });
 }
 function drawMonthlyCalendar(ctx, report) {
-  drawFantasyPanel(ctx, 276, 624, 218, 138, { fill: "rgba(246,220,169,.9)", radius: 9 });
+  drawFantasyPanel(ctx, 276, 624, 218, 98, { fill: "rgba(246,220,169,.93)", radius: 8 });
   const activeRate = report.daily?.length ? Math.round(report.daily.filter((day) => day.minutes > 0).length / report.daily.length * 100) : 0;
-  drawPosterText(ctx, `本月打卡日历 · ${activeRate}%`, 385, 641, 190, { weight: 900, size: 10, align: "center", color: "#4b3068" });
+  drawPosterText(ctx, `本月打卡日历 · 打卡率 ${activeRate}%`, 385, 638, 190, { weight: 900, size: 9, align: "center", color: "#4b3068" });
   const days = report.daily || [];
   const first = new Date(report.periodStart);
   const offset = (first.getDay() + 6) % 7;
-  const cellWidth = 24;
+  const cellWidth = 23;
   days.forEach((day, index) => {
     const slot = offset + index;
     const column = slot % 7;
     const row = Math.floor(slot / 7);
-    const x = 291 + column * 27;
-    const y = 660 + row * 18;
+    const x = 292 + column * 26;
+    const y = 651 + row * 12;
     ctx.fillStyle = day.minutes > 0 ? "#67407d" : "rgba(118,82,50,.11)";
-    roundedPath(ctx, x, y, cellWidth, 15, 3); ctx.fill();
-    drawPosterText(ctx, day.day, x + cellWidth / 2, y + 8, cellWidth - 3, { weight: 850, size: 7, align: "center", color: day.minutes > 0 ? "#fff0b6" : "#765a44" });
+    roundedPath(ctx, x, y, cellWidth, 10, 3); ctx.fill();
+    drawPosterText(ctx, day.day, x + cellWidth / 2, y + 5, cellWidth - 3, { weight: 850, size: 5.8, minSize: 5, align: "center", color: day.minutes > 0 ? "#fff0b6" : "#765a44" });
   });
 }
 function drawReportPoster(canvas, report) {
@@ -1325,15 +1370,15 @@ function drawReportPoster(canvas, report) {
     drawMonthlyTrend(ctx, report);
     drawMonthlyDistribution(ctx, report);
     drawMonthlyCalendar(ctx, report);
-    drawCompactMemberRows(ctx, report, 784);
+    drawCompactMemberRows(ctx, report, 744);
   } else {
     drawWeeklyPodium(ctx, report);
     drawWeeklyRewards(ctx, report);
-    drawCompactMemberRows(ctx, report, 568);
+    drawCompactMemberRows(ctx, report, 636);
   }
-  ctx.fillStyle = "rgba(236,207,147,.92)"; roundedPath(ctx, 138, layout.footerY - 15, 264, 30, 6); ctx.fill();
+  ctx.fillStyle = "rgba(236,207,147,.96)"; roundedPath(ctx, 137, layout.footerY - 12, 266, 24, 5); ctx.fill();
   ctx.lineWidth = 1.2; ctx.strokeStyle = "#83552e"; ctx.stroke();
-  drawPosterText(ctx, "每一次打卡，都是成长的足迹！", 270, layout.footerY + 1, 240, { weight: 900, size: 12, minSize: 9, align: "center", color: "#43291c" });
+  drawPosterText(ctx, "每一次打卡，都是成长的足迹！", 270, layout.footerY + 1, 240, { weight: 900, size: 10.5, minSize: 8, align: "center", color: "#43291c" });
 }
 function paintReportCanvases() {
   const reports = new Map(scheduledReports().map((report) => [report.id, report]));
