@@ -1,14 +1,21 @@
-const CACHE = 'gaba47-v49'
+const CACHE = 'gaba47-v52'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
   './app.css?v=26',
   './photo-fix.js?v=1',
-  './app.js?v=41',
+  './app.js?v=44',
   './cat-zodiac-ui.js?v=1',
   './assets/zodiac-plaza/fantasy-plaza.webp',
   './assets/zodiac-plaza/report-week-scroll.webp',
   './assets/zodiac-plaza/report-month-scroll.webp',
+  './assets/zodiac-plaza/report-week-template.webp',
+  './assets/zodiac-plaza/report-month-template.webp',
+  './assets/zodiac-plaza/reward-crystal.jpg',
+  './assets/zodiac-plaza/reward-medal.jpg',
+  './assets/zodiac-plaza/reward-coin.jpg',
+  './assets/zodiac-plaza/reward-dumbbell.jpg',
+  './assets/zodiac-plaza/reward-fishbone.jpg',
   './assets/zodiac-plaza/cat-state-props-v1.png',
   './assets/zodiac-plaza/cat-state-props-v2.png',
   './assets/zodiac-plaza/aries.webp',
