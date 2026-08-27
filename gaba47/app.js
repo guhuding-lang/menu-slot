@@ -1496,10 +1496,14 @@ function homePage() {
   const members = memberStats();
   const me = currentMember(members) || { weeklyCount: 0, monthlyCount: 0, monthlyMinutes: 0, streak: 0, dates: new Set() };
   const reports = scheduledReports();
-  const latest = reports[0];
   const feedItems = homeFeedItems();
-  const latestButton = latest ? `<button class="latest-report-button" data-action="open-report" data-report-id="${escapeHTML(latest.id)}"><span class="latest-report-icon">${icon(latest.reportType === "week" ? "trophy" : "calendar-star")}</span><span><small>最近一期</small><strong>${escapeHTML(latest.reportName)}</strong></span>${icon("arrow-right")}</button>` : "";
-  return `<main class="page page-home">${header("嘎巴47", true)}${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月分钟</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div></section>${latestButton}<section class="feed-section"><div class="section-heading"><h2>动态</h2><span>${feedItems.length ? `${feedItems.length} 条最近动态` : "等待第一卡"}</span></div><div class="feed-list">${feedItems.length ? feedItems.map((item) => item.feedKind === "report" ? reportCard(item) : activityCard(item)).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
+  const latestReports = [
+    { report: reports.find((item) => item.reportType === "week"), label: "最近周报", iconName: "trophy" },
+    { report: reports.find((item) => item.reportType === "month"), label: "最近月报", iconName: "calendar-star" },
+  ].filter((item) => item.report);
+  const latestReportButtons = latestReports.map(({ report, label, iconName }) => `<button class="latest-report-button" data-action="open-report" data-report-id="${escapeHTML(report.id)}" aria-label="打开${escapeHTML(label)}：${escapeHTML(report.reportName)}"><span class="latest-report-icon">${icon(iconName)}</span><span><small>${escapeHTML(label)}</small><strong>${escapeHTML(report.reportName)}</strong></span>${icon("arrow-right")}</button>`).join("");
+  const latestReportSection = latestReportButtons ? `<section class="latest-report-grid ${latestReports.length === 1 ? "is-single" : ""}" aria-label="最近报表">${latestReportButtons}</section>` : "";
+  return `<main class="page page-home">${header("嘎巴47", true)}${connectionNotice()}<section class="weekly-card" aria-label="我的训练概览"><div class="metric-grid"><div><span>本周训练</span><strong>${me.weeklyCount}<small>次</small></strong></div><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>本月分钟</span><strong>${me.monthlyMinutes}<small>分钟</small></strong></div></div><div class="week-bars">${weekBars(me)}</div></section>${latestReportSection}<section class="feed-section"><div class="section-heading"><h2>动态</h2><span>${feedItems.length ? `${feedItems.length} 条最近动态` : "等待第一卡"}</span></div><div class="feed-list">${feedItems.length ? feedItems.map((item) => item.feedKind === "report" ? reportCard(item) : activityCard(item)).join("") : `<div class="empty-state">${icon("barbell")}<strong>还没有训练记录</strong><p>你来打第一卡，这里只展示真实数据。</p><button data-route="checkin">去打卡</button></div>`}</div></section></main>`;
 }
 
 function rankingPage() {
