@@ -930,15 +930,56 @@ function reportPosterLayout(report) {
 }
 
 const REPORT_BACKGROUNDS = {
-  week: "./assets/zodiac-plaza/report-week-template.webp",
+  week: "./assets/zodiac-plaza/report-week-template-fixed.jpg",
   month: "./assets/zodiac-plaza/report-month-template.webp",
 };
 const REPORT_REWARD_ASSETS = [
-  "./assets/zodiac-plaza/reward-crystal.jpg",
-  "./assets/zodiac-plaza/reward-medal.jpg",
-  "./assets/zodiac-plaza/reward-coin.jpg",
-  "./assets/zodiac-plaza/reward-dumbbell.jpg",
-  "./assets/zodiac-plaza/reward-fishbone.jpg",
+  "./assets/zodiac-plaza/reward-courage-crystal.png",
+  "./assets/zodiac-plaza/reward-persistence-medal.png",
+  "./assets/zodiac-plaza/reward-paw-coin.png",
+  "./assets/zodiac-plaza/reward-strength-badge.png",
+  "./assets/zodiac-plaza/reward-fishbone-badge.png",
+];
+const WEEKLY_POSTER_SIZE = { width: 1024, height: 1536 };
+const WEEKLY_LAYOUT = {
+  title: { x: 216, y: 192, width: 596, height: 96 },
+  date: { x: 306, y: 289, width: 412, height: 45 },
+  stats: [
+    { x: 158, y: 347, width: 174, height: 166 },
+    { x: 338, y: 347, width: 172, height: 166 },
+    { x: 516, y: 347, width: 172, height: 166 },
+    { x: 694, y: 347, width: 174, height: 166 },
+  ],
+  top3Title: { x: 328, y: 530, width: 366, height: 50 },
+  podium: [
+    { rank: 2, x: 236, y: 738, width: 164, height: 265, rankX: 258, rankY: 752, character: { x: 248, y: 752, width: 140, height: 145 }, nameY: 909, timeY: 954, countY: 983 },
+    { rank: 1, x: 432, y: 631, width: 180, height: 292, rankX: 458, rankY: 651, character: { x: 446, y: 645, width: 152, height: 176 }, nameY: 850, timeY: 887, countY: 913 },
+    { rank: 3, x: 684, y: 739, width: 168, height: 264, rankX: 705, rankY: 753, character: { x: 697, y: 753, width: 142, height: 145 }, nameY: 910, timeY: 954, countY: 983 },
+  ],
+  rewards: { x: 242, y: 1023, width: 545, height: 119 },
+  members: { x: 78, y: 1202, cellWidth: 144, cellHeight: 96, columnGap: 0, rowGap: 4, columns: 6, rows: 2 },
+  footer: { x: 338, y: 1421, width: 378, height: 49 },
+};
+const WEEKLY_CAT_BOUNDS = {
+  aries: { x: 10, y: 34, width: 379, height: 335 }, taurus: { x: 16, y: 12, width: 373, height: 371 },
+  gemini: { x: 23, y: 10, width: 363, height: 380 }, cancer: { x: 24, y: 30, width: 364, height: 328 },
+  leo: { x: 25, y: 11, width: 356, height: 369 }, virgo: { x: 17, y: 12, width: 364, height: 364 },
+  libra: { x: 15, y: 13, width: 368, height: 369 }, scorpio: { x: 32, y: 23, width: 355, height: 361 },
+  sagittarius: { x: 27, y: 10, width: 353, height: 380 }, capricorn: { x: 18, y: 14, width: 361, height: 372 },
+  aquarius: { x: 10, y: 38, width: 379, height: 337 }, pisces: { x: 29, y: 14, width: 351, height: 362 },
+};
+const WEEKLY_CAT_VISUALS = {
+  aries: { scale: .98, x: 0, y: 2 }, taurus: { scale: .97, x: 0, y: 1 }, gemini: { scale: 1, x: 0, y: 0 },
+  cancer: { scale: 1.01, x: 0, y: 2 }, leo: { scale: .99, x: 0, y: 1 }, virgo: { scale: 1, x: 0, y: 0 },
+  libra: { scale: .99, x: 0, y: 0 }, scorpio: { scale: 1.02, x: 0, y: 1 }, sagittarius: { scale: 1.01, x: 0, y: 0 },
+  capricorn: { scale: 1, x: 0, y: 0 }, aquarius: { scale: .98, x: 0, y: 2 }, pisces: { scale: 1.02, x: 0, y: 0 },
+};
+const WEEKLY_REWARD_VISUALS = [
+  { scale: 1.02, x: 0, y: 0 },
+  { scale: 1.01, x: 0, y: -1 },
+  { scale: 1.08, x: 0, y: -1 },
+  { scale: 1.04, x: 0, y: 0 },
+  { scale: 1.04, x: 1, y: -1 },
 ];
 const reportAssetCache = new Map();
 function reportAssetRecord(src) {
@@ -1069,6 +1110,49 @@ function drawReportCat(ctx, member, x, y, width, height) {
   if (!drawContainedAsset(ctx, descriptor.asset, x, y, width, height)) {
     drawPosterText(ctx, member ? initials(member.name) : "—", x + width / 2, y + height / 2, width - 8, { weight: 900, size: Math.max(12, Math.round(width * .32)), align: "center", color: "#3c2519" });
   }
+}
+function drawWeeklyCat(ctx, member, box, roleScale = 1) {
+  const { descriptor } = reportMemberVisual(member || { name: "47" });
+  const record = reportAssetRecord(descriptor.asset);
+  if (!record?.loaded) {
+    drawPosterText(ctx, member ? initials(member.name) : "—", box.x + box.width / 2, box.y + box.height / 2, box.width - 12, { weight: 900, size: Math.max(24, Math.round(box.width * .3)), align: "center", color: "#3c2519" });
+    return;
+  }
+  const image = record.image;
+  const source = WEEKLY_CAT_BOUNDS[descriptor.value] || { x: 0, y: 0, width: image.naturalWidth || image.width, height: image.naturalHeight || image.height };
+  const visual = WEEKLY_CAT_VISUALS[descriptor.value] || { scale: 1, x: 0, y: 0 };
+  const scale = Math.min(box.width / source.width, box.height / source.height) * visual.scale * roleScale;
+  const width = source.width * scale;
+  const height = source.height * scale;
+  const x = box.x + (box.width - width) / 2 + visual.x;
+  const y = box.y + (box.height - height) / 2 + visual.y;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(box.x, box.y, box.width, box.height);
+  ctx.clip();
+  ctx.drawImage(image, source.x, source.y, source.width, source.height, x, y, width, height);
+  ctx.restore();
+}
+function drawWeeklyRewardAsset(ctx, index, box) {
+  const record = reportAssetRecord(REPORT_REWARD_ASSETS[index]);
+  if (!record?.loaded) return;
+  const image = record.image;
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const visual = WEEKLY_REWARD_VISUALS[index] || { scale: 1, x: 0, y: 0 };
+  const scale = Math.min(box.width / sourceWidth, box.height / sourceHeight) * visual.scale;
+  const width = sourceWidth * scale;
+  const height = sourceHeight * scale;
+  ctx.drawImage(image, box.x + (box.width - width) / 2 + visual.x, box.y + (box.height - height) / 2 + visual.y, width, height);
+}
+function drawWeeklyStatIcon(ctx, glyph, x, y, color) {
+  ctx.save();
+  ctx.font = `30px Phosphor`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.fillText(glyph, x, y);
+  ctx.restore();
 }
 function drawReportTitle(ctx, report) {
   const month = report.reportType === "month";
@@ -1234,54 +1318,110 @@ function drawLegacyReportPoster(canvas, report) {
   drawPosterText(ctx, "嘎巴47 · 47群训练记录", 506, layout.footerY + 5, 210, { weight: 700, size: 9, align: "right", color: "#6c6c68" });
 }
 
-function drawWeeklyPodium(ctx, report) {
-  drawPosterText(ctx, "时长 TOP 3", 270, 296, 150, { weight: 900, size: 13, minSize: 10, align: "center", color: "#ffe7a0" });
-  const slots = [
-    { rank: 2, x: 120, y: 381, width: 102, height: 149, catX: 134, catY: 394, catSize: 74, badgeX: 136, badgeY: 394, nameY: 478 },
-    { rank: 1, x: 228, y: 334, width: 96, height: 153, catX: 239, catY: 346, catSize: 76, badgeX: 243, badgeY: 349, nameY: 436 },
-    { rank: 3, x: 353, y: 383, width: 102, height: 147, catX: 367, catY: 395, catSize: 73, badgeX: 369, badgeY: 396, nameY: 478 },
+function drawWeeklyHeader(ctx, report) {
+  const title = WEEKLY_LAYOUT.title;
+  const date = WEEKLY_LAYOUT.date;
+  drawPosterText(ctx, "WEEKLY REPORT", 512, 143, 320, { weight: 900, size: 24, minSize: 20, align: "center", color: "#604127" });
+  drawPosterText(ctx, "上周训练周报", title.x + title.width / 2, title.y + title.height / 2 + 2, title.width - 44, { weight: 900, size: 67, minSize: 58, align: "center", color: "#352017" });
+  drawPosterText(ctx, report.periodLabel, date.x + date.width / 2, date.y + date.height / 2, date.width - 60, { weight: 900, size: 31, minSize: 24, align: "center", color: "#ffe1a0" });
+}
+function drawWeeklyMetrics(ctx, report) {
+  const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
+  const metrics = [
+    { glyph: "\ue2b2", label: "累计时长", value: formatReportHours(report.totalMinutes), unit: "小时", color: "#73509d" },
+    { glyph: "\ue68e", label: "活跃人数", value: report.activeCount, unit: "人", color: "#547aa0" },
+    { glyph: "\ue712", label: "打卡次数", value: report.checkinCount, unit: "次", color: "#708547" },
+    { glyph: "\ue19a", label: "人均时长", value: formatReportHours(averageMinutes), unit: "小时", color: "#ad5e67" },
   ];
-  slots.forEach((slot) => {
-    const member = report.top3?.[slot.rank - 1] || null;
-    ctx.save();
-    if (slot.rank === 1) { ctx.shadowColor = "rgba(255,206,68,.85)"; ctx.shadowBlur = 12; }
-    drawReportCat(ctx, member, slot.catX, slot.catY, slot.catSize, slot.catSize);
-    ctx.restore();
-    if (slot.rank === 1) {
-      ctx.save();
-      ctx.beginPath(); ctx.arc(slot.badgeX, slot.badgeY, 12, 0, Math.PI * 2); ctx.clip();
-      drawContainedAsset(ctx, REPORT_REWARD_ASSETS[1], slot.badgeX - 13, slot.badgeY - 13, 26, 26, { crop: true });
-      ctx.restore();
-      ctx.lineWidth = 1.2; ctx.strokeStyle = "#f7d87b"; ctx.beginPath(); ctx.arc(slot.badgeX, slot.badgeY, 12, 0, Math.PI * 2); ctx.stroke();
-    }
-    drawPosterText(ctx, slot.rank, slot.badgeX, slot.badgeY, 18, { weight: 950, size: slot.rank === 1 ? 11.5 : 15, align: "center", color: "#fff5d0" });
-    drawPosterText(ctx, member?.name || "等待上榜", slot.x + slot.width / 2, slot.nameY, slot.width - 20, { weight: 900, size: slot.rank === 1 ? 9.2 : 8.3, minSize: 5.2, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, member ? `${formatReportHours(member.minutes)} 小时` : "—", slot.x + slot.width / 2, slot.nameY + 22, slot.width - 18, { weight: 950, size: slot.rank === 1 ? 17.5 : 15.5, minSize: 10, align: "center", color: "#3b2519" });
-    drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", slot.x + slot.width / 2, slot.nameY + 36, slot.width - 16, { weight: 750, size: 6.5, minSize: 5.2, align: "center", color: "#6f4d35" });
+  metrics.forEach((metric, index) => {
+    const card = WEEKLY_LAYOUT.stats[index];
+    const centerX = card.x + card.width / 2;
+    drawWeeklyStatIcon(ctx, metric.glyph, centerX - 48, card.y + 39, metric.color);
+    drawPosterText(ctx, metric.label, centerX + 13, card.y + 39, card.width - 66, { weight: 850, size: 19, minSize: 16, align: "center", color: "#68452d" });
+    drawPosterText(ctx, metric.value, centerX, card.y + 94, card.width - 26, { weight: 900, size: 53, minSize: 38, align: "center", color: "#3b2519" });
+    drawPosterText(ctx, metric.unit, centerX, card.y + 137, card.width - 28, { weight: 850, size: 18, minSize: 15, align: "center", color: "#68452d" });
   });
+}
+function drawWeeklyRankCard(ctx, report, slot) {
+  const member = report.top3?.[slot.rank - 1] || null;
+  drawPosterText(ctx, slot.rank, slot.rankX, slot.rankY, 34, { weight: 900, size: slot.rank === 1 ? 30 : 32, minSize: 24, align: "center", color: slot.rank === 1 ? "#9a5a16" : "#fff3cc" });
+  ctx.save();
+  if (slot.rank === 1) {
+    ctx.shadowColor = "rgba(255,206,68,.8)";
+    ctx.shadowBlur = 14;
+  }
+  drawWeeklyCat(ctx, member, slot.character, slot.rank === 1 ? 1.06 : 1);
+  ctx.restore();
+  const centerX = slot.x + slot.width / 2;
+  drawPosterText(ctx, member?.name || "等待上榜", centerX, slot.nameY, slot.width - 28, { weight: 900, size: slot.rank === 1 ? 19 : 17, minSize: 11, align: "center", color: "#3b2519" });
+  drawPosterText(ctx, member ? `${formatReportHours(member.minutes)} 小时` : "—", centerX, slot.timeY, slot.width - 24, { weight: 900, size: slot.rank === 1 ? 34 : 30, minSize: 22, align: "center", color: "#3b2519" });
+  drawPosterText(ctx, member ? `${member.checkins} 次打卡` : "完成一次训练", centerX, slot.countY, slot.width - 28, { weight: 800, size: 14, minSize: 11, align: "center", color: "#6f4d35" });
+}
+function drawWeeklyPodium(ctx, report) {
+  const title = WEEKLY_LAYOUT.top3Title;
+  drawPosterText(ctx, "时长 TOP 3", title.x + title.width / 2, title.y + title.height / 2 + 1, title.width - 90, { weight: 900, size: 27, minSize: 23, align: "center", color: "#ffe7a0" });
+  WEEKLY_LAYOUT.podium.forEach((slot) => drawWeeklyRankCard(ctx, report, slot));
 }
 function drawWeeklyRewards(ctx, report) {
   const ranking = report.ranking || [];
   const mostCheckins = [...ranking].sort((a, b) => b.checkins - a.checkins || b.minutes - a.minutes)[0];
   const mostActive = [...ranking].sort((a, b) => b.activeDays - a.activeDays || b.minutes - a.minutes)[0];
-  drawPosterText(ctx, "冒险奖励", 270, 548, 126, { weight: 900, size: 12, minSize: 9, align: "center", color: "#ffe7a0" });
   const rewards = [
-    ["勇气水晶", ranking[0]?.name || "待解锁", "#8c57dc"],
-    ["坚持勋章", mostActive?.name || "待解锁", "#d69a27"],
-    ["猫爪金币", mostCheckins?.name || "待解锁", "#d5b34b"],
-    ["力量徽章", `${report.checkinCount}次`, "#59687e"],
-    ["群体经验", `${formatReportHours(report.totalMinutes)}h`, "#b97c52"],
+    { label: "勇气水晶", value: ranking[0]?.name || "待解锁" },
+    { label: "坚持勋章", value: mostActive?.name || "待解锁" },
+    { label: "猫爪金币", value: mostCheckins?.name || "待解锁" },
+    { label: "力量徽章", value: `${report.checkinCount}次` },
+    { label: "喵喵鱼骨", value: `${formatReportHours(report.totalMinutes)}小时` },
   ];
-  rewards.forEach(([label, value], index) => {
-    const centerX = 153 + index * 58.5;
-    ctx.save();
-    ctx.beginPath(); ctx.arc(centerX, 561, 14, 0, Math.PI * 2); ctx.clip();
-    drawContainedAsset(ctx, REPORT_REWARD_ASSETS[index], centerX - 15, 546, 30, 30, { crop: true });
-    ctx.restore();
-    ctx.lineWidth = 1.1; ctx.strokeStyle = "#f5d985"; ctx.beginPath(); ctx.arc(centerX, 561, 14, 0, Math.PI * 2); ctx.stroke();
-    drawPosterText(ctx, label, centerX, 580, 55, { weight: 850, size: 6.2, minSize: 5, align: "center", color: "#e7bb66" });
-    drawPosterText(ctx, value, centerX, 592, 53, { weight: 900, size: 6.3, minSize: 4.6, align: "center", color: "#fff1be" });
+  const region = WEEKLY_LAYOUT.rewards;
+  drawPosterText(ctx, "冒险奖励", region.x + region.width / 2, region.y + 7, 190, { weight: 900, size: 24, minSize: 20, align: "center", color: "#ffe7a0" });
+  const columnWidth = region.width / rewards.length;
+  rewards.forEach((reward, index) => {
+    const x = region.x + index * columnWidth;
+    const centerX = x + columnWidth / 2;
+    drawWeeklyRewardAsset(ctx, index, { x: centerX - 36, y: region.y + 21, width: 72, height: 62 });
+    drawPosterText(ctx, reward.label, centerX, region.y + 88, columnWidth - 10, { weight: 850, size: 14, minSize: 11, align: "center", color: "#e7bb66" });
+    drawPosterText(ctx, reward.value, centerX, region.y + 108, columnWidth - 12, { weight: 900, size: 13, minSize: 9, align: "center", color: "#fff1be" });
   });
+}
+function drawWeeklyMemberItem(ctx, member, index) {
+  const region = WEEKLY_LAYOUT.members;
+  const column = index % region.columns;
+  const row = Math.floor(index / region.columns);
+  const x = region.x + column * (region.cellWidth + region.columnGap);
+  const y = region.y + row * (region.cellHeight + region.rowGap);
+  drawWeeklyCat(ctx, member, { x: x + 6, y: y + 12, width: 59, height: 68 }, .98);
+  drawPosterText(ctx, member.name, x + 68, y + 35, region.cellWidth - 74, { weight: 900, size: 16, minSize: 10.5, color: "#3b2519" });
+  drawPosterText(ctx, `${formatReportHours(member.minutes)}小时 · ${member.checkins}次`, x + 68, y + 65, region.cellWidth - 74, { weight: 800, size: 11.5, minSize: 9.8, color: "#735039" });
+}
+function drawWeeklyMembers(ctx, report) {
+  drawPosterText(ctx, "其他训练成员", 512, 1178, 260, { weight: 900, size: 25, minSize: 21, align: "center", color: "#ffe7a0" });
+  (report.ranking || []).slice(3, 15).forEach((member, index) => drawWeeklyMemberItem(ctx, member, index));
+}
+function drawWeeklyFooter(ctx) {
+  const footer = WEEKLY_LAYOUT.footer;
+  drawPosterText(ctx, "每一次打卡，都是成长的足迹！", footer.x + footer.width / 2, footer.y + footer.height / 2 + 1, footer.width - 24, { weight: 900, size: 22, minSize: 18, align: "center", color: "#43291c" });
+}
+function drawWeeklyReportPoster(canvas, report) {
+  canvas.width = WEEKLY_POSTER_SIZE.width;
+  canvas.height = WEEKLY_POSTER_SIZE.height;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) return;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, WEEKLY_POSTER_SIZE.width, WEEKLY_POSTER_SIZE.height);
+  ctx.fillStyle = "#17396d";
+  ctx.fillRect(0, 0, WEEKLY_POSTER_SIZE.width, WEEKLY_POSTER_SIZE.height);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  const background = reportAssetRecord(REPORT_BACKGROUNDS.week);
+  if (background?.loaded) ctx.drawImage(background.image, 0, 0, WEEKLY_POSTER_SIZE.width, WEEKLY_POSTER_SIZE.height);
+  ctx.textBaseline = "middle";
+  drawWeeklyHeader(ctx, report);
+  drawWeeklyMetrics(ctx, report);
+  drawWeeklyPodium(ctx, report);
+  drawWeeklyRewards(ctx, report);
+  drawWeeklyMembers(ctx, report);
+  drawWeeklyFooter(ctx);
 }
 function drawMonthlyStarAndRing(ctx, report) {
   const star = report.top3?.[0] || null;
@@ -1408,6 +1548,10 @@ function drawMonthlyCalendar(ctx, report) {
   });
 }
 function drawReportPoster(canvas, report) {
+  if (report.reportType === "week") {
+    drawWeeklyReportPoster(canvas, report);
+    return;
+  }
   const baseWidth = 540;
   const layout = reportPosterLayout(report);
   const scale = canvas.width / baseWidth;
@@ -1428,17 +1572,11 @@ function drawReportPoster(canvas, report) {
   ctx.textBaseline = "middle";
   drawReportTitle(ctx, report);
   drawReportMetrics(ctx, report);
-  if (report.reportType === "month") {
-    drawMonthlyStarAndRing(ctx, report);
-    drawMonthlyTop3(ctx, report);
-    drawMonthlyTrend(ctx, report);
-    drawMonthlyDistribution(ctx, report);
-    drawMonthlyCalendar(ctx, report);
-  } else {
-    drawWeeklyPodium(ctx, report);
-    drawWeeklyRewards(ctx, report);
-    drawCompactMemberRows(ctx, report, 636);
-  }
+  drawMonthlyStarAndRing(ctx, report);
+  drawMonthlyTop3(ctx, report);
+  drawMonthlyTrend(ctx, report);
+  drawMonthlyDistribution(ctx, report);
+  drawMonthlyCalendar(ctx, report);
   drawPosterText(ctx, "每一次打卡，都是成长的足迹！", 270, layout.footerY + 1, 240, { weight: 900, size: 10.5, minSize: 8, align: "center", color: "#43291c" });
 }
 function paintReportCanvases() {
@@ -1460,8 +1598,8 @@ function paintReportCanvases() {
 async function saveReportImage(report) {
   await preloadReportAssets(report);
   const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1920;
+  canvas.width = report.reportType === "week" ? WEEKLY_POSTER_SIZE.width : 1080;
+  canvas.height = report.reportType === "week" ? WEEKLY_POSTER_SIZE.height : 1920;
   drawReportPoster(canvas, report);
   try {
     const url = canvas.toDataURL("image/png");
