@@ -931,7 +931,7 @@ function reportPosterLayout(report) {
 
 const REPORT_BACKGROUNDS = {
   week: "./assets/zodiac-plaza/report-week-template-fixed.jpg",
-  month: "./assets/zodiac-plaza/report-month-template-fixed.jpg",
+  month: "./assets/zodiac-plaza/report-month-members-template.png",
 };
 const REPORT_REWARD_ASSETS = [
   "./assets/zodiac-plaza/reward-courage-crystal.png",
@@ -970,39 +970,19 @@ const MONTHLY_LAYOUT = {
     { x: 597, y: 378, width: 145, height: 164 },
     { x: 754, y: 378, width: 145, height: 164 },
   ],
-  star: {
-    character: { x: 185, y: 590, width: 198, height: 226 },
-    name: { x: 183, y: 826, width: 202, height: 42 },
-    quoteY: 877,
-    valuesX: 386,
-    valueYs: [900, 934, 969],
+  members: {
+    x: 129,
+    y: 652,
+    cellWidth: 142,
+    cellHeight: 242,
+    columnStep: 156,
+    rowStep: 254,
+    columns: 5,
+    rows: 3,
+    character: { x: 8, y: 12, width: 126, height: 157 },
+    nameY: 185,
+    timeY: 217,
   },
-  zodiac: {
-    centerX: 650,
-    centerY: 770,
-    slots: [
-      { value: "aries", x: 584, y: 656 },
-      { value: "taurus", x: 650, y: 637 },
-      { value: "gemini", x: 716, y: 656 },
-      { value: "cancer", x: 761, y: 696 },
-      { value: "leo", x: 782, y: 766 },
-      { value: "sagittarius", x: 761, y: 833 },
-      { value: "virgo", x: 716, y: 879 },
-      { value: "libra", x: 650, y: 895 },
-      { value: "scorpio", x: 585, y: 879 },
-      { value: "capricorn", x: 539, y: 833 },
-      { value: "pisces", x: 518, y: 766 },
-      { value: "aquarius", x: 539, y: 696 },
-    ],
-  },
-  top3: [
-    { rank: 2, x: 139, y: 1064, width: 91, height: 151, character: { x: 141, y: 1066, width: 87, height: 100 }, nameY: 1182, timeY: 1217 },
-    { rank: 1, x: 247, y: 1039, width: 111, height: 176, character: { x: 249, y: 1043, width: 107, height: 125 }, nameY: 1182, timeY: 1217 },
-    { rank: 3, x: 370, y: 1064, width: 88, height: 151, character: { x: 372, y: 1066, width: 84, height: 100 }, nameY: 1182, timeY: 1217 },
-  ],
-  trend: { x: 536, y: 1057, width: 342, height: 111 },
-  distribution: { x: 238, y: 1288, pawsWidth: 142, countX: 409, rowGap: 31 },
-  calendar: { x: 519, y: 1261, width: 358, cellWidth: 32.55, cellHeight: 34, rows: 3, columns: 11, pawY: 1384 },
 };
 const WEEKLY_CAT_BOUNDS = {
   aries: { x: 10, y: 34, width: 379, height: 335 }, taurus: { x: 16, y: 12, width: 373, height: 371 },
@@ -1494,6 +1474,51 @@ function drawMonthlyMetrics(ctx, report) {
     drawPosterText(ctx, values[index], card.x + card.width / 2, card.y + 105, card.width - 22, { weight: 900, size: 46, minSize: 34, align: "center", color: "#4f2f72" });
   });
 }
+function drawMonthlyMemberCard(ctx, member, index) {
+  const region = MONTHLY_LAYOUT.members;
+  const column = index % region.columns;
+  const row = Math.floor(index / region.columns);
+  const x = region.x + column * region.columnStep;
+  const y = region.y + row * region.rowStep;
+  drawWeeklyCat(ctx, member, {
+    x: x + region.character.x,
+    y: y + region.character.y,
+    width: region.character.width,
+    height: region.character.height,
+  }, .99);
+  const nameCharacters = [...String(member.name || "47群友")];
+  const displayName = nameCharacters.length > 8 ? `${nameCharacters.slice(0, 7).join("")}…` : nameCharacters.join("");
+  drawPosterText(ctx, displayName, x + region.cellWidth / 2, y + region.nameY, region.cellWidth - 18, {
+    weight: 900,
+    size: 17,
+    minSize: 12.5,
+    align: "center",
+    color: "#3b2519",
+  });
+  drawPosterText(ctx, `${formatReportHours(member.minutes)} 小时`, x + region.cellWidth / 2, y + region.timeY, region.cellWidth - 14, {
+    weight: 900,
+    size: 24,
+    minSize: 17,
+    align: "center",
+    color: "#513078",
+  });
+}
+function drawMonthlyMembers(ctx, report) {
+  const region = MONTHLY_LAYOUT.members;
+  const capacity = region.columns * region.rows;
+  const members = (report.ranking || []).filter((member) => Number(member.minutes) > 0).slice(0, capacity);
+  if (!members.length) {
+    drawPosterText(ctx, "本月暂无训练记录", 512, 905, 430, {
+      weight: 900,
+      size: 30,
+      minSize: 24,
+      align: "center",
+      color: "rgba(79,47,114,.72)",
+    });
+    return;
+  }
+  members.forEach((member, index) => drawMonthlyMemberCard(ctx, member, index));
+}
 function drawMonthlyStar(ctx, report) {
   const star = report.top3?.[0] || null;
   const region = MONTHLY_LAYOUT.star;
@@ -1659,12 +1684,7 @@ function drawMonthlyReportPoster(canvas, report) {
   ctx.textBaseline = "middle";
   drawMonthlyHeader(ctx, report);
   drawMonthlyMetrics(ctx, report);
-  drawMonthlyStar(ctx, report);
-  drawMonthlyZodiacRing(ctx, report);
-  drawMonthlyTop3(ctx, report);
-  drawMonthlyTrend(ctx, report);
-  drawMonthlyDistribution(ctx, report);
-  drawMonthlyCalendar(ctx, report);
+  drawMonthlyMembers(ctx, report);
 }
 function drawReportPoster(canvas, report) {
   if (report.reportType === "week") {
