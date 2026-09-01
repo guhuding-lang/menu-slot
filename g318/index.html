@@ -239,7 +239,7 @@
     <section class="view stay-view" id="stayView">
       <h2>住宿与餐饮清单</h2>
       <p>优先选择停车、供氧、地暖和洗衣条件明确的住宿。国庆期间预订可取消房型，并在入住前电话确认。</p>
-      <table class="stay-table"><thead><tr><th>日期</th><th>住宿</th><th>餐饮</th><th>海拔</th></tr></thead><tbody id="stayRows"></tbody></table>
+      <table class="stay-table"><thead><tr><th>日期</th><th>住宿</th><th>餐饮</th><th>海拔</th><th>风险点</th></tr></thead><tbody id="stayRows"></tbody></table>
     </section>
 
     <section class="view prep-view" id="prepView">
@@ -319,7 +319,7 @@
   function routeList(items){return items.map((name,i)=>`<div class="route-city"><span>${i+1}</span><div><b>${name}</b><small>${i===0?"起点":i===items.length-1?"终点":"住宿或经过"}</small></div></div>`).join("")}
   function renderTables(){
     $("#inboundRoute").innerHTML=routeList(inbound);$("#returnRoute").innerHTML=routeList(returning);
-    $("#stayRows").innerHTML=days.map(x=>`<tr><td>${x.d}<small>${x.date}</small></td><td><strong>${x.city}</strong><small>${x.hotel}</small></td><td><strong>${x.food}</strong><small>${x.foodDesc}</small></td><td>${x.elev}</td></tr>`).join("");
+    $("#stayRows").innerHTML=days.map(x=>`<tr><td>${x.d}<small>${x.date}</small></td><td><strong>${x.city}</strong><small>${x.hotel}</small></td><td><strong>${x.food}</strong><small>${x.foodDesc}</small></td><td>${x.elev}</td><td><strong>${x.risk}</strong><small>${x.risks.join("；")}</small></td></tr>`).join("");
   }
   function switchView(name){$$('.view').forEach(v=>v.classList.toggle('active',v.id===`${name}View`));$$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===name));window.scrollTo({top:$(".tabs").offsetTop-80,behavior:"smooth"})}
   $$('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
