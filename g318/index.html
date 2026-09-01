@@ -4,164 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#7f1826">
-  <meta name="description" content="十堰出发15天川藏自驾攻略，G318进入拉萨，G317经那曲、索县、丁青、昌都返回成都。">
+  <meta name="description" content="2026年9月23日从十堰出发，15天G318进藏、G317返程的拉萨自驾环线路书。">
   <title>十堰出发 | 15天川进北出拉萨环线</title>
-  <style>
-    :root{
-      color-scheme:light;
-      --bg:#f1efe9;
-      --surface:#f8f7f3;
-      --surface-2:#e7e3da;
-      --ink:#282322;
-      --muted:#716a66;
-      --line:#cfc8bd;
-      --red:#8b1e2d;
-      --red-deep:#5e131e;
-      --red-soft:#ead6d8;
-      --gold:#9b7837;
-      --shadow:0 18px 46px rgba(70,29,30,.13);
-      --radius:14px;
-      --font:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;
-    }
-    [data-theme="dark"]{
-      color-scheme:dark;
-      --bg:#191617;
-      --surface:#242021;
-      --surface-2:#30292a;
-      --ink:#eee9e2;
-      --muted:#b8afa9;
-      --line:#4c4141;
-      --red:#c44b5c;
-      --red-deep:#8e2737;
-      --red-soft:#47272c;
-      --gold:#c3a262;
-      --shadow:0 18px 46px rgba(9,5,6,.32);
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth;background:var(--bg)}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.65}
-    button{font:inherit}
-    button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-    button:active{transform:translateY(1px)}
-    .app{min-height:100dvh;overflow-x:hidden}
-    .hero{position:relative;min-height:580px;background:#342528 url("potala-road.webp") center/cover no-repeat;color:#f6f1e9;isolation:isolate}
-    .hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(34,21,23,.9) 0%,rgba(40,23,25,.68) 38%,rgba(38,22,24,.08) 72%)}
-    .hero:after{content:"";position:absolute;left:0;bottom:0;width:58%;height:12px;background:var(--red)}
-    .topbar{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px;width:min(1240px,calc(100% - 48px));margin:auto;border-bottom:1px solid rgba(246,241,233,.28)}
-    .brand{display:flex;align-items:center;gap:13px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
-    .shield{display:grid;place-items:center;width:48px;height:42px;background:var(--red);border:2px solid rgba(246,241,233,.88);border-radius:7px 7px 13px 13px;font-size:18px;line-height:1}
-    .top-actions{display:flex;align-items:center;gap:8px}
-    .top-actions button,.hero-cta,.nav-arrow{border:1px solid rgba(246,241,233,.42);background:rgba(34,21,23,.32);color:#f6f1e9;padding:9px 14px;border-radius:9px;cursor:pointer;transition:background .2s ease,border-color .2s ease,transform .2s ease;white-space:nowrap}
-    .top-actions button:hover,.hero-cta:hover{background:var(--red);border-color:var(--red)}
-    .hero-inner{width:min(1240px,calc(100% - 48px));min-height:508px;margin:auto;display:flex;align-items:center;padding:42px 0 62px}
-    .hero-copy{width:min(620px,64%)}
-    .hero-kicker{margin:0 0 18px;font-size:13px;font-weight:800;letter-spacing:.16em;color:#ead4ad}
-    .hero h1{margin:0;font-size:clamp(42px,5.2vw,72px);line-height:1.06;letter-spacing:-.045em;max-width:9em;text-wrap:balance}
-    .hero p{max-width:30em;margin:22px 0 30px;font-size:18px;color:#e6ded4}
-    .hero-cta{display:inline-block;text-decoration:none;background:#f2eee7;color:#4c1720;border-color:#f2eee7;font-weight:800;padding:12px 18px}
-    .hero-cta:hover{color:#f6f1e9}
-    .facts{width:min(1240px,calc(100% - 48px));margin:-42px auto 0;position:relative;z-index:2;display:grid;grid-template-columns:1.25fr repeat(4,1fr);background:var(--surface);box-shadow:var(--shadow);border-radius:var(--radius);overflow:hidden}
-    .fact{padding:22px 24px;border-right:1px solid var(--line)}
-    .fact:last-child{border-right:0}
-    .fact strong{display:block;font-size:24px;line-height:1.1;color:var(--red);font-variant-numeric:tabular-nums}
-    .fact small{display:block;margin-top:8px;color:var(--muted);font-size:12px}
-    .fact.route strong{font-size:18px;color:var(--ink)}
-    .day-shell{position:sticky;top:0;z-index:20;margin-top:28px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-    .day-nav{display:flex;overflow-x:auto;scrollbar-width:none;width:min(1240px,100%);margin:auto;padding:0 16px}
-    .day-nav::-webkit-scrollbar{display:none}
-    .day-btn{flex:0 0 104px;min-height:72px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--muted);padding:11px 8px;cursor:pointer;transition:color .2s ease,background .2s ease,border-color .2s ease}
-    .day-btn b{display:block;font-size:15px;color:inherit}.day-btn small{display:block;font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .day-btn:hover{background:var(--surface)}
-    .day-btn.active{color:var(--red);border-bottom-color:var(--red);background:var(--surface)}
-    .tabs{display:flex;gap:6px;width:min(1240px,calc(100% - 48px));margin:24px auto 0}
-    .tab{border:1px solid var(--line);background:transparent;color:var(--muted);padding:10px 16px;border-radius:9px;cursor:pointer;white-space:nowrap}
-    .tab:hover,.tab.active{background:var(--red);border-color:var(--red);color:#f8f1eb}
-    .main{width:min(1240px,calc(100% - 48px));margin:0 auto;padding:24px 0 80px}
-    .view{display:none}.view.active{display:block}
-    .day-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:24px;align-items:start}
-    .day-main,.day-aside{background:var(--surface);border-radius:var(--radius)}
-    .day-main{padding:38px 40px}
-    .day-aside{overflow:hidden;position:sticky;top:122px}
-    .date-line{display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--red);font-weight:800}
-    .risk-chip{display:inline-flex;align-items:center;border:1px solid currentColor;padding:5px 9px;border-radius:8px;font-size:12px}
-    .day-main h2{font-size:clamp(30px,4vw,50px);line-height:1.13;letter-spacing:-.035em;margin:14px 0 12px;text-wrap:balance}
-    .day-summary{color:var(--muted);margin:0 0 28px}
-    .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:30px}
-    .metric{padding:16px 0}.metric+.metric{padding-left:18px;border-left:1px solid var(--line)}
-    .metric strong{display:block;font-size:17px}.metric span{font-size:11px;color:var(--muted)}
-    .section-title{font-size:17px;margin:30px 0 14px}
-    .schedule{display:grid;gap:12px}
-    .stop{display:grid;grid-template-columns:64px 1fr;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
-    .stop:last-child{border-bottom:0}.stop time{font-size:12px;font-weight:800;color:var(--red);font-variant-numeric:tabular-nums}
-    .stop strong{display:block;font-size:15px}.stop p{margin:3px 0 0;color:var(--muted);font-size:13px}
-    .nav-row{display:flex;justify-content:space-between;gap:12px;margin-top:32px}
-    .nav-arrow{background:transparent;color:var(--ink);border-color:var(--line)}
-    .nav-arrow.primary{background:var(--red);color:#f8f1eb;border-color:var(--red)}
-    .nav-arrow:disabled{opacity:.35;cursor:not-allowed}
-    .aside-head{padding:24px 26px;background:var(--red);color:#f8f1eb}
-    .aside-head small{opacity:.8}.aside-head strong{display:block;font-size:21px;margin-top:4px}
-    .aside-section{padding:22px 26px;border-bottom:1px solid var(--line)}
-    .aside-section:last-child{border-bottom:0}.aside-section h3{font-size:13px;margin:0 0 9px;color:var(--gold)}
-    .aside-section strong{display:block;font-size:16px}.aside-section p{margin:5px 0 0;color:var(--muted);font-size:13px}
-    .risk-box{background:var(--red-soft)}
-    .risk-box h3{color:var(--red)}
-    .risk-box ul{margin:8px 0 0;padding-left:18px}.risk-box li{font-size:13px;margin:7px 0}
-    .route-section{background:var(--surface);border-radius:var(--radius);padding:38px 40px}
-    .route-section h2,.stay-view h2,.prep-view h2{font-size:36px;margin:0 0 10px;letter-spacing:-.03em}
-    .route-section>p,.stay-view>p,.prep-view>p{margin:0 0 28px;color:var(--muted);max-width:65ch}
-    .route-band{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
-    .route-half{padding:28px;background:var(--surface-2)}
-    .route-half.return{background:var(--red-soft)}
-    .route-half h3{margin:0 0 16px;color:var(--red)}
-    .route-list{display:grid;gap:0}
-    .route-city{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;padding:11px 0}
-    .route-city span{position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--surface);border:2px solid var(--red);color:var(--red);font-size:11px;font-weight:800}
-    .route-city:not(:last-child) span:after{content:"";position:absolute;width:2px;height:26px;background:var(--red);transform:translateY(30px)}
-    .route-city b{display:block}.route-city small{color:var(--muted)}
-    .road-note{margin-top:22px;padding:20px;border-left:5px solid var(--red);background:var(--red-soft)}
-    .road-note h3{margin:0 0 7px;color:var(--red)}.road-note p{margin:0;font-size:13px}
-    .stay-view,.prep-view{background:var(--surface);border-radius:var(--radius);padding:38px 40px}
-    .stay-table{width:100%;border-collapse:collapse}
-    .stay-table th{text-align:left;font-size:12px;color:var(--muted);padding:12px;border-bottom:2px solid var(--red)}
-    .stay-table td{padding:15px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
-    .stay-table td:first-child{font-weight:800;color:var(--red);white-space:nowrap}
-    .stay-table strong{display:block;color:var(--ink)}
-    .stay-table small{color:var(--muted)}
-    .prep-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px}
-    .check-panel,.danger-panel{padding:26px;border-radius:var(--radius);background:var(--surface-2)}
-    .danger-panel{background:var(--red-soft)}
-    .check-panel h3,.danger-panel h3{margin:0 0 14px}
-    .checklist{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
-    .check{position:relative;padding-left:24px;font-size:13px}.check:before{content:"✓";position:absolute;left:0;color:var(--red);font-weight:900}
-    .danger-panel ul{margin:0;padding-left:20px}.danger-panel li{margin:9px 0;font-size:13px}
-    .source-note{margin-top:22px;color:var(--muted);font-size:12px}
-    .source-note a{color:var(--red);text-underline-offset:3px}
-    .toast{position:fixed;left:50%;bottom:24px;z-index:50;transform:translate(-50%,18px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;pointer-events:none;transition:opacity .2s ease,transform .2s ease}
-    .toast.show{opacity:1;transform:translate(-50%,0)}
-    footer{width:min(1240px,calc(100% - 48px));margin:0 auto 38px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
-    @media(max-width:920px){
-      .hero{min-height:520px;background-position:62% center}.hero-inner{min-height:448px}.hero-copy{width:72%}
-      .facts{grid-template-columns:repeat(2,1fr)}.fact{border-bottom:1px solid var(--line)}.fact.route{grid-column:1/-1}
-      .day-layout{grid-template-columns:1fr}.day-aside{position:static}.route-band{grid-template-columns:1fr}.prep-grid{grid-template-columns:1fr}
-    }
-    @media(max-width:640px){
-      .topbar{width:calc(100% - 28px);height:64px}.brand span:last-child{display:none}.top-actions button{padding:8px 10px;font-size:12px}.top-actions button:nth-child(2){display:none}
-      .hero{min-height:500px;background-position:67% center}.hero:before{background:linear-gradient(90deg,rgba(34,21,23,.92),rgba(34,21,23,.58) 62%,rgba(34,21,23,.2))}
-      .hero-inner{width:calc(100% - 28px);min-height:436px;padding:34px 0 48px;align-items:flex-end}.hero-copy{width:100%}.hero h1{font-size:42px;max-width:8em}.hero p{font-size:15px;max-width:20em}
-      .facts{width:calc(100% - 24px);margin-top:-28px}.fact{padding:17px}.fact strong{font-size:20px}
-      .tabs,.main,footer{width:calc(100% - 24px)}.tabs{overflow-x:auto;scrollbar-width:none}.tab{flex:0 0 auto}
-      .day-btn{flex-basis:82px}.day-main,.route-section,.stay-view,.prep-view{padding:24px 18px}.day-main h2{font-size:34px}
-      .metrics{grid-template-columns:1fr}.metric+.metric{padding-left:0;border-left:0;border-top:1px solid var(--line)}
-      .stop{grid-template-columns:48px 1fr;gap:10px}.nav-arrow{font-size:12px;padding:9px 10px}
-      .route-section h2,.stay-view h2,.prep-view h2{font-size:30px}.route-half{padding:20px}
-      .stay-table,.stay-table tbody,.stay-table tr,.stay-table td{display:block}.stay-table thead{display:none}.stay-table tr{padding:16px 0;border-bottom:1px solid var(--line)}.stay-table td{border:0;padding:3px 0}.stay-table td:first-child{font-size:15px}
-      .checklist{grid-template-columns:1fr}
-    }
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-    @media print{
-      .top-actions,.day-shell,.tabs,.nav-row,.toast{display:none!important}.hero{min-height:250px}.hero-inner{min-height:178px}.facts{margin:0;width:100%;box-shadow:none}.main{width:100%;padding:20px}.view{display:block!important;break-before:page}.view:first-child{break-before:auto}.day-aside{position:static}
-    }
-  </style>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="app">
@@ -169,168 +15,55 @@
     <nav class="topbar" aria-label="页面工具">
       <div class="brand"><span class="shield">318</span><span>十堰出发自驾路书</span></div>
       <div class="top-actions">
-        <button id="shareBtn">分享</button>
-        <button id="favBtn">收藏</button>
-        <button id="themeBtn" aria-label="切换显示主题">夜间</button>
-        <button onclick="window.print()">打印</button>
+        <button id="shareBtn">分享</button><button id="favBtn">收藏</button><button id="themeBtn" aria-label="切换显示主题">夜间</button><button id="printBtn">打印</button>
       </div>
     </nav>
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <p class="hero-kicker">2026.09.23 - 10.07</p>
-        <h1>川进北出，抵达拉萨</h1>
-        <p>G318进藏，G317返程。15天完成十堰往返。</p>
-        <a class="hero-cta" href="#journey">查看逐日路书</a>
-      </div>
-    </div>
+    <div class="hero-inner"><div class="hero-copy">
+      <p class="hero-kicker">2026.09.23 至 10.07</p><h1>川进北出<br>抵达拉萨</h1><p>G318进藏，G317返程。15天完成十堰往返。</p><a class="hero-cta" href="#journey">查看逐日路书</a>
+    </div></div>
   </header>
 
   <section class="facts" aria-label="行程概况">
-    <div class="fact route"><strong>十堰 → 拉萨 → 那曲 → 昌都 → 成都 → 十堰</strong><small>川藏南线进，川藏北线出</small></div>
-    <div class="fact"><strong>15天</strong><small>9月23日至10月7日</small></div>
-    <div class="fact"><strong>约6100km</strong><small>两名司机轮换</small></div>
-    <div class="fact"><strong>3990m</strong><small>最高住宿海拔，索县</small></div>
-    <div class="fact"><strong>2晚</strong><small>拉萨完整停留</small></div>
+    <div class="fact fact-route"><strong>十堰 → 拉萨 → 那曲 → 昌都 → 成都 → 十堰</strong><small>川藏南线进，川藏北线出</small></div>
+    <div class="fact"><strong>15天</strong><small>9月23日至10月7日</small></div><div class="fact"><strong>约5958km</strong><small>真实道路估算</small></div><div class="fact"><strong>3990m</strong><small>最高住宿海拔，索县</small></div><div class="fact"><strong>2晚</strong><small>拉萨完整停留</small></div>
   </section>
 
-  <div class="day-shell" id="journey"><nav class="day-nav" id="dayNav" aria-label="15天行程"></nav></div>
-  <nav class="tabs" aria-label="攻略栏目">
-    <button class="tab active" data-view="day">逐日路书</button>
-    <button class="tab" data-view="route">全线总览</button>
-    <button class="tab" data-view="stay">住宿餐饮</button>
-    <button class="tab" data-view="prep">道路与准备</button>
-  </nav>
+  <div class="journey-controller" id="journey">
+    <nav class="day-nav" id="dayNav" aria-label="15天行程"></nav>
+    <nav class="tabs" aria-label="攻略栏目"><button class="tab active" data-view="day">逐日路书</button><button class="tab" data-view="route">全线总览</button><button class="tab" data-view="stay">住宿餐饮</button><button class="tab" data-view="prep">道路与准备</button></nav>
+  </div>
 
   <main class="main">
     <section class="view active" id="dayView">
       <div class="day-layout">
         <article class="day-main">
-          <div class="date-line"><span id="dateLine"></span><span class="risk-chip" id="riskChip"></span></div>
-          <h2 id="dayRoute"></h2>
-          <p class="day-summary" id="daySummary"></p>
-          <div class="metrics">
-            <div class="metric"><strong id="distance"></strong><span>预计里程</span></div>
-            <div class="metric"><strong id="driveTime"></strong><span>含休息的参考车程</span></div>
-            <div class="metric"><strong id="sleepElev"></strong><span>住宿海拔</span></div>
-          </div>
-          <h3 class="section-title">当天怎么走</h3>
-          <div class="schedule" id="schedule"></div>
+          <div class="date-line"><span id="dateLine"></span><span class="risk-chip" id="riskChip"></span></div><h2 id="dayRoute"></h2><p class="day-summary" id="daySummary"></p>
+          <div class="metrics"><div class="metric"><strong id="distance"></strong><span>预计里程</span></div><div class="metric"><strong id="driveTime"></strong><span>含休息参考车程</span></div><div class="metric"><strong id="sleepElev"></strong><span>住宿海拔</span></div></div>
+          <h3 class="section-title">当天怎么走</h3><div class="schedule" id="schedule"></div><h3 class="section-title">主要景点与路段</h3><div class="sight-strip" id="sightStrip"></div>
           <div class="nav-row"><button class="nav-arrow" id="prevBtn">前一天</button><button class="nav-arrow primary" id="nextBtn">下一天</button></div>
         </article>
-        <aside class="day-aside">
-          <div class="aside-head"><small>今晚住这里</small><strong id="sleepCity"></strong></div>
-          <div class="aside-section"><h3>住宿推荐</h3><strong id="hotelName"></strong><p id="hotelDesc"></p></div>
-          <div class="aside-section"><h3>餐厅推荐</h3><strong id="foodName"></strong><p id="foodDesc"></p></div>
-          <div class="aside-section risk-box"><h3>当天风险点</h3><ul id="riskList"></ul></div>
-        </aside>
+        <aside class="day-aside"><div class="aside-head"><small>今晚住这里</small><strong id="stayCity"></strong></div><div class="media-reco" id="hotelReco"></div><div class="media-reco" id="foodReco"></div><div class="aside-section risk-box"><h3>当天风险点</h3><ul id="riskList"></ul></div></aside>
       </div>
     </section>
 
-    <section class="view route-section" id="routeView">
-      <h2>一条真正闭合的川藏环线</h2>
-      <p>进入拉萨后不走G109可可西里段，改走那曲、索县、丁青、昌都和G317返回成都。</p>
-      <div class="route-band">
-        <div class="route-half"><h3>G318进拉萨</h3><div class="route-list" id="inboundRoute"></div></div>
-        <div class="route-half return"><h3>G317返回成都</h3><div class="route-list" id="returnRoute"></div></div>
-      </div>
-      <div class="road-note"><h3>海拔口径</h3><p>所有夜间住宿均不超过4200米。白天会翻越折多山、东达山、安久拉山、色季拉山及G317多个4500米以上垭口。</p></div>
-    </section>
+    <section class="view" id="routeView"><article class="route-section">
+      <div class="section-heading"><div><p class="eyebrow">真实道路总览</p><h2>5958km 环线落在地图上</h2></div><p>红线为G318进藏方向，金线为G317返程方向。轨迹由OSRM基于OpenStreetMap道路数据计算，不是城市间直线。</p></div>
+      <div class="map-frame"><div id="routeMap" role="application" aria-label="十堰至拉萨15天自驾真实路线地图"></div><div id="mapStatus" class="map-status">正在加载真实地图与道路轨迹</div><div class="map-legend" aria-label="地图图例"><span><i class="legend-line inbound"></i>G318进藏</span><span><i class="legend-line outbound"></i>G317返程</span><span><i class="legend-dot city"></i>每日住宿地</span><span><i class="legend-dot sight"></i>景点或关键路段</span></div></div>
+      <div class="route-fallback" id="routeFallback"><b>进藏</b> 十堰 → 成都 → 雅江 → 巴塘 → 如美 → 八宿 → 波密 → 林芝 → 拉萨<br><b>返程</b> 拉萨 → 那曲 → 索县 → 丁青 → 昌都 → 江达 → 德格 → 甘孜 → 炉霍 → 马尔康 → 成都 → 十堰</div>
+      <div class="map-note"><strong>地图口径</strong><span>道路轨迹核对于2026年9月1日，仅用于规划。出发前及每天早晨必须再查高德或交管信息，遇封路按现场管制绕行，不盲目照搬本图。</span></div>
+    </article></section>
 
-    <section class="view stay-view" id="stayView">
-      <h2>住宿与餐饮清单</h2>
-      <p>优先选择停车、供氧、地暖和洗衣条件明确的住宿。国庆期间预订可取消房型，并在入住前电话确认。</p>
-      <table class="stay-table"><thead><tr><th>日期</th><th>住宿</th><th>餐饮</th><th>海拔</th><th>风险点</th></tr></thead><tbody id="stayRows"></tbody></table>
-    </section>
+    <section class="view" id="stayView"><article class="stay-view"><div class="section-heading"><div><p class="eyebrow">住宿与餐饮</p><h2>每天住哪，吃什么</h2></div><p>房价按双人标间或大床房估算，餐价按每人估算。2026年9月1日核对，国庆期间波动明显，以预订页和到店菜单为准。</p></div><div class="stay-table-wrap"><table class="stay-table"><thead><tr><th>日期</th><th>住宿与估价</th><th>餐饮与估价</th><th>海拔</th><th>风险点</th></tr></thead><tbody id="stayRows"></tbody></table></div></article></section>
 
-    <section class="view prep-view" id="prepView">
-      <h2>道路确认与行前准备</h2>
-      <p>未来道路情况无法提前保证。每天按两次核实机制执行，官方管制优先于导航。</p>
-      <div class="prep-grid">
-        <div class="check-panel"><h3>每天固定执行</h3><div class="checklist">
-          <div class="check">前一晚20:00查看西藏交警、昌都交警和四川路网</div>
-          <div class="check">当天06:00复查天气预警及导航实时路况</div>
-          <div class="check">向酒店前台确认下一段道路是否实际放行</div>
-          <div class="check">封路时留在县城，不走乡道和无编号便道</div>
-          <div class="check">G317油量低于半箱立即补充</div>
-          <div class="check">准备防滑链、充气泵、补胎工具和拖车绳</div>
-          <div class="check">每1.5至2小时换司机或停车休息</div>
-          <div class="check">拉萨、昌都、江达、德格、甘孜重点加满油</div>
-        </div></div>
-        <div class="danger-panel"><h3>立即终止行程</h3><ul>
-          <li>走路不稳、意识异常或异常嗜睡</li>
-          <li>静息呼吸困难、持续胸闷或咳嗽</li>
-          <li>严重头痛并反复呕吐</li>
-          <li>吸氧和休息后症状继续加重</li>
-          <li>两名司机同时困倦或反应迟钝</li>
-          <li>官方发布封路或要求原地等待</li>
-        </ul></div>
-      </div>
-      <div class="road-note"><h3>当前已知施工</h3><p>D5东达山和田妥村路段公告施工至9月30日，7:00至20:00施工时交替放行。G317岗托至江达段施工公告覆盖7月12日至11月30日，国庆法定节假日期间取消常规管制，但D13仍须重新核实。G4217马尔康往汶川方向下一轮计划管制从10月13日开始，本方案10月6日通过。</p></div>
-      <p class="source-note">道路信息核对日期：2026年9月1日。参考：<a href="https://jtt.xizang.gov.cn/bsfw/cxfw/202608/t20260831_555965.html" target="_blank" rel="noopener">西藏自治区交通运输厅路网动态</a>、<a href="https://jiangda.changdu.gov.cn/jdx/c102080/202607/f48fe5111dbf43b29a045e5e19dbb684.shtml" target="_blank" rel="noopener">江达县G317施工公告</a>。实际行驶以当日交警、现场管制和天气为准。</p>
-    </section>
+    <section class="view" id="prepView"><article class="prep-view">
+      <div class="section-heading"><div><p class="eyebrow">道路与准备</p><h2>这条路线真正要防什么</h2></div><p>乘客可能高反，驾驶安全优先级高于打卡。3990m只是最高住宿点，不代表白天不经过更高垭口。</p></div>
+      <div class="prep-grid"><section class="check-panel"><h3>出发前清单</h3><div class="checklist" id="checklist"></div></section><section class="danger-panel"><h3>硬性止损规则</h3><ul><li>出现静息胸闷、意识异常、走路不稳、持续剧烈头痛，立即下降并就医。</li><li>每天出发前确认前方国道通行状态，任何封路信息以交警和现场管制为准。</li><li>D10、D13、D14为高强度日，必须两名司机每2小时轮换。</li><li>晚上不赶不熟悉的山路，日落前无法抵达就启用备用住宿。</li><li>不因预订损失硬撑，高反与疲劳同时出现时直接中止当天计划。</li></ul></section></div>
+      <div class="road-grid" id="roadGrid"></div><p class="source-note">路线数据：OpenStreetMap道路底图与OSRM驾车路径。地点坐标来自OpenStreetMap/Nominatim及公开地图核验。门店图片来自对应门店公开页面，价格为规划估算，不构成预订承诺。</p>
+    </article></section>
   </main>
 
-  <footer>15天十堰往返拉萨自驾路书。安全优先于按表抵达，景点随时可以取消。</footer>
+  <footer>15天川进北出拉萨环线 · 规划核对日 2026年9月1日 · 实时路况永远以交管和现场为准</footer><div class="toast" id="toast" role="status"></div>
 </div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-<script>
-  const days=[
-    {d:"D1",date:"9月23日",nav:"十堰-成都",route:"十堰 → 成都",summary:"高速直达成都，为进入川西做车辆与物资准备。",km:"约840km",time:"10.5-12.5h",city:"成都",elev:"约500m",risk:"高风险",stops:[["06:30","十堰出发","经安康、汉中前往成都。"],["12:00","汉中服务区","午餐、加油并更换司机。"],["18:30","成都北部入住","不进核心城区，方便次日出城。"]],hotel:"成都北部或新都区连锁酒店",hotelDesc:"选择免费停车和洗衣房，避免第二天穿城。",food:"就近清淡川菜或砂锅",foodDesc:"首晚不喝酒，不吃过辣、过撑。",risks:["首日长途驾驶","秦巴山区隧道密集","两名司机仍需每1.5至2小时轮换"]},
-    {d:"D2",date:"9月24日",nav:"成都-雅江",route:"成都 → 泸定 → 折多山 → 新都桥 → 雅江",summary:"一天从盆地进入高原，翻越折多山后下降到雅江住宿。",km:"约470km",time:"9-11h",city:"雅江",elev:"约2630m",risk:"高风险",stops:[["07:00","成都出发","经雅康高速前往泸定。"],["10:30","泸定桥","控制游览在1小时以内。"],["14:00","折多山","视天气短停，不奔跑。"],["18:00","雅江入住","到店后只吃饭休息。"]],hotel:"康巴藏驿·花园酒店",hotelDesc:"供氧、停车和洗衣条件较完整。",food:"雅江松茸牦牛肉汤锅",foodDesc:"优先热汤、面食和熟食。",risks:["折多山约4298米","雾、雨雪和临时管制","前一日疲劳尚未完全恢复"]},
-    {d:"D3",date:"9月25日",nav:"雅江-巴塘",route:"雅江 → 理塘 → 姊妹湖 → 巴塘",summary:"穿越天路十八弯和理塘高原，晚上回到低海拔巴塘。",km:"约300km",time:"8-10h",city:"巴塘",elev:"约2580m",risk:"高风险",stops:[["07:30","雅江出发","驶入天路十八弯。"],["12:00","理塘午餐","不安排长时间游览，不住宿。"],["15:00","姊妹湖","高海拔短停并注意保暖。"],["18:00","巴塘入住","补充次日进藏物资。"]],hotel:"全季酒店（巴塘318国道店）",hotelDesc:"停车和休息条件较稳定。",food:"酒店餐厅或县城牦牛肉汤锅",foodDesc:"避免生冷食物和饮酒。",risks:["多个垭口超过4500米","高海拔暴露时间较长","连续下坡注意制动温度"]},
-    {d:"D4",date:"9月26日",nav:"巴塘-如美",route:"巴塘 → 金沙江大桥 → 芒康 → 如美",summary:"跨过金沙江正式入藏，在澜沧江河谷低海拔休整。",km:"约150km",time:"4-5h",city:"如美镇",elev:"约2600m",risk:"中风险",stops:[["09:00","巴塘出发","保持轻松节奏。"],["10:30","金沙江大桥","配合检查，短停拍照。"],["13:00","芒康午餐","加油和补给。"],["16:30","如美入住","检查轮胎和刹车。"]],hotel:"芒康江景富氧酒店",hotelDesc:"靠近G318，海拔低，适合恢复。",food:"天香美食荟",foodDesc:"推荐炖鸡、面条或清淡川菜。",risks:["入藏检查可能排队","峡谷落石和施工风险","禁止走乡道捷径绕行"]},
-    {d:"D5",date:"9月27日",nav:"如美-八宿",route:"如美 → 东达山 → 邦达 → 怒江72拐 → 八宿",summary:"进藏段最辛苦的一天，连续翻越高山后走怒江72拐。",km:"约310km",time:"9-12h+",city:"八宿",elev:"约3260m",risk:"极高风险",stops:[["06:30","如美出发","尽早进入施工与管制路段。"],["10:00","东达山沿线","只在安全停车区短停。"],["13:00","左贡午餐","加油、换司机。"],["16:00","邦达草原","确认72拐天气和路况。"],["19:00","八宿入住","不再安排夜间活动。"]],hotel:"八宿西岸有氧酒店",hotelDesc:"停车和供氧条件较适合自驾。",food:"老方桌烂蹄花（八宿店）",foodDesc:"选择热汤、豆花和家常菜。",risks:["东达山超过5000米","施工和交替放行可能增加2至3小时","72拐连续下坡防止刹车过热"]},
-    {d:"D6",date:"9月28日",nav:"八宿-波密",route:"八宿 → 安久拉山 → 然乌湖 → 波密",summary:"越过安久拉山进入森林河谷，在波密低海拔恢复。",km:"约220km",time:"6-8h",city:"波密",elev:"约2720m",risk:"中高风险",stops:[["08:00","八宿出发","翻越安久拉山。"],["11:00","然乌湖","选择安全停车区短游。"],["13:00","然乌镇午餐","根据路况决定是否继续停留。"],["17:00","波密入住","洗衣并检查车辆。"]],hotel:"桔子酒店（波密318国道店）",hotelDesc:"县城补给方便，适合低海拔恢复。",food:"帅哥餐厅或圣地卓龙藏家宴",foodDesc:"推荐波密鱼锅、川菜或藏家宴。",risks:["安久拉山超过4400米","可能出现雨雪、浓雾和暗冰","米堆冰川只能作为机动项目"]},
-    {d:"D7",date:"9月29日",nav:"波密-林芝",route:"波密 → 通麦 → 鲁朗 → 色季拉山 → 林芝",summary:"穿过鲁朗林海，翻越色季拉山后下降到林芝。",km:"约230km",time:"6-8h",city:"林芝",elev:"约3000m",risk:"高风险",stops:[["08:00","波密出发","经通麦大桥前往鲁朗。"],["12:00","鲁朗午餐","石锅鸡用餐控制在1.5小时。"],["15:00","色季拉山","雾大或下雪时不停车。"],["18:00","林芝入住","不等待日照金山。"]],hotel:"林芝工布天街亚朵酒店",hotelDesc:"停车、洗衣和市区餐饮方便。",food:"鲁朗翠花特色石锅鸡",foodDesc:"建议在鲁朗午餐，提前电话留位。",risks:["色季拉山超过4700米","浓雾和雨雪影响能见度","国庆前旅游车辆增加"]},
-    {d:"D8",date:"9月30日",nav:"林芝-拉萨",route:"林芝 → 林拉高速 → 拉萨",summary:"沿尼洋河和拉萨河谷进入圣城，傍晚只安排轻度活动。",km:"约400km",time:"6-8h",city:"拉萨",elev:"约3650m",risk:"中高风险",stops:[["09:00","林芝出发","出发前确认G4218施工情况。"],["12:30","服务区午餐","休息并更换司机。"],["17:00","拉萨入住","缓慢活动，不洗长时间热水澡。"],["19:30","布宫夜景","身体状态良好才前往。"]],hotel:"萨吉富氧酒店（布达拉宫店）",hotelDesc:"备选圣途观景富氧酒店，连续入住两晚。",food:"酒店附近藏面或牛肉汤",foodDesc:"抵达首晚只吃清淡热食。",risks:["国庆前车流增加","G4218施工信息需当天核实","到达拉萨后高反可能延迟出现"]},
-    {d:"D9",date:"10月1日",nav:"拉萨全天",route:"布达拉宫 → 大昭寺 → 八廓街 → 药王山",summary:"完整保留拉萨核心游览日，布达拉宫是当天唯一硬预约项目。",km:"市内游览",time:"全天",city:"拉萨",elev:"约3650m",risk:"中风险",stops:[["09:00","布达拉宫","以官方预约时间为准。"],["13:30","大昭寺","午餐后慢速游览。"],["15:30","八廓街","顺时针步行，不快走。"],["18:00","药王山","身体状态良好再拍夜景。"]],hotel:"继续入住拉萨富氧酒店",hotelDesc:"不换酒店，减少搬运行李和体力消耗。",food:"吉祥圣雪藏餐",foodDesc:"藏餐不适应时改吃清淡川菜。",risks:["国庆客流量极大","布宫台阶容易诱发高反","门票需要按官方系统提前预约"]},
-    {d:"D10",date:"10月2日",nav:"拉萨-索县",route:"拉萨 → 当雄 → 那曲 → 索县",summary:"经过那曲但不在那曲住宿，当天继续下降到索县河谷。",km:"约566km",time:"9-11h",city:"索县",elev:"约3990m",risk:"高风险",stops:[["07:00","拉萨出发","沿G109前往当雄和那曲。"],["11:30","那曲午餐","只补给和换司机，不住宿。"],["13:00","转入G317","确认索县方向实际放行。"],["18:30","索县入住","到店后使用供氧房休息。"]],hotel:"雲璟酒店或索县塔嘎德大酒店",hotelDesc:"供氧和停车条件明确，提前确认房间。",food:"酒店餐厅或附近牛肉面",foodDesc:"当天不安排夜游和重口味火锅。",risks:["全日多次处于4500米以上","高原横风和牛羊横穿","长距离高原驾驶导致疲劳"]},
-    {d:"D11",date:"10月3日",nav:"索县-丁青",route:"索县 → 巴青 → 丁青",summary:"沿G317进入藏东，里程不长但弯道和垭口较多。",km:"约280-320km",time:"7-9h",city:"丁青",elev:"约3870m",risk:"中高风险",stops:[["08:00","索县出发","检查油量和胎压。"],["11:30","巴青午餐","海拔约4150米，不久留。"],["14:00","继续向丁青","遇施工服从现场放行。"],["17:30","丁青入住","提前确认停车和供氧。"]],hotel:"唐蕃大酒店或岷山印象康巴酒店",hotelDesc:"优先选择可供氧房和免费停车。",food:"添又添牛蹄汤锅",foodDesc:"也可选择县城清淡川菜。",risks:["G317弯道和起伏多","部分路段补给条件弱","巴青住宿海拔接近上限，不建议停住"]},
-    {d:"D12",date:"10月4日",nav:"丁青-昌都",route:"丁青 → 类乌齐 → 昌都",summary:"穿过藏东峡谷下降到昌都，下午不安排高海拔支线。",km:"约251km",time:"7-8h",city:"昌都",elev:"约3250m",risk:"中高风险",stops:[["08:00","丁青出发","沿G317向类乌齐。"],["12:00","类乌齐午餐","补油并确认昌都方向路况。"],["16:00","昌都入住","时间充足可看强巴林寺外观。"],["18:00","茶马广场","只安排轻松晚餐。"]],hotel:"维也纳酒店（茶马广场强巴林寺店）",hotelDesc:"可供氧房、免费停车，城区位置方便。",food:"朋源石锅酸汤牦牛肉",foodDesc:"备选玛杰崩日藏餐厅。",risks:["藏东峡谷弯急坡陡","雨后可能有落石","取消孜珠寺支线，避免4800米和时间超支"]},
-    {d:"D13",date:"10月5日",nav:"昌都-甘孜",route:"昌都 → 江达 → 德格 → 甘孜县",summary:"全天G317山路跨越金沙江，国庆期间仍需核实施工与天气。",km:"约520-550km",time:"11-13h",city:"甘孜县",elev:"约3410m",risk:"极高风险",stops:[["06:30","昌都出发","尽早通过江达施工区域。"],["10:30","江达补给","加满油并确认岗托放行。"],["13:00","德格午餐","不进入印经院，避免压缩车程。"],["16:00","雀儿山隧道","低速通过隧道及沉降路段。"],["19:30","甘孜县入住","到店后只休息。"]],hotel:"甘孜县王府大酒店",hotelDesc:"备选你好酒店（格萨尔王城店），均有供氧和停车。",food:"康珠藏餐",foodDesc:"推荐牛肉汤、牛肉包子和手抓牛肉。",risks:["G317岗托至江达段施工","连续山路可能超过12小时","落石、雨雪和夜间到达风险"]},
-    {d:"D14",date:"10月6日",nav:"甘孜-成都",route:"甘孜县 → 炉霍 → 马尔康 → 汶川 → 成都",summary:"前半程川西山路，后半程转高速，是返程驾驶压力最大的一天。",km:"约700-750km",time:"12-14h",city:"成都",elev:"约500m",risk:"极高风险",stops:[["06:00","甘孜县出发","两名司机按1至1.5小时轮换。"],["09:00","炉霍补给","快速早餐或加油。"],["13:30","马尔康午餐","确认G4217通行安排。"],["17:00","汶川休息","进入成都前最后换司机。"],["20:00","成都入住","选择北部酒店方便次日出发。"]],hotel:"成都北部或新都区连锁酒店",hotelDesc:"选择停车方便且接近次日高速入口的位置。",food:"酒店附近面条、粥或砂锅",foodDesc:"不跨城打卡，不喝酒。",risks:["全程约700至750公里","川西山路叠加国庆返程车流","连续多日驾驶形成睡眠债"]},
-    {d:"D15",date:"10月7日",nav:"成都-十堰",route:"成都 → 广元 → 汉中 → 安康 → 十堰",summary:"高速返回十堰，最后一天仍按长途驾驶标准执行。",km:"约840km",time:"10.5-12.5h",city:"十堰",elev:"返回家中",risk:"高风险",stops:[["06:30","成都出发","避开早高峰上高速。"],["11:30","汉中服务区","午餐、加油并换司机。"],["15:30","安康沿线","至少休息30分钟。"],["18:30","返回十堰","不为提前到家超速。"]],hotel:"返回家中",hotelDesc:"车辆到家后第二天再整理行李。",food:"服务区简餐",foodDesc:"避免吃得过饱后继续驾驶。",risks:["连续第三个长途驾驶日","假期末高速返程拥堵","接近家门时更容易放松警惕"]}
-  ];
-
-  const inbound=["十堰","成都","雅江","巴塘","如美","八宿","波密","林芝","拉萨"];
-  const returning=["拉萨","那曲","索县","丁青","昌都","德格","甘孜","成都","十堰"];
-  let activeDay=0;
-  const $=s=>document.querySelector(s);
-  const $$=s=>[...document.querySelectorAll(s)];
-
-  function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),1800)}
-  function renderNav(){
-    $("#dayNav").innerHTML=days.map((x,i)=>`<button class="day-btn ${i===activeDay?"active":""}" data-day="${i}"><b>${x.d}</b><small>${x.date} ${x.nav}</small></button>`).join("");
-    $("#dayNav").onclick=e=>{const b=e.target.closest("button[data-day]");if(b)setDay(Number(b.dataset.day),true)};
-  }
-  function setDay(i,center=false){
-    activeDay=Math.max(0,Math.min(days.length-1,i));const x=days[activeDay];
-    renderNav();
-    $("#dateLine").textContent=`${x.d}  ${x.date}`;$("#riskChip").textContent=x.risk;$("#dayRoute").textContent=x.route;$("#daySummary").textContent=x.summary;
-    $("#distance").textContent=x.km;$("#driveTime").textContent=x.time;$("#sleepElev").textContent=x.elev;$("#sleepCity").textContent=x.city;
-    $("#hotelName").textContent=x.hotel;$("#hotelDesc").textContent=x.hotelDesc;$("#foodName").textContent=x.food;$("#foodDesc").textContent=x.foodDesc;
-    $("#schedule").innerHTML=x.stops.map(s=>`<div class="stop"><time>${s[0]}</time><div><strong>${s[1]}</strong><p>${s[2]}</p></div></div>`).join("");
-    $("#riskList").innerHTML=x.risks.map(r=>`<li>${r}</li>`).join("");
-    $("#prevBtn").disabled=activeDay===0;$("#nextBtn").disabled=activeDay===days.length-1;
-    $("#prevBtn").textContent=activeDay?`前一天 ${days[activeDay-1].d}`:"前一天";$("#nextBtn").textContent=activeDay<days.length-1?`下一天 ${days[activeDay+1].d}`:"行程结束";
-    if(center){const b=$(`.day-btn[data-day="${activeDay}"]`);b?.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})}
-  }
-  function routeList(items){return items.map((name,i)=>`<div class="route-city"><span>${i+1}</span><div><b>${name}</b><small>${i===0?"起点":i===items.length-1?"终点":"住宿或经过"}</small></div></div>`).join("")}
-  function renderTables(){
-    $("#inboundRoute").innerHTML=routeList(inbound);$("#returnRoute").innerHTML=routeList(returning);
-    $("#stayRows").innerHTML=days.map(x=>`<tr><td>${x.d}<small>${x.date}</small></td><td><strong>${x.city}</strong><small>${x.hotel}</small></td><td><strong>${x.food}</strong><small>${x.foodDesc}</small></td><td>${x.elev}</td><td><strong>${x.risk}</strong><small>${x.risks.join("；")}</small></td></tr>`).join("");
-  }
-  function switchView(name){$$('.view').forEach(v=>v.classList.toggle('active',v.id===`${name}View`));$$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===name));window.scrollTo({top:$(".tabs").offsetTop-80,behavior:"smooth"})}
-  $$('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
-  $("#prevBtn").onclick=()=>setDay(activeDay-1,true);$("#nextBtn").onclick=()=>setDay(activeDay+1,true);
-  $("#shareBtn").onclick=async()=>{try{if(navigator.share)await navigator.share({title:document.title,url:location.href});else{await navigator.clipboard.writeText(location.href);toast("链接已复制")}}catch(e){if(e.name!=="AbortError")toast("请复制浏览器地址分享")}};
-  $("#favBtn").onclick=()=>{const on=localStorage.getItem("g318-fav")!=="1";localStorage.setItem("g318-fav",on?"1":"0");$("#favBtn").textContent=on?"已收藏":"收藏";toast(on?"已保存在当前浏览器":"已取消收藏")};
-  function applyTheme(theme){document.documentElement.dataset.theme=theme;localStorage.setItem("g318-theme",theme);$("#themeBtn").textContent=theme==="dark"?"日间":"夜间"}
-  $("#themeBtn").onclick=()=>applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");
-  const storedTheme=localStorage.getItem("g318-theme");applyTheme(storedTheme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));
-  if(localStorage.getItem("g318-fav")==="1")$("#favBtn").textContent="已收藏";
-  renderTables();setDay(0);
-</script>
+<script src="vendor/leaflet.js"></script><script src="app.js"></script>
 </body>
 </html>
