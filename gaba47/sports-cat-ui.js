@@ -21,7 +21,7 @@ export const CAT_OUTFIT_OPTIONS = [{ value: "sport", label: "运动日常" }];
 export const CAT_ACCESSORY_OPTIONS = [{ value: "none", label: "角色自带" }];
 
 const optionByValue = new Map(CAT_FUR_OPTIONS.map((item) => [item.value, item]));
-const legacyValues = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"];
+const selectedCatPrefix = "sports-cat:";
 
 function hashText(value = "47") {
   let hash = 0;
@@ -31,31 +31,10 @@ function hashText(value = "47") {
 
 function optionForValue(value, userId = "47") {
   if (optionByValue.has(value)) return optionByValue.get(value);
-  const legacyIndex = legacyValues.indexOf(value);
-  if (legacyIndex >= 0) return CAT_FUR_OPTIONS[legacyIndex];
+  // 没有主动选择过运动猫（含旧星座猫数据）的用户，按账号稳定随机。
+  // 同一用户每次刷新都会得到同一只猫，直到本人保存新的选择。
   return CAT_FUR_OPTIONS[hashText(userId) % CAT_FUR_OPTIONS.length];
 }
-
-const actionMap = {
-  hike: "hiking",
-  strength: "bench",
-  skate: "skating",
-  water: "skating",
-  basketball: "basketball",
-  run: "running",
-  flex: "flexing",
-  stairs: "stairs",
-  stretch: "yoga",
-  yoga: "yoga",
-  meal: "meal",
-  core: "core",
-  rest: "sleeping",
-  sit: "sleeping",
-  snack: "snack",
-  phone: "working",
-  work: "working",
-  aerobics: "aerobics",
-};
 
 export function defaultCatProfile(userId = "47") {
   const option = CAT_FUR_OPTIONS[hashText(userId) % CAT_FUR_OPTIONS.length];
@@ -74,7 +53,9 @@ export function defaultCatProfile(userId = "47") {
 
 export function normalizeCatProfile(raw = {}, userId = raw.user_id || raw.userId || "") {
   const fallback = defaultCatProfile(userId);
-  const rawFur = raw.fur_type || raw.furType;
+  const rawItems = Array.isArray(raw.unlocked_items || raw.unlockedItems) ? [...(raw.unlocked_items || raw.unlockedItems)] : [];
+  const selectedItem = rawItems.find((item) => String(item).startsWith(selectedCatPrefix));
+  const rawFur = selectedItem ? String(selectedItem).slice(selectedCatPrefix.length) : (raw.fur_type || raw.furType);
   const option = optionForValue(rawFur, userId || fallback.userId);
   return {
     userId: String(userId || fallback.userId),
@@ -83,7 +64,8 @@ export function normalizeCatProfile(raw = {}, userId = raw.user_id || raw.userId
     outfit: "sport",
     accessory: "none",
     selectedTitle: String(raw.selected_title || raw.selectedTitle || ""),
-    unlockedItems: CAT_FUR_OPTIONS.map((item) => `fur:${item.value}`),
+    // 复用既有 text[] 字段记录 14 选 1，兼容线上旧星座猫表结构。
+    unlockedItems: [...CAT_FUR_OPTIONS.map((item) => `fur:${item.value}`), `${selectedCatPrefix}${option.value}`],
     unlockedAchievements: Array.isArray(raw.unlocked_achievements || raw.unlockedAchievements) ? [...(raw.unlocked_achievements || raw.unlockedAchievements)] : [],
     updatedAt: raw.updated_at || raw.updatedAt || null,
   };
@@ -98,9 +80,9 @@ export function catProfileDescriptor(rawProfile) {
   return optionForValue(profile.furType, profile.userId);
 }
 
-export function catCharacter(rawProfile, { label = "运动猫咪", action = "" } = {}) {
+export function catCharacter(rawProfile, { label = "运动猫咪" } = {}) {
   const profile = normalizeCatProfile(rawProfile, rawProfile?.userId || rawProfile?.user_id || "47");
-  const option = optionForValue(actionMap[action] || profile.furType, profile.userId);
+  // 角色身份只由用户选择决定。页面场景不再覆盖成另一只猫。
+  const option = optionForValue(profile.furType, profile.userId);
   return `<span class="cat-character sports-cat sports-cat-${option.value}" role="img" aria-label="${safeText(label)}，${option.label}"><img src="${option.asset}" alt="" loading="lazy" decoding="async" draggable="false" /></span>`;
 }
-

@@ -4,7 +4,7 @@ import {
   catProfileDescriptor,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./sports-cat-ui.js?v=1";
+} from "./sports-cat-ui.js?v=2";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -369,9 +369,10 @@ async function createService() {
         headers: { "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
         body: JSON.stringify({
           user_id: userId,
-          fur_type: profile.furType,
+          // 旧表的 fur_type 仍受星座值约束；真实运动猫选择保存在 unlocked_items。
+          fur_type: "aries",
           headwear: profile.headwear,
-          outfit: profile.outfit,
+          outfit: "zodiac",
           accessory: profile.accessory,
           selected_title: profile.selectedTitle,
           unlocked_items: profile.unlockedItems,
@@ -2043,7 +2044,7 @@ function integratedProfilePage() {
   const mode = state.profileCalendarMode;
   const stats = profilePeriodStats(me, mode);
   const tabs = [["week", "周"], ["month", "月"], ["year", "年"]].map(([key, label]) => `<button class="calendar-mode-tab ${mode === key ? "is-active" : ""}" data-calendar-mode="${key}" aria-pressed="${mode === key}">${label}</button>`).join("");
-  return `<main class="page page-profile"><section class="profile-cute-hero"><div class="profile-cute-copy"><small>${descriptor.label}</small><h1>${escapeHTML(state.user.name)}</h1><p>慢慢练，也是在认真生活。</p><button data-action="open-profile-editor">${icon("pencil-simple")} 修改昵称</button></div><div class="profile-cute-cat">${catCharacter(profile, { action: "yoga", label: `${state.user.name}的运动猫` })}</div></section><section class="profile-metrics"><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>累计</span><strong>${me.totalCount || 0}<small>次</small></strong></div><div><span>累计</span><strong>${formatReportHours(me.totalMinutes)}<small>小时</small></strong></div></section>${connectionNotice()}<section class="calendar-journal"><div class="calendar-journal-head"><div><small>TRAINING JOURNAL</small><h2>${stats.label}打卡日历</h2><p>${stats.count} 次 · ${formatReportHours(stats.minutes)} 小时</p></div><div class="calendar-mode-tabs" aria-label="切换日历范围">${tabs}</div></div>${profileCalendarContent(me, mode)}<button class="poster-button" data-action="open-profile-poster">${icon("image-square")}<span>生成朋友圈海报</span>${icon("arrow-right")}</button></section><section class="settings-list"><button class="action-row" data-action="retry">${icon("cloud-check")}<span>数据连接</span><small>${state.connection === "ready" || state.connection === "preview" ? "云端正常" : "点击重试"}</small></button><button class="action-row" data-route="checkin">${icon("calendar-plus")}<span>补一条训练记录</span>${icon("caret-right")}</button></section></main>${state.profileEditor.open ? nicknameEditorModal() : ""}${state.profilePosterOpen ? profilePosterModal(me) : ""}`;
+  return `<main class="page page-profile"><section class="profile-cute-hero"><div class="profile-cute-copy"><small>${descriptor.label}</small><h1>${escapeHTML(state.user.name)}</h1><p>慢慢练，也是在认真生活。</p><div class="profile-cute-actions"><button data-action="open-profile-editor">${icon("pencil-simple")} 修改昵称</button><button data-action="open-cat-editor">${icon("arrows-clockwise")} 更换猫咪</button></div></div><div class="profile-cute-cat">${catCharacter(profile, { label: `${state.user.name}的运动猫` })}</div></section>${catEditorPanel(me, profile)}<section class="profile-metrics"><div><span>连续</span><strong>${me.streak}<small>天</small></strong></div><div><span>累计</span><strong>${me.totalCount || 0}<small>次</small></strong></div><div><span>累计</span><strong>${formatReportHours(me.totalMinutes)}<small>小时</small></strong></div></section>${connectionNotice()}<section class="calendar-journal"><div class="calendar-journal-head"><div><small>TRAINING JOURNAL</small><h2>${stats.label}打卡日历</h2><p>${stats.count} 次 · ${formatReportHours(stats.minutes)} 小时</p></div><div class="calendar-mode-tabs" aria-label="切换日历范围">${tabs}</div></div>${profileCalendarContent(me, mode)}<button class="poster-button" data-action="open-profile-poster">${icon("image-square")}<span>生成朋友圈海报</span>${icon("arrow-right")}</button></section><section class="settings-list"><button class="action-row" data-action="retry">${icon("cloud-check")}<span>数据连接</span><small>${state.connection === "ready" || state.connection === "preview" ? "云端正常" : "点击重试"}</small></button><button class="action-row" data-route="checkin">${icon("calendar-plus")}<span>补一条训练记录</span>${icon("caret-right")}</button></section></main>${state.profileEditor.open ? nicknameEditorModal() : ""}${state.profilePosterOpen ? profilePosterModal(me) : ""}`;
 }
 
 function deleteDialog() {
@@ -2231,8 +2232,11 @@ app.addEventListener("click", async (event) => {
   if (action === "toggle-member-list") { state.showAllMembers = !state.showAllMembers; render(); return; }
   if (action === "open-cat-editor") {
     const me = currentMember(memberStats());
+    state.profileEditor.open = false;
     state.catEditor = { open: true, draft: { ...catProfileFor(me || state.user.id) }, saving: false, status: "" };
-    render(); return;
+    render();
+    requestAnimationFrame(() => document.querySelector(".cat-editor")?.scrollIntoView({ block: "start", behavior: "smooth" }));
+    return;
   }
   if (action === "close-cat-editor") { state.catEditor = { open: false, draft: null, saving: false, status: "" }; render(); return; }
   if (action === "save-cat" && state.catEditor.open && !state.catEditor.saving) {
@@ -2316,7 +2320,7 @@ app.addEventListener("click", async (event) => {
     return;
   }
   if (action === "retry") { state.booting = !state.user; await connect(); if (state.connection === "ready" && state.user) showToast("已经重新连上云端"); return; }
-  if (action === "open-profile-editor") { state.profileEditor = { open: true, name: state.user?.name || "", avatar: null, avatarUrl: state.user?.avatarUrl || "", removeAvatar: false, status: "", saving: false }; render(); return; }
+  if (action === "open-profile-editor") { state.catEditor = { open: false, draft: null, saving: false, status: "" }; state.profileEditor = { open: true, name: state.user?.name || "", avatar: null, avatarUrl: state.user?.avatarUrl || "", removeAvatar: false, status: "", saving: false }; render(); return; }
   if (action === "close-profile-editor") { if (state.profileEditor.avatar && state.profileEditor.avatarUrl) URL.revokeObjectURL(state.profileEditor.avatarUrl); state.profileEditor.open = false; render(); return; }
   if (action === "remove-avatar") { if (state.profileEditor.avatar && state.profileEditor.avatarUrl) URL.revokeObjectURL(state.profileEditor.avatarUrl); state.profileEditor.avatar = null; state.profileEditor.avatarUrl = ""; state.profileEditor.removeAvatar = true; render(); return; }
   if (action === "save-profile" && state.service && !state.profileEditor.saving) {
