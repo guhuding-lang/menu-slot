@@ -55,7 +55,13 @@ export function normalizeCatProfile(raw = {}, userId = raw.user_id || raw.userId
   const fallback = defaultCatProfile(userId);
   const rawItems = Array.isArray(raw.unlocked_items || raw.unlockedItems) ? [...(raw.unlocked_items || raw.unlockedItems)] : [];
   const selectedItem = rawItems.find((item) => String(item).startsWith(selectedCatPrefix));
-  const rawFur = selectedItem ? String(selectedItem).slice(selectedCatPrefix.length) : (raw.fur_type || raw.furType);
+  // 编辑器会先更新 camelCase 的 furType；它必须优先于旧的持久化标记。
+  // 从数据库读取时没有 furType，才回退到 unlocked_items 中保存的实际选择。
+  const rawFur = optionByValue.has(raw.furType)
+    ? raw.furType
+    : selectedItem
+      ? String(selectedItem).slice(selectedCatPrefix.length)
+      : raw.fur_type;
   const option = optionForValue(rawFur, userId || fallback.userId);
   return {
     userId: String(userId || fallback.userId),

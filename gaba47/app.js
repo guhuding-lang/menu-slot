@@ -4,7 +4,7 @@ import {
   catProfileDescriptor,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./sports-cat-ui.js?v=2";
+} from "./sports-cat-ui.js?v=3";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
