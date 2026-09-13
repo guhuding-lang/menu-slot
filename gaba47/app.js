@@ -30,8 +30,8 @@ const trainingOptions = [
 ];
 const diceExercises = ["胸", "背", "臀腿", "肩", "手臂", "核心"];
 const navItems = [
-  ["home", "动态", "activity"], ["ranking", "排行榜", "trophy"],
-  ["checkin", "去打卡", "lightning"], ["plaza", "广场", "sparkle"], ["profile", "我的", "user"],
+  ["home", "动态", "house"], ["ranking", "排行榜", "trophy"],
+  ["checkin", "去打卡", "lightning"], ["plaza", "广场", "planet"], ["profile", "我的", "cat"],
 ];
 
 const emptyCheckinForm = () => ({
@@ -722,8 +722,8 @@ function nav() {
   return `<nav class="bottom-nav" aria-label="主导航">${navItems.map(([route, label, iconName]) => {
     const active = state.route === route || (state.route === "tools" && route === "plaza");
     return route === "checkin"
-      ? `<button class="nav-primary" data-route="${route}" aria-label="${label}"><span class="primary-circle">${icon(iconName)}</span><span>${label}</span></button>`
-      : `<button class="nav-item ${active ? "is-active" : ""}" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
+      ? `<button class="nav-primary" data-route="${route}" aria-label="${label}"><span class="primary-paw" aria-hidden="true">${icon("paw-print", "primary-paw-shape")}<span class="primary-circle">${icon(iconName)}<strong>${label}</strong></span></span></button>`
+      : `<button class="nav-item ${active ? "is-active" : ""}" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span>${active ? icon("paw-print", "nav-active-paw") : ""}</button>`;
   }).join("")}</nav>`;
 }
 function connectionNotice() {
