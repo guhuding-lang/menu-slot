@@ -1755,27 +1755,86 @@ function drawMonthlyCalendar(ctx, report) {
   });
 }
 function drawMonthlyReportPoster(canvas, report) {
+  const members = (report.ranking || []).filter((member) => Number(member.minutes) > 0);
+  const columns = 5;
+  const rows = Math.max(1, Math.ceil(members.length / columns));
+  const memberTop = 570;
+  const rowStep = 170;
+  const posterHeight = Math.max(930, memberTop + rows * rowStep + 96);
   canvas.width = MONTHLY_POSTER_SIZE.width;
-  canvas.height = MONTHLY_POSTER_SIZE.height;
+  canvas.height = posterHeight;
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) return;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "#f7f2e8"; ctx.fillRect(0, 0, MONTHLY_POSTER_SIZE.width, MONTHLY_POSTER_SIZE.height);
+  ctx.fillStyle = "#f7f2e8"; ctx.fillRect(0, 0, MONTHLY_POSTER_SIZE.width, posterHeight);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#df765e"; roundedPath(ctx, 52, 52, 920, 250, 48); ctx.fill();
-  drawPosterText(ctx, `${new Date(report.periodStart).getMonth() + 1}月训练月报`, 100, 126, 580, { weight: 900, size: 64, minSize: 48, color: "#2f2924" });
-  drawPosterText(ctx, "和一群猫一起，把这个月认真过完", 102, 205, 600, { weight: 700, size: 27, minSize: 21, color: "#fffdf8" });
-  drawWeeklyCat(ctx, report.top3?.[0], { x: 700, y: 28, width: 250, height: 250 }, 1);
+
+  const ink = "#30251f";
+  const coral = "#ee745b";
+  const coralDark = "#df553d";
+  const sage = "#a9bda0";
+  const softSage = "#dce8d7";
+  const paper = "#fffdf8";
+  const month = new Date(report.periodStart).getMonth() + 1;
+
+  // 月报是全员复盘，不使用领奖台、冠军或放大前三名的表达。
+  ctx.fillStyle = coral; roundedPath(ctx, 38, 44, 948, 258, 42); ctx.fill();
+  ctx.fillStyle = sage;
+  ctx.beginPath(); ctx.moveTo(760, 44); ctx.lineTo(944, 44); ctx.arcTo(986, 44, 986, 86, 42); ctx.lineTo(986, 302); ctx.lineTo(816, 302); ctx.closePath(); ctx.fill();
+  drawPosterText(ctx, `${month}月训练月报`, 76, 126, 610, { weight: 950, size: 66, minSize: 50, color: ink });
+  drawPosterText(ctx, "这个月，谁来过、练多久，都认真记下来。", 80, 210, 650, { weight: 800, size: 25, minSize: 20, color: paper });
+  ctx.fillStyle = paper; roundedPath(ctx, 80, 241, 330, 42, 21); ctx.fill();
+  drawPosterText(ctx, report.periodLabel, 245, 263, 286, { weight: 900, size: 19, minSize: 16, align: "center", color: coralDark });
+  drawWeeklyCat(ctx, members[0], { x: 720, y: 24, width: 245, height: 272 }, 1.02);
+
   const averageMinutes = report.activeCount ? Math.round(report.totalMinutes / report.activeCount) : 0;
-  const values = [[formatReportHours(report.totalMinutes), "总小时"], [report.activeCount, "参与猫咪"], [report.checkinCount, "总打卡"], [report.maxStreak || 0, "最长连续"], [averageMinutes, "人均分钟"]];
-  values.forEach(([value, label], index) => { const x = 52 + index * 184; ctx.fillStyle = index % 2 ? "#edf0e4" : "#fffdf8"; roundedPath(ctx, x, 336, 162, 140, 25); ctx.fill(); ctx.strokeStyle = "#302b26"; ctx.lineWidth = 2.5; ctx.stroke(); drawPosterText(ctx, value, x + 81, 388, 136, { weight: 900, size: 39, minSize: 28, align: "center", color: "#302b26" }); drawPosterText(ctx, label, x + 81, 438, 136, { weight: 700, size: 18, minSize: 15, align: "center", color: "#766e66" }); });
-  drawPosterText(ctx, "这个月，大家都在这里", 54, 548, 650, { weight: 900, size: 39, minSize: 30, color: "#302b26" });
-  const members = (report.ranking || []).slice(0, 15);
-  members.forEach((member, index) => { const column = index % 5; const row = Math.floor(index / 5); const x = 52 + column * 184; const y = 602 + row * 266; ctx.fillStyle = row % 2 ? "#fffdf8" : "#f4eadc"; roundedPath(ctx, x, y, 162, 236, 26); ctx.fill(); ctx.strokeStyle = "#b9b0a5"; ctx.lineWidth = 2; ctx.stroke(); drawWeeklyCat(ctx, member, { x: x + 10, y: y + 4, width: 142, height: 142 }, 1); drawPosterText(ctx, member.name, x + 81, y + 164, 136, { weight: 900, size: 17, minSize: 12, align: "center", color: "#302b26" }); drawPosterText(ctx, `${formatReportHours(member.minutes)}小时`, x + 81, y + 202, 136, { weight: 800, size: 17, minSize: 13, align: "center", color: "#766e66" }); });
-  if (!members.length) drawPosterText(ctx, "这个月还没有训练记录", 512, 900, 700, { weight: 800, size: 36, minSize: 28, align: "center", color: "#8b837b" });
-  drawPosterText(ctx, "每一次到场，都让这个月多了一点亮色。", 512, 1442, 820, { weight: 800, size: 26, minSize: 22, align: "center", color: "#6c655e" });
+  const activeDays = (report.daily || []).filter((day) => Number(day.minutes) > 0).length;
+  const values = [
+    [formatReportHours(report.totalMinutes), "总小时"],
+    [report.checkinCount || 0, "总打卡"],
+    [report.activeCount || 0, "参与成员"],
+    [averageMinutes, "人均分钟"],
+    [activeDays, "运动天数"],
+  ];
+  values.forEach(([value, label], index) => {
+    const x = 38 + index * 190;
+    ctx.fillStyle = index % 2 ? softSage : paper; roundedPath(ctx, x, 330, 174, 138, 25); ctx.fill();
+    ctx.strokeStyle = "#c8beb2"; ctx.lineWidth = 2; ctx.stroke();
+    drawPosterText(ctx, value, x + 87, 382, 144, { weight: 950, size: 42, minSize: 29, align: "center", color: ink });
+    drawPosterText(ctx, label, x + 87, 431, 142, { weight: 800, size: 18, minSize: 15, align: "center", color: "#6f665e" });
+  });
+
+  drawPosterText(ctx, `本月运动成员 · ${members.length}人`, 48, 521, 470, { weight: 950, size: 34, minSize: 27, color: ink });
+  drawPosterText(ctx, "按训练时长整理，仅用于回顾本月记录", 976, 524, 420, { weight: 750, size: 16, minSize: 13, align: "right", color: "#81776f" });
+
+  if (members.length) {
+    members.forEach((member, index) => {
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      const rowCount = Math.min(columns, members.length - row * columns);
+      const rowWidth = rowCount * 184 - 10;
+      const rowStart = (1024 - rowWidth) / 2;
+      const x = rowStart + column * 184;
+      const y = memberTop + row * rowStep;
+      ctx.fillStyle = index % 2 ? paper : "#f4eadc"; roundedPath(ctx, x, y, 174, 156, 25); ctx.fill();
+      ctx.strokeStyle = "#c8beb2"; ctx.lineWidth = 2; ctx.stroke();
+      if (index < 3) {
+        drawPosterText(ctx, index + 1, x + 19, y + 19, 24, { weight: 900, size: 17, minSize: 15, align: "center", color: coralDark });
+      }
+      drawWeeklyCat(ctx, member, { x: x + 38, y: y + 2, width: 98, height: 92 }, 1.03);
+      const displayName = [...String(member.name || "47群友")].length > 8 ? `${[...String(member.name)].slice(0, 7).join("")}…` : member.name;
+      drawPosterText(ctx, displayName, x + 87, y + 105, 148, { weight: 900, size: 16, minSize: 10.5, align: "center", color: ink });
+      drawPosterText(ctx, `${formatReportHours(member.minutes)}小时 · ${member.checkins}次`, x + 87, y + 135, 150, { weight: 800, size: 14.5, minSize: 10.5, align: "center", color: "#6f665e" });
+    });
+  } else {
+    drawPosterText(ctx, "这个月还没有训练记录", 512, 670, 700, { weight: 850, size: 32, minSize: 25, align: "center", color: "#8b837b" });
+    drawPosterText(ctx, "下一次到场，就从你开始。", 512, 720, 560, { weight: 750, size: 20, minSize: 17, align: "center", color: "#9a9188" });
+  }
+
+  drawPosterText(ctx, "这个月的每一次运动，都已经好好记住。", 512, posterHeight - 45, 820, { weight: 850, size: 23, minSize: 19, align: "center", color: "#625a53" });
+  ctx.beginPath(); ctx.moveTo(242, posterHeight - 20); ctx.lineTo(782, posterHeight - 20); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.strokeStyle = coral; ctx.stroke();
 }
 function drawReportPoster(canvas, report) {
   if (report.reportType === "week") {
