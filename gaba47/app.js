@@ -1760,7 +1760,7 @@ function drawMonthlyReportPoster(canvas, report) {
   const rows = Math.max(1, Math.ceil(members.length / columns));
   const memberTop = 570;
   const rowStep = 170;
-  const posterHeight = Math.max(930, memberTop + rows * rowStep + 96);
+  const posterHeight = Math.max(820, memberTop + rows * rowStep + 96);
   canvas.width = MONTHLY_POSTER_SIZE.width;
   canvas.height = posterHeight;
   const ctx = canvas.getContext("2d", { alpha: false });
