@@ -1431,17 +1431,106 @@ function drawWeeklyReportPoster(canvas, report) {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#a9bca0"; roundedPath(ctx, 52, 52, 920, 250, 48); ctx.fill();
-  drawPosterText(ctx, "上周训练周报", 102, 125, 570, { weight: 900, size: 64, minSize: 48, color: "#2f2924" });
-  drawPosterText(ctx, report.periodLabel, 104, 202, 520, { weight: 700, size: 28, minSize: 22, color: "#fffdf8" });
-  drawWeeklyCat(ctx, report.top3?.[0], { x: 692, y: 28, width: 260, height: 260 }, 1);
-  const values = [[report.checkinCount, "打卡次数"], [report.activeCount, "参与成员"], [formatReportHours(report.totalMinutes), "训练小时"], [report.maxStreak || 0, "最长连续"]];
-  values.forEach(([value, label], index) => { const x = 52 + index * 230; ctx.fillStyle = "#fffdf8"; roundedPath(ctx, x, 338, 206, 150, 28); ctx.fill(); ctx.strokeStyle = "#302b26"; ctx.lineWidth = 3; ctx.stroke(); drawPosterText(ctx, value, x + 103, 392, 170, { weight: 900, size: 46, minSize: 34, align: "center", color: "#302b26" }); drawPosterText(ctx, label, x + 103, 449, 170, { weight: 700, size: 21, minSize: 18, align: "center", color: "#766e66" }); });
-  drawPosterText(ctx, "本周训练搭子", 64, 555, 450, { weight: 900, size: 38, minSize: 30, color: "#302b26" });
-  (report.ranking || []).slice(0, 3).forEach((member, index) => { const x = 52 + index * 312; ctx.fillStyle = ["#f2c584", "#dbe4d6", "#ecd9c7"][index]; roundedPath(ctx, x, 602, 286, 330, 36); ctx.fill(); ctx.strokeStyle = "#302b26"; ctx.lineWidth = 3; ctx.stroke(); drawWeeklyCat(ctx, member, { x: x + 43, y: 610, width: 200, height: 200 }, 1); drawPosterText(ctx, member.name, x + 143, 824, 240, { weight: 900, size: 26, minSize: 18, align: "center", color: "#302b26" }); drawPosterText(ctx, `${formatReportHours(member.minutes)}小时 · ${member.checkins}次`, x + 143, 874, 240, { weight: 800, size: 21, minSize: 17, align: "center", color: "#5f5851" }); });
-  drawPosterText(ctx, "还有这些猫也来过", 64, 1004, 450, { weight: 900, size: 32, minSize: 26, color: "#302b26" });
-  (report.ranking || []).slice(3, 11).forEach((member, index) => { const column = index % 4; const row = Math.floor(index / 4); const x = 52 + column * 230; const y = 1055 + row * 148; ctx.fillStyle = "#fffdf8"; roundedPath(ctx, x, y, 206, 124, 24); ctx.fill(); ctx.strokeStyle = "#c9c1b6"; ctx.lineWidth = 2; ctx.stroke(); drawWeeklyCat(ctx, member, { x: x + 5, y: y + 4, width: 92, height: 92 }, 1); drawPosterText(ctx, member.name, x + 98, y + 46, 96, { weight: 900, size: 18, minSize: 13, color: "#302b26" }); drawPosterText(ctx, `${formatReportHours(member.minutes)}小时`, x + 98, y + 81, 96, { weight: 700, size: 16, minSize: 13, color: "#766e66" }); });
-  drawPosterText(ctx, "每一次到场，都值得为这一周鼓掌。", 512, 1442, 820, { weight: 800, size: 26, minSize: 22, align: "center", color: "#6c655e" });
+
+  const ink = "#30251f";
+  const coral = "#ee745b";
+  const coralDark = "#df553d";
+  const sage = "#a9bda0";
+  const softSage = "#dce8d7";
+  const paper = "#fffdf8";
+  const ranking = report.ranking || [];
+  const top3 = report.top3 || [];
+
+  // 冲线封面：以大面积珊瑚色和用户自己的猫建立第一视觉焦点。
+  ctx.fillStyle = coral;
+  ctx.beginPath();
+  ctx.moveTo(0, 55); ctx.lineTo(1024, 55); ctx.lineTo(1024, 326); ctx.lineTo(0, 395); ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = sage;
+  ctx.beginPath();
+  ctx.moveTo(760, 55); ctx.lineTo(1024, 55); ctx.lineTo(1024, 326); ctx.lineTo(875, 348); ctx.closePath();
+  ctx.fill();
+  drawPosterText(ctx, "上周", 58, 154, 510, { weight: 950, size: 86, minSize: 74, color: paper });
+  drawPosterText(ctx, "训练周报", 58, 254, 610, { weight: 950, size: 94, minSize: 74, color: ink });
+  ctx.fillStyle = paper; roundedPath(ctx, 62, 310, 284, 56, 28); ctx.fill();
+  drawPosterText(ctx, report.periodLabel, 204, 339, 240, { weight: 900, size: 27, minSize: 22, align: "center", color: coralDark });
+  drawWeeklyCat(ctx, top3[0], { x: 650, y: 28, width: 330, height: 340 }, 1.08);
+
+  // 核心成绩：一分钟也不折算丢失，保存海报时能直接读出总量。
+  ctx.fillStyle = paper; roundedPath(ctx, 30, 420, 964, 196, 34); ctx.fill();
+  ctx.shadowColor = "rgba(71,50,38,.09)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 8;
+  ctx.strokeStyle = "rgba(85,64,51,.14)"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  drawPosterText(ctx, "本周总训练时长", 60, 457, 350, { weight: 900, size: 24, minSize: 20, color: ink });
+  drawPosterText(ctx, Math.round(report.totalMinutes || 0), 56, 536, 295, { weight: 950, size: 103, minSize: 74, color: coralDark });
+  drawPosterText(ctx, "分钟", 335, 554, 92, { weight: 900, size: 29, minSize: 24, color: ink });
+  ctx.beginPath(); ctx.moveTo(445, 454); ctx.lineTo(445, 584); ctx.lineWidth = 2; ctx.strokeStyle = "#c9bfb4"; ctx.stroke();
+  const compactStats = [
+    [report.checkinCount || 0, "次", "打卡"],
+    [report.activeCount || 0, "位", "成员"],
+    [report.maxStreak || 0, "天", "最长连续"],
+  ];
+  compactStats.forEach(([value, unit, label], index) => {
+    const x = 470 + index * 166;
+    ctx.fillStyle = index === 1 ? "#f7ddd4" : softSage; roundedPath(ctx, x, 452, 146, 132, 24); ctx.fill();
+    drawPosterText(ctx, value, x + 56, 495, 74, { weight: 950, size: 54, minSize: 40, align: "center", color: ink });
+    drawPosterText(ctx, unit, x + 109, 507, 44, { weight: 900, size: 22, minSize: 18, align: "center", color: ink });
+    drawPosterText(ctx, label, x + 73, 550, 118, { weight: 850, size: 18, minSize: 15, align: "center", color: ink });
+  });
+
+  // 方案三中最有效的七日热力跑道，删去坐标轴与装饰性标注。
+  ctx.fillStyle = paper; roundedPath(ctx, 30, 640, 964, 220, 34); ctx.fill();
+  ctx.strokeStyle = "rgba(85,64,51,.12)"; ctx.lineWidth = 2; ctx.stroke();
+  drawPosterText(ctx, "本周训练热力", 60, 682, 340, { weight: 950, size: 31, minSize: 26, color: ink });
+  const daily = (report.daily || []).slice(0, 7);
+  const dailyPeak = Math.max(1, ...daily.map((day) => Number(day.minutes) || 0));
+  ctx.fillStyle = "#f8d7ca"; roundedPath(ctx, 60, 718, 904, 90, 45); ctx.fill();
+  ctx.strokeStyle = coral; ctx.lineWidth = 7; ctx.stroke();
+  const labels = ["一", "二", "三", "四", "五", "六", "日"];
+  labels.forEach((label, index) => {
+    const day = daily[index] || { minutes: 0 };
+    const intensity = Math.max(0, Math.min(1, (Number(day.minutes) || 0) / dailyPeak));
+    const centerX = 126 + index * 128;
+    ctx.fillStyle = paper; roundedPath(ctx, centerX - 50, 733, 100, 61, 18); ctx.fill();
+    ctx.font = "40px Phosphor"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = intensity > .62 ? coralDark : intensity > 0 ? `rgba(108,143,97,${.5 + intensity * .45})` : "#d8d3cb";
+    ctx.fillText("\ue648", centerX, 765);
+    drawPosterText(ctx, label, centerX, 829, 56, { weight: 900, size: 18, minSize: 16, align: "center", color: ink });
+  });
+
+  drawPosterText(ctx, "本周训练搭子", 48, 914, 330, { weight: 950, size: 33, minSize: 28, color: ink });
+  drawPosterText(ctx, "TOP 3", 338, 914, 190, { weight: 950, size: 37, minSize: 31, color: coralDark });
+  const podium = [
+    { member: top3[1], rank: 2, x: 30, y: 974, w: 302, h: 304, color: "#f5c77f" },
+    { member: top3[0], rank: 1, x: 361, y: 936, w: 302, h: 342, color: softSage },
+    { member: top3[2], rank: 3, x: 692, y: 984, w: 302, h: 294, color: "#f1d8cd" },
+  ];
+  podium.forEach((slot) => {
+    ctx.fillStyle = slot.color; roundedPath(ctx, slot.x, slot.y, slot.w, slot.h, 32); ctx.fill();
+    ctx.strokeStyle = ink; ctx.lineWidth = slot.rank === 1 ? 4 : 3; ctx.stroke();
+    ctx.fillStyle = slot.rank === 1 ? coral : sage; roundedPath(ctx, slot.x + 18, slot.y + 18, 52, 45, 15); ctx.fill();
+    drawPosterText(ctx, slot.rank, slot.x + 44, slot.y + 41, 36, { weight: 950, size: 26, align: "center", color: paper });
+    drawWeeklyCat(ctx, slot.member, { x: slot.x + 48, y: slot.y + 14, width: 206, height: 196 }, 1.03);
+    drawPosterText(ctx, slot.member?.name || "等待上榜", slot.x + slot.w / 2, slot.y + slot.h - 82, slot.w - 38, { weight: 950, size: 25, minSize: 17, align: "center", color: ink });
+    drawPosterText(ctx, slot.member ? `${formatReportHours(slot.member.minutes)} 小时 · ${slot.member.checkins} 次` : "完成一次训练", slot.x + slot.w / 2, slot.y + slot.h - 40, slot.w - 36, { weight: 850, size: 19, minSize: 14, align: "center", color: slot.member ? "#62564e" : "#8c8178" });
+  });
+
+  // 用实际参训成员生成猫队合照；成员少时也不留下大片空白。
+  const lineup = ranking.slice(0, 8);
+  drawPosterText(ctx, "本周猫队合照", 48, 1329, 280, { weight: 950, size: 28, minSize: 23, color: ink });
+  if (lineup.length) {
+    const cellWidth = Math.min(118, 900 / lineup.length);
+    const startX = 512 - cellWidth * lineup.length / 2;
+    lineup.forEach((member, index) => {
+      const x = startX + index * cellWidth;
+      drawWeeklyCat(ctx, member, { x, y: 1352, width: cellWidth, height: 100 }, .96);
+      drawPosterText(ctx, member.name, x + cellWidth / 2, 1451, cellWidth - 8, { weight: 850, size: 13, minSize: 9, align: "center", color: "#6c625a" });
+    });
+  } else {
+    drawPosterText(ctx, "这一周还在热身，下一次到场就从你开始。", 512, 1397, 780, { weight: 850, size: 23, minSize: 18, align: "center", color: "#7c7168" });
+  }
+  ctx.beginPath(); ctx.moveTo(212, 1492); ctx.lineTo(812, 1492); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.strokeStyle = coral; ctx.stroke();
+  drawPosterText(ctx, "每一次到场，都值得为这一周鼓掌。", 512, 1473, 780, { weight: 900, size: 24, minSize: 20, align: "center", color: ink });
 }
 function monthlyPeriodRange(report) {
   const start = new Date(report.periodStart);
