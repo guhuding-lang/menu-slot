@@ -1510,7 +1510,7 @@ function drawWeeklyReportPoster(canvas, report) {
     ctx.strokeStyle = ink; ctx.lineWidth = slot.rank === 1 ? 4 : 3; ctx.stroke();
     ctx.fillStyle = slot.rank === 1 ? coral : sage; roundedPath(ctx, slot.x + 18, slot.y + 18, 52, 45, 15); ctx.fill();
     drawPosterText(ctx, slot.rank, slot.x + 44, slot.y + 41, 36, { weight: 950, size: 26, align: "center", color: paper });
-    drawWeeklyCat(ctx, slot.member, { x: slot.x + 48, y: slot.y + 14, width: 206, height: 196 }, 1.03);
+    drawWeeklyCat(ctx, slot.member, { x: slot.x + 39, y: slot.y + 6, width: 224, height: 210 }, 1.08);
     drawPosterText(ctx, slot.member?.name || "等待上榜", slot.x + slot.w / 2, slot.y + slot.h - 82, slot.w - 38, { weight: 950, size: 25, minSize: 17, align: "center", color: ink });
     drawPosterText(ctx, slot.member ? `${formatReportHours(slot.member.minutes)} 小时 · ${slot.member.checkins} 次` : "完成一次训练", slot.x + slot.w / 2, slot.y + slot.h - 40, slot.w - 36, { weight: 850, size: 19, minSize: 14, align: "center", color: slot.member ? "#62564e" : "#8c8178" });
   });
@@ -1523,14 +1523,14 @@ function drawWeeklyReportPoster(canvas, report) {
     const startX = 512 - cellWidth * lineup.length / 2;
     lineup.forEach((member, index) => {
       const x = startX + index * cellWidth;
-      drawWeeklyCat(ctx, member, { x, y: 1352, width: cellWidth, height: 100 }, .96);
-      drawPosterText(ctx, member.name, x + cellWidth / 2, 1451, cellWidth - 8, { weight: 850, size: 13, minSize: 9, align: "center", color: "#6c625a" });
+      drawWeeklyCat(ctx, member, { x, y: 1348, width: cellWidth, height: 88 }, .96);
+      drawPosterText(ctx, member.name, x + cellWidth / 2, 1442, cellWidth - 8, { weight: 850, size: 13, minSize: 9, align: "center", color: "#6c625a" });
     });
   } else {
     drawPosterText(ctx, "这一周还在热身，下一次到场就从你开始。", 512, 1397, 780, { weight: 850, size: 23, minSize: 18, align: "center", color: "#7c7168" });
   }
-  ctx.beginPath(); ctx.moveTo(212, 1492); ctx.lineTo(812, 1492); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.strokeStyle = coral; ctx.stroke();
-  drawPosterText(ctx, "每一次到场，都值得为这一周鼓掌。", 512, 1473, 780, { weight: 900, size: 24, minSize: 20, align: "center", color: ink });
+  drawPosterText(ctx, "每一次到场，都值得为这一周鼓掌。", 512, 1490, 780, { weight: 900, size: 24, minSize: 20, align: "center", color: ink });
+  ctx.beginPath(); ctx.moveTo(212, 1520); ctx.lineTo(812, 1520); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.strokeStyle = coral; ctx.stroke();
 }
 function monthlyPeriodRange(report) {
   const start = new Date(report.periodStart);
