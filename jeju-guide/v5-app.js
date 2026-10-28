@@ -9,6 +9,11 @@
  const draw=(type)=>window.JEJU_ICON?window.JEJU_ICON(type):'<span aria-hidden="true">🍊</span>';
  const placeArt=(name,ko)=>{
    const v=(String(name||"")+" "+String(ko||"")).toLowerCase();
+   if(/石头爷爷|돌하르방|harubang/.test(v))return "harubang";
+   if(/海女|해녀/.test(v))return "haenyeo";
+   if(/涉地可支|섭지코지/.test(v))return "lighthouse";
+   if(/鳗鱼|장어/.test(v))return "eel-rice";
+   if(/紫菜包饭|김밥/.test(v))return "gimbap";
    if(/机场|공항|airport|cju/.test(v))return "airport";
    if(/站|巴士|公交|정류장|버스/.test(v))return "bus";
    if(/酒店|bridge|호텔/.test(v))return "hotel";
@@ -18,14 +23,15 @@
    if(/瀑布|폭포/.test(v))return "falls";
    if(/面包|bakery|베이커리|咖啡|해지개|lazy pump/.test(v))return "bakery";
    if(/海滩|해수욕장|海岸|해안|해변|涯月|韩潭|한담|涉地可支|섭지코지|河口|쇠소깍/.test(v))return "beach";
-   if(/山房|松岳|송악|산방|汉拿山/.test(v))return "mountain";
+   if(/汉拿山|한라산/.test(v))return "hallasan";
+   if(/山房|松岳|송악|산방/.test(v))return "mountain";
    if(/偶来|올레|步道|길/.test(v))return "trail";
    if(/港|포구/.test(v))return "port";
    if(/市场|시장/.test(v))return "market";
    if(/购物|olive young|올리브영/.test(v))return "shop";
    if(/龙头岩|용두암|岩石/.test(v))return "rock";
    if(/云桥|구름다리/.test(v))return "bridge";
-   if(/烤肉|黑猪|章鱼|갈치|김밥|鳗鱼|장어|식당|음식/.test(v))return "food";
+   if(/烤肉|黑猪|章鱼|갈치|식당|음식/.test(v))return "food";
    return "orange";
  };
  const html=s=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
