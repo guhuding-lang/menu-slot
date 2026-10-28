@@ -217,3 +217,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #f29a
  .day-mini-illustration{width:52px}
  .sketch-budget-row b{font-size:10px}
 }
+
+/* Hand-drawn location marker beside every photo and venue name */
+.place-name-row{display:flex;align-items:center;gap:9px;margin-top:5px;margin-bottom:3px;min-height:39px}
+.place-name-row b{font-size:13px;line-height:1.45;margin:0;flex:1;overflow-wrap:anywhere}
+.place-mini-icon{height:40px;width:42px;min-width:42px;border:1px dashed #d6a66e;background:#fff0d0;border-radius:42% 57% 39% 52%;display:grid;place-items:center;transform:rotate(-4deg)}
+.place-mini-icon svg{height:37px;width:39px}
+.food .place-mini-icon{background:#fff0d9}
+@media(max-width:650px){.place-name-row{gap:6px}.place-mini-icon{width:35px;min-width:35px;height:34px}.place-mini-icon svg{width:32px;height:31px}.place-name-row b{font-size:12px}}
