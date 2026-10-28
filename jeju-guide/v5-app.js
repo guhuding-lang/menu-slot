@@ -4,7 +4,7 @@
  const d=db.days, food=db.food, check=db.check, places=db.places, urls=db.urls;
  const media=window.JEJU_MEDIA||{places:{},aliases:{}};
  const prices=window.JEJU_COSTS||{days:[],rate:200,spaNonFree:[63000,200000],sources:[]};
- const state={tab:"home",index:0,checks:[],query:"",filter:"all",expanded:{},budget:{flight:"",hotel:"",parking:"",shopping:"",fx:200,freeSpa:false}};
+ const state={tab:"home",index:0,checks:[],query:"",filter:"all",expanded:{},budget:{flight:"",hotel:"",parking:"",shopping:"",fx:200,freeSpa:false},detailsOpen:false};
  const app=document.getElementById("app");
  const html=s=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 
@@ -108,7 +108,7 @@
  function section(title,sub=""){return `<div class="sec"><h2>${html(title)}</h2><small>${html(sub)}</small></div>`}
  function toast(msg){let el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(window.toastDelay);window.toastDelay=setTimeout(()=>el.classList.remove("show"),2000)}
  async function copy(s){try{await navigator.clipboard.writeText(s);toast("已复制")}catch(err){const ta=document.createElement("textarea");ta.value=s;document.body.append(ta);ta.select();try{document.execCommand("copy");toast("已复制")}catch(e){toast("无法复制，请手动选择")}ta.remove()}}
- function setTab(tab,i){if(Number.isInteger(i))state.index=i;state.tab=tab;state.expanded={};if(tab==="day"){history.replaceState(null,"","#day-"+(state.index+1))}else{history.replaceState(null,"",location.pathname+location.search)}render();window.scrollTo(0,0)}
+ function setTab(tab,i){if(Number.isInteger(i))state.index=i;state.tab=tab;state.expanded={};state.detailsOpen=false;if(tab==="day"){history.replaceState(null,"","#day-"+(state.index+1))}else{history.replaceState(null,"",location.pathname+location.search)}render();window.scrollTo(0,0)}
  function navbar(){document.querySelectorAll("[data-nav]").forEach(el=>el.classList.toggle("active",el.dataset.nav===state.tab))}
  function home(){
   const boxes=[
@@ -117,7 +117,7 @@
    ["🚌","交通原则","公交优先、少换乘；机场往返600；11/07华顺换乘，11/08主选295直达涉地可支"]
   ];
   return `<div class="hero hasimage"><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div>
-  ${section("七天行程一眼看懂","点击日期进入时间轴")}
+  ${section("七天行程一眼看懂","点击日期查看手绘行程")}
   <div class="days">${d.map((x,i)=>`<button class="day-card" data-day="${i}"><small>D${i+1} · ${html(x.week)}</small><b>${html(x.date)}</b><em>${html(x.name)}</em><i>查看详情 ↗</i></button>`).join("")}</div>
   ${section("行程费用先看一眼","两人花费 · 机票酒店另录入")}
   ${overallSummary()}<div class="btnrow" style="margin:11px 0 18px"><button class="btn primary" data-goto="budget">💰 查看七天费用明细 →</button></div>
@@ -129,22 +129,34 @@
   </div><div style="display:grid;gap:12px;align-content:start"><div class="callout"><b>⚠️ 返程巴士要重点复核</b><p>11/09 06:25是600路从KAL酒店的始发时刻，并非徐福展示馆站上车时刻。11/08晚上确认具体到站分钟。</p></div><div class="callout blue"><b>🚏 班距不是候车时长</b><p>本页全部公交间隔只作整线参考。特别注意202区间车、752-2乡村巴士和295稀疏班次。当天以Naver Map和官方站牌为准。</p></div><div class="white"><div class="kicker">旅行中的快捷操作</div><h3>不用再翻长文找韩文地名</h3><p>在口袋工具里查看每日路线简图、复制韩文地名、查看美食备选和准备清单。</p><div class="btnrow" style="margin-top:14px"><button class="btn primary" data-goto="pocket">🎒 打开随身口袋</button><button class="btn" data-day="0">D1 开始阅读 →</button></div></div></div></div>`;
  }
  function scrollDays(){return `<div class="scroll-days">${d.map((x,i)=>`<button class="${state.index===i?"active":""}" data-day="${i}">D${i+1} · ${html(x.date)} ${html(x.week)}</button>`).join("")}</div>`}
- function side(){return `<aside class="side"><div class="sideheader">🗓️ 逐日时间轴 / 7 DAYS</div>${d.map((x,i)=>`<button data-day="${i}" class="${state.index===i?"active":""}"><span>D${i+1}</span><div><b>${html(x.name)}</b><small>${html(x.date)} · ${html(x.area)}</small></div></button>`).join("")}<div style="padding:14px"><button class="btn soft" style="width:100%" data-goto="pocket">🎒 随身口袋</button></div></aside>`}
+ function side(){return `<aside class="side"><div class="sideheader">🗓️ 每日手绘行程 / 7 DAYS</div>${d.map((x,i)=>`<button data-day="${i}" class="${state.index===i?"active":""}"><span>D${i+1}</span><div><b>${html(x.name)}</b><small>${html(x.date)} · ${html(x.area)}</small></div></button>`).join("")}<div style="padding:14px"><button class="btn soft" style="width:100%" data-goto="pocket">🎒 随身口袋</button></div></aside>`}
  function dayView(){
-  const x=d[state.index];const heroImage=x.photo?"./images/"+x.photo:selectMedia(x.name,"",state.index)[0].src;const img=`photo" style="--day-image:url('${html(heroImage)}')"`;
-  const rows=x.rows.map((r,i)=>{const gallery=selectMedia(r[1],r[3],state.index);return `<div class="step"><div class="time">${html(r[0])}</div><div class="track"><span class="dot"></span></div><div class="entry">${cover(gallery,state.index)}<div class="step-content"><b>${html(r[1])}</b><p>${html(r[2])}</p><div class="buttons"><button data-gallery-step="${state.index}:${i}">📷 相关图片${gallery.length>1?" · "+gallery.length+"张":""}</button><button data-expand="${i}">${state.expanded[i]?"收起说明 −":"查看说明 ＋"}</button>${r[3]?`<button data-copy="${html(r[3])}">复制韩文</button>`:""}</div>${state.expanded[i]?`<div class="detail">${r[3]?`韩文搜索：${html(r[3])}<br>`:""}${html(r[2])}<br>公交实际到站、步道开放情况及餐厅营业时间，请出发当天核对。</div>`:""}</div></div></div>`}).join("");
-  return `<div class="layout">${side()}<div>${scrollDays()}<div class="day-hero ${img}><small>D${state.index+1} · 2026年${html(x.date)} ${html(x.week)} · ${html(x.area)}</small><h1>${html(x.name)}</h1><p>${html(x.lead)}</p><div class="chips"><span>${html(x.date)} ${html(x.week)}</span><span>${state.index===4?"🚶 重点徒步":state.index===6?"✈️ 国际航班":"🌊 慢行济州"}</span></div></div>
-  <div class="twokeys"><div class="key"><small>⭐ 今日不能错过</small><b>${html(x.star)}</b></div><div class="key second"><small>🍽️ 今日餐饮</small><b>${html(x.food)}</b></div></div>
-  ${dayCosts(state.index)}
-  <div class="callout" style="margin-top:12px"><b>⚠️ 今天要注意</b><p>${html(x.alert)}</p></div>
-  ${section("行程时间轴",`${x.rows.length}个环节 · 逐条展开`)}
-  <div class="btnrow" style="margin-bottom:12px"><button class="btn primary" data-copyday="${state.index}">📋 复制当天完整行程</button><button class="btn" data-route="${state.index}">🗺️ 打开今日行程简图</button></div>
-  <div class="timeline">${rows}</div>
-  ${section("交通主选与备选","线路间隔仅供参考")}
-  <div class="buslist">${x.bus.map(b=>`<div class="buscard"><b>${html(b[0])}</b><p>${html(b[1])}</p></div>`).join("")}</div>
-  <div class="callout blue" style="margin-top:12px"><b>当天执行规则</b><p>若官方路标、餐厅营业、天气或实时到站与计划不一致，以现场实际为准；不要为赶时间进入关闭步道或勉强等稀疏班次。</p></div>
-  <div class="btnrow" style="margin-top:20px;justify-content:space-between"><button class="btn" ${state.index?"data-day='"+(state.index-1)+"'":"disabled"}>← 前一天</button><button class="btn primary" ${state.index<6?"data-day='"+(state.index+1)+"'":"disabled"}>后一天 →</button></div>
-  </div></div>`;
+  const x=d[state.index];
+  const poster=(window.JEJU_POSTERS||[])[state.index];
+  const rows=x.rows.map((r,i)=>{const gallery=selectMedia(r[1],r[3],state.index);return '<div class="step"><div class="time">'+html(r[0])+'</div><div class="track"><span class="dot"></span></div><div class="entry">'+cover(gallery,state.index)+'<div class="step-content"><b>'+html(r[1])+'</b><p>'+html(r[2])+'</p><div class="buttons"><button data-gallery-step="'+state.index+':'+i+'">📷 相关图片'+(gallery.length>1?' · '+gallery.length+'张':'')+'</button><button data-expand="'+i+'">'+(state.expanded[i]?'收起说明 −':'查看说明 ＋')+'</button>'+(r[3]?'<button data-copy="'+html(r[3])+'">复制韩文</button>':'')+'</div>'+(state.expanded[i]?'<div class="detail">'+(r[3]?'韩文搜索：'+html(r[3])+'<br>':'')+html(r[2])+'<br>公交实际到站、步道开放情况及餐厅营业时间，请出发当天核对。</div>':'')+'</div></div></div>'}).join('');
+  const painted=poster&&window.JEJU_POSTER_VIEW?window.JEJU_POSTER_VIEW(x,poster,state.index,{
+     html,priceDays:prices.days,amounts:dailyAmounts(state.index),fx:bfx(),freeSpa:state.budget.freeSpa,spa:prices.spaNonFree
+  }):'<div class="callout"><b>'+html(x.name)+'</b><p>'+html(x.lead)+'</p></div>';
+  return '<div class="layout">'+side()+'<div>'+scrollDays()+
+    painted+
+    '<div class="sketch-extras"><div class="sketch-brief-actions">'+
+    '<button class="btn primary" data-copyday="'+state.index+'">📋 复制完整行程</button>'+
+    '<button class="btn soft" data-route="'+state.index+'">🗺️ 查看路线方位简图</button>'+
+    '<button class="btn" data-goto="budget">💰 全程费用预算</button>'+
+    '</div>'+
+    '<details class="sketch-detail-disclosure" '+(state.detailsOpen?'open':'')+'>'+
+       '<summary>📖 展开完整时间表、实景照片和交通备选</summary>'+
+       '<div class="sketch-detail-inner">'+
+         '<div class="callout"><b>⚠️ 当日执行提醒</b><p>'+html(x.alert)+'</p></div>'+
+         section('详细时间轴',x.rows.length+'个步骤 · 可查看地点照片')+
+         '<div class="timeline">'+rows+'</div>'+
+         section('交通主选与备选','线路间隔仅供参考')+
+         '<div class="buslist">'+x.bus.map(b=>'<div class="buscard"><b>'+html(b[0])+'</b><p>'+html(b[1])+'</p></div>').join('')+'</div>'+
+         '<div class="callout blue" style="margin-top:12px"><b>现场情况优先</b><p>公交班次、开放步道、营业时间以当天为准；不要为赶行程进入封闭路段。</p></div>'+
+       '</div>'+
+    '</details>'+
+    '<div class="btnrow" style="margin-top:22px;justify-content:space-between"><button class="btn" '+(state.index?'data-day="'+(state.index-1)+'"':'disabled')+'>← 前一天</button><button class="btn primary" '+(state.index<6?'data-day="'+(state.index+1)+'"':'disabled')+'>后一天 →</button></div>'+
+  '</div></div>';
  }
  function placeCards(){
   const q=state.query.toLowerCase().trim();
@@ -175,6 +187,13 @@
      else closeRoute();
      return;
    }
+   const posterPhoto=e.target.closest("[data-poster-photo]");
+   if(posterPhoto){
+     const [di,si]=posterPhoto.dataset.posterPhoto.split(":").map(Number);
+     const s=(window.JEJU_POSTERS||[])[di]?.stops?.[si];
+     if(s)openGallery(s[1],selectMedia(s[1],s[4],di),di);
+     return;
+   }
    const g=e.target.closest("[data-gallery-step],[data-gallery-place],[data-photo-prev],[data-photo-next],[data-close-photo]");
    if(g){
      if(g.hasAttribute("data-gallery-step")){const [di,ri]=g.dataset.galleryStep.split(":").map(Number);const r=d[di].rows[ri];openGallery(r[1],selectMedia(r[1],r[3],di),di)}
@@ -191,7 +210,7 @@
    if(el.hasAttribute("data-copy")){copy(el.dataset.copy);return}
 
    if(el.hasAttribute("data-copyday")){const x=d[Number(el.dataset.copyday)];let s=`2026年${x.date} ${x.week}｜${x.name}\n${x.lead}\n\n${x.rows.map(r=>r[0]+"｜"+r[1]+"："+r[2]+(r[3]?"（"+r[3]+"）":"")).join("\n")}\n\n交通备选：\n${x.bus.map(b=>b[0]+"｜"+b[1]).join("\n")}\n注意：${x.alert}`;copy(s);return}
-   if(el.hasAttribute("data-expand")){let i=Number(el.dataset.expand);state.expanded[i]=!state.expanded[i];render();return}
+   if(el.hasAttribute("data-expand")){let i=Number(el.dataset.expand);state.expanded[i]=!state.expanded[i];state.detailsOpen=true;render();return}
    if(el.hasAttribute("data-filter")){state.filter=el.dataset.filter;render();return}
  });
  document.addEventListener("input",e=>{
