@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+<title>济州岛旅行冰箱贴风格网页背景</title>
+<defs>
+ <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#fff3d8"/><stop offset=".58" stop-color="#fffaf0"/><stop offset="1" stop-color="#fff0d0"/></linearGradient>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a1dff2"/><stop offset="1" stop-color="#effbfc"/></linearGradient>
+ <pattern id="dots" width="52" height="52" patternUnits="userSpaceOnUse"><circle cx="12" cy="17" r="1.6" fill="#e1c9a2" opacity=".29"/><path d="M31 40l2 -2 m3 0l2 2" fill="none" stroke="#d7c09b" stroke-width="1.3" opacity=".3"/></pattern>
+ <filter id="stickerShadow" x="-30%" y="-35%" width="160%" height="180%"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#50718a" flood-opacity=".23"/></filter>
+ <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".62" numOctaves="2" stitchTiles="stitch" seed="5"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".055"/></feComponentTransfer></filter>
+</defs>
+<rect width="1080" height="1920" fill="url(#paper)"/>
+<rect width="1080" height="1920" fill="url(#dots)"/>
+<path d="M0 0H1080V350Q985 310 913 326T730 322Q635 340 550 320T348 333Q162 307 0 337Z" fill="url(#sky)"/>
+<path d="M0 260Q176 238 263 264T507 268T749 247T1080 265V354Q942 350 804 350T536 345T270 351T0 345Z" fill="#57c1df" stroke="#264765" stroke-width="7"/>
+<path d="M0 289Q132 280 260 293T532 293T817 290T1080 294M52 326q18 -9 36 1t36 -1M383 321q22 -7 40 1t40 -1M783 324q15 -8 31 1" fill="none" stroke="#fff8ef" stroke-width="9" stroke-linecap="round"/>
+<!-- Hallasan in the top center -->
+<g stroke="#283e55" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" filter="url(#stickerShadow)">
+<path d="M222 261L358 175L441 196L538 112L647 195L718 178L855 264Z" fill="#a2d47a" stroke="#fff" stroke-width="22"/>
+<path d="M222 261L358 175L441 196L538 112L647 195L718 178L855 264" fill="none" stroke="#263e52" stroke-width="8"/>
+<path d="M463 167L539 112L606 168L571 161L539 174L505 161Z" fill="#fff9f1"/>
+<path d="M312 241q26 -27 57 -28m223 22q22 -21 52 -13" fill="none" stroke="#537e58" stroke-width="6"/>
+</g>
+<!-- top clouds -->
+<g fill="#fffef7" stroke="#263f5b" stroke-width="6" stroke-linejoin="round" filter="url(#stickerShadow)">
+<path d="M57 86q6 -24 30 -21q12 -31 41 -18q25 -15 46 12q27 -8 39 18q12 23 -19 34H71q-24 -4 -14 -25Z"/>
+<path d="M753 66q12 -19 29 -9q15 -25 39 -10q22 -8 39 15q27 -3 34 18q4 21 -21 26H775q-26 -4 -22 -40Z"/>
+</g>
+<!-- tangerine group left top -->
+<g stroke="#273c47" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#stickerShadow)">
+<path d="M-9 111q75 -33 126 -35" fill="none" stroke="#fff" stroke-width="19"/>
+<path d="M-9 111q75 -33 126 -35" fill="none" stroke="#695a3e" stroke-width="9"/>
+<path d="M74 82Q67 40 112 36q23 24 -4 45ZM105 76Q138 30 183 57q-5 38 -65 35ZM45 113Q5 83 11 53q39 -1 47 42Z" fill="#82bc62" stroke="#fff" stroke-width="17"/>
+<path d="M74 82Q67 40 112 36q23 24 -4 45ZM105 76Q138 30 183 57q-5 38 -65 35ZM45 113Q5 83 11 53q39 -1 47 42Z" fill="#82bc62"/>
+<circle cx="95" cy="132" r="41" fill="#ffab43" stroke="#fff" stroke-width="18"/>
+<circle cx="95" cy="132" r="41" fill="#ffab43"/>
+<circle cx="158" cy="150" r="31" fill="#ff9635" stroke="#fff" stroke-width="15"/>
+<circle cx="158" cy="150" r="31" fill="#ff9635"/>
+</g>
+<g fill="#d77931" opacity=".9"><circle cx="75" cy="123" r="3"/><circle cx="103" cy="146" r="3"/><circle cx="109" cy="113" r="2.8"/><circle cx="157" cy="163" r="2.6"/><circle cx="146" cy="142" r="2.2"/></g>
+<!-- airy diagonal airplane sticker on top-right -->
+<g transform="translate(881 91) rotate(14)" filter="url(#stickerShadow)">
+<path d="M-59 4L-8 -11L14 -55Q19 -65 26 -53L22 -9L63 14Q68 24 59 29L16 20L-13 49Q-25 56 -26 42L-11 16L-57 21Q-68 19 -59 4Z" fill="#fff" stroke="#fff" stroke-width="20" stroke-linejoin="round"/>
+<path d="M-59 4L-8 -11L14 -55Q19 -65 26 -53L22 -9L63 14Q68 24 59 29L16 20L-13 49Q-25 56 -26 42L-11 16L-57 21Q-68 19 -59 4Z" fill="#fff9ec" stroke="#27465c" stroke-width="7" stroke-linejoin="round"/>
+<path d="M-7 -8L17 -7L21 -41" fill="none" stroke="#59b7de" stroke-width="6"/>
+<circle cx="-40" cy="8" r="3" fill="#60bde5"/><circle cx="-25" cy="5" r="3" fill="#60bde5"/>
+</g>
+<!-- decorative middle light wash: intentionally keeps text areas clear -->
+<rect x="0" y="350" width="1080" height="1190" fill="#fff8e8" opacity=".78"/>
+<g fill="none" stroke-linecap="round" stroke-width="6" opacity=".19">
+ <path d="M35 495q50 -24 95 4m-60 -19q9 -24 24 -27" stroke="#5aaec6"/>
+ <path d="M971 644q35 -34 70 1m-56 11q15 14 40 4" stroke="#df9a54"/>
+ <path d="M12 1050q27 -27 52 -6t59 0" stroke="#50a9c8"/>
+ <path d="M973 1210q24 -21 55 6" stroke="#e3a769"/>
+ <path d="M34 1434q38 -18 69 8" stroke="#9cbb71"/>
+</g>
+<g fill="#ffcf78" opacity=".33"><circle cx="954" cy="474" r="11"/><circle cx="935" cy="495" r="6"/><circle cx="85" cy="1137" r="7"/><circle cx="1003" cy="1482" r="8"/></g>
+<!-- small edge-side sticker doodles -->
+<g transform="translate(995 859)" opacity=".6" stroke="#426e74" stroke-width="5" stroke-linecap="round" fill="none"><path d="M0 33q17 -21 34 0q17 -21 33 0M10 54q20 -12 42 2"/></g>
+<g transform="translate(0 852)" opacity=".4" stroke="#dd9c52" stroke-width="5" stroke-linecap="round" fill="none"><path d="M0 20q22 -18 48 0m-23 19q20 -10 40 5"/></g>
+<!-- lower wide sea -->
+<path d="M0 1630Q158 1603 286 1629T528 1628T817 1627T1080 1630V1920H0Z" fill="#68c5e0"/>
+<path d="M0 1698Q90 1671 196 1693T394 1691T609 1694T848 1691T1080 1696" fill="none" stroke="#fffdf3" stroke-width="9" stroke-linecap="round"/>
+<path d="M0 1776q83 -19 169 -2t167 -1M606 1760q46 -18 97 1t88 0M859 1838q47 -14 93 2t91 0" fill="none" stroke="#eafdfc" stroke-width="7" stroke-linecap="round"/>
+<!-- coastline at bottom, beaches -->
+<path d="M0 1760Q170 1713 308 1789Q464 1884 578 1817Q756 1717 883 1818Q975 1846 1080 1800V1920H0Z" fill="#a4d16c" stroke="#2c4b53" stroke-width="9"/>
+<path d="M0 1825Q124 1794 244 1844T535 1865T828 1853T1080 1843V1920H0Z" fill="#4f9b79"/>
+<path d="M0 1852Q209 1815 396 1883T813 1882T1080 1860V1920H0Z" fill="#343d3d"/>
+<!-- Dol Hareubang -->
+<g transform="translate(62 1535)" filter="url(#stickerShadow)" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M21 302q-4 -67 20 -113q-29 -34 -22 -73q2 -63 61 -83q61 -21 101 37q21 35 1 80q25 31 27 97l10 59Z" fill="#9b9a9b" stroke="#fff" stroke-width="23"/>
+ <path d="M21 302q-4 -67 20 -113q-29 -34 -22 -73q2 -63 61 -83q61 -21 101 37q21 35 1 80q25 31 27 97l10 59Z" fill="#a8a6a4" stroke="#263e4e" stroke-width="9"/>
+ <path d="M26 96Q29 16 103 16q67 1 76 79Z" fill="#c0b9ad" stroke="#263e4e" stroke-width="9"/>
+ <path d="M54 121q16 -15 33 -1m45 -2q16 -12 31 0m-58 13l-7 22l20 5m-32 16q16 11 31 -1m-50 73q36 16 74 2" fill="none" stroke="#273b43" stroke-width="9"/>
+ <path d="M58 216l48 22l34 -22M59 253l46 16l37 -12" fill="none" stroke="#677274" stroke-width="7"/>
+ <g fill="#7f8385"><circle cx="46" cy="177" r="4"/><circle cx="171" cy="188" r="5"/><circle cx="80" cy="287" r="4"/><circle cx="158" cy="271" r="5"/></g>
+</g>
+<!-- lighthouse + cliff bottom right -->
+<g transform="translate(832 1590)" filter="url(#stickerShadow)" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M-44 269q35 -57 103 -57q59 -13 103 30l42 69H-67Z" fill="#3d4952" stroke="#fff" stroke-width="22"/>
+ <path d="M-44 269q35 -57 103 -57q59 -13 103 30l42 69H-67Z" fill="#48555d" stroke="#2b3b49" stroke-width="8"/>
+ <path d="M55 217L66 67H126L138 221Z" fill="#fff5e3" stroke="#fff" stroke-width="20"/>
+ <path d="M55 217L66 67H126L138 221Z" fill="#fff6e6" stroke="#2c4356" stroke-width="8"/>
+ <path d="M65 110h67v34H65Z" fill="#e66e51"/>
+ <path d="M64 170h72v36H64Z" fill="#d55e4d"/>
+ <path d="M67 68l8 -30h40l13 30Z" fill="#f6a962" stroke="#2c4356" stroke-width="8"/>
+ <path d="M88 38V18h14v20" fill="#fff5d2" stroke="#2c4356" stroke-width="6"/>
+</g>
+<!-- lower flowers -->
+<g transform="translate(360 1770)" filter="url(#stickerShadow)" stroke="#263e4e" stroke-width="6" stroke-linejoin="round">
+ <path d="M0 149L38 73M68 149L83 65M116 155L126 92" fill="none"/>
+ <g fill="#ffcc63"><ellipse cx="38" cy="55" rx="13" ry="24"/><ellipse cx="38" cy="55" rx="24" ry="13"/><circle cx="38" cy="55" r="8" fill="#e7a04b"/><ellipse cx="83" cy="47" rx="13" ry="22"/><ellipse cx="83" cy="47" rx="21" ry="12"/><circle cx="83" cy="47" r="8" fill="#e7a04b"/><ellipse cx="126" cy="78" rx="11" ry="21"/><ellipse cx="126" cy="78" rx="20" ry="12"/><circle cx="126" cy="78" r="6" fill="#e7a04b"/></g>
+ </g>
+<!-- orange cat on seaside rock -->
+<g transform="translate(571 1766)" filter="url(#stickerShadow)" stroke="#263e4e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M16 113Q30 76 67 84q11 -27 38 -29q38 -11 60 17q20 4 29 25q12 40 -10 51H52Q18 146 16 113Z" fill="#fff9ed" stroke="#fff" stroke-width="22"/>
+ <path d="M16 113Q30 76 67 84q11 -27 38 -29q38 -11 60 17q20 4 29 25q12 40 -10 51H52Q18 146 16 113Z" fill="#fff9ed"/>
+ <path d="M68 84L62 55L87 63M135 65l18 -25l8 37" fill="#f4a753"/>
+ <path d="M58 91q20 -16 34 -6m37 -9q17 1 21 13" fill="none"/>
+ <path d="M114 119q8 10 16 0m-23 -7l-6 -4m33 4l8 -4" fill="none" stroke-width="5"/>
+ <path d="M20 127q13 27 35 18" fill="none" stroke="#ed9f55" stroke-width="12"/>
+ <path d="M83 127q25 -10 34 7" fill="none" stroke="#f0a756" stroke-width="13"/>
+</g>
+<!-- hydrangeas bottom right -->
+<g transform="translate(908 1755)" stroke="#2c4752" stroke-width="4.7" stroke-linejoin="round" filter="url(#stickerShadow)">
+<path d="M40 144q18 -67 55 -74M64 146Q31 98 10 102" fill="none"/>
+<path d="M60 126q-41 2 -53 -32q37 -8 53 32m24 -17q16 -46 47 -44q2 39 -47 44" fill="#79b57d"/>
+<g fill="#92a9f0"><circle cx="37" cy="51" r="21"/><circle cx="66" cy="30" r="24"/><circle cx="91" cy="57" r="23"/><circle cx="68" cy="84" r="21"/><circle cx="20" cy="78" r="19"/><circle cx="105" cy="94" r="20"/></g>
+<g fill="#fff6d4"><circle cx="37" cy="51" r="5"/><circle cx="66" cy="30" r="5"/><circle cx="91" cy="57" r="5"/><circle cx="68" cy="84" r="5"/><circle cx="20" cy="78" r="5"/><circle cx="105" cy="94" r="5"/></g>
+</g>
+<rect width="1080" height="1920" fill="#fff" filter="url(#grain)" opacity=".09"/>
+</svg>
