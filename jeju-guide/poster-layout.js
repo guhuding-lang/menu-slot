@@ -6,14 +6,15 @@ window.JEJU_POSTER_VIEW=(function(){
    const steps=poster.stops.map((s,k)=>{
      const [time,title,description,icon,ko]=s;
      const key=index+':'+k;
-     return '<article class="sketch-stop">'+
+     return '<article class="sketch-stop han-stop">'+
+       '<span class="han-stop-index">'+String(k+1).padStart(2,'0')+'</span>'+
        '<button type="button" class="sketch-illustration" data-poster-photo="'+key+'" aria-label="查看'+e(title)+'相关图片">'+ico(icon)+'</button>'+
-       '<div class="sketch-stop-head"><span class="sketch-number">'+(k+1)+'</span><strong>'+e(title)+'</strong></div>'+
-       '<div class="sketch-time">'+e(time)+'</div>'+
-       '<p>'+e(description)+'</p>'+
+       '<span class="sketch-time">'+e(time)+'</span>'+
+       '<h3 class="han-stop-title">'+e(title)+'</h3>'+
+       '<p title="'+e(description)+'">'+e(description)+'</p>'+
        (ko?'<span class="sketch-location">'+e(ko)+'</span>':'')+
-       '<button type="button" class="sketch-photo-link" data-poster-photo="'+key+'">📷 相关图片</button>'+
-     '</article>'
+       '<button type="button" class="sketch-photo-link" data-poster-photo="'+key+'">看图片 ↗</button>'+
+     '</article>';
    }).join('');
    const line=opts.priceDays[index]||{costs:[]};
    const budgetRows=line.costs.map(c=>{
@@ -30,12 +31,12 @@ window.JEJU_POSTER_VIEW=(function(){
          '<h1>'+e(day.name)+'</h1><p class="sketch-motto">'+e(poster.motto)+'</p></div>'+
        '<div class="sketch-hdr-deco sketch-hdr-right">'+ico(index===6?'plane':index===2?'falls':index===4?'mountain':'sea')+'</div>'+
      '</div>'+
-     '<div class="sketch-route-outer"><div class="sketch-mini-title">🧭 今日路线 · 按编号依次游览</div><div class="sketch-stops">'+steps+'</div>'+
-       '<div class="sketch-wave" aria-hidden="true"><span>～</span><span>〰</span><span>～</span></div>'+
+     '<div class="sketch-route-outer"><div class="sketch-mini-title">✎ 今日路线 / 按编号走</div><div class="sketch-stops">'+steps+'</div>'+
+       '<div class="sketch-wave" aria-hidden="true"><span>✦</span><span>〰</span><span>✦</span></div>'+
      '</div>'+
      '<div class="sketch-notes">'+
-       '<section class="sketch-notebox sketch-highlights"><h2><span class="sketch-label">✓</span> 今天的重点</h2><ul>'+highlights+'</ul><div class="sketch-smallart">'+ico('orange')+'</div></section>'+
-       '<section class="sketch-notebox sketch-budget"><h2><span class="sketch-label">🍊</span> 双人费用预估</h2><div class="sketch-budget-list">'+budgetRows+'</div><div class="sketch-total">约 '+total+'</div><p>仅含预计岛内消费；机票、酒店与购物另算。</p></section>'+
+       '<section class="sketch-notebox sketch-highlights"><h2><span class="sketch-label">★</span> 今日重点</h2><ul>'+highlights+'</ul><div class="sketch-smallart">'+ico('orange')+'</div></section>'+
+       '<section class="sketch-notebox sketch-budget"><h2><span class="sketch-label">¥</span> 双人预算</h2><div class="sketch-budget-list">'+budgetRows+'</div><div class="sketch-total">约 '+total+'</div><p>仅含预计岛内消费；机票、酒店与购物另算。</p></section>'+
      '</div>'+
      '<section class="sketch-transport"><span class="sketch-transport-icon">'+ico(index===2||index===4?'trail':'bus')+'</span>'+
         '<div><b>'+(index===2||index===4?'🥾 徒步提醒':'🚌 交通说明')+'</b><p>'+e(poster.traffic)+'</p></div></section>'+
