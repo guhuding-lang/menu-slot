@@ -225,3 +225,67 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #f29a
 .place-mini-icon svg{height:37px;width:39px}
 .food .place-mini-icon{background:#fff0d9}
 @media(max-width:650px){.place-name-row{gap:6px}.place-mini-icon{width:35px;min-width:35px;height:34px}.place-mini-icon svg{width:32px;height:31px}.place-name-row b{font-size:12px}}
+
+/* 2026-10-28 · 济州冰箱贴纪念品视觉升级 */
+body{
+  background-color:#fff6e6;
+  background-image:url("./jeju-fridge-magnet-background.svg"),url("./jeju-paper-pattern.svg");
+  background-repeat:no-repeat,repeat;
+  background-position:center top,left top;
+  background-size:min(100%,1080px) auto,280px 320px;
+  background-attachment:scroll,scroll;
+}
+.top{background:#fff7e5ed;backdrop-filter:blur(11px)}
+.doodle-home-hero{
+  background:linear-gradient(90deg,rgba(255,251,240,.92) 0%,rgba(255,252,240,.85) 68%,rgba(255,247,231,.67) 100%),url("./jeju-fridge-magnet-background.svg") center 21% / cover no-repeat!important;
+}
+.pocket-hero,.budget-hero{
+  background:linear-gradient(100deg,rgba(255,250,237,.97),rgba(255,247,226,.79)),url("./jeju-fridge-magnet-background.svg") center 22% / cover no-repeat!important;
+}
+.sketch-poster{
+  background-color:#fff6e6;
+  background-image:url("./jeju-paper-pattern.svg");
+  background-size:240px 270px;
+}
+.white,.day-card,.day-cost-card,.cost-summary,.place-inner,.food-inner{
+  background-image:radial-gradient(circle at 90% 6%,rgba(255,193,112,.10) 0 19px,transparent 20px),radial-gradient(circle at 5% 93%,rgba(104,194,219,.09) 0 13px,transparent 14px);
+}
+.jeju-doodle,.brand-art svg,.nav-icon svg,.nav-inline-icon svg{
+  overflow:visible;
+  filter:drop-shadow(1px 2px 1px rgba(38,53,66,.16));
+  transition:transform .17s ease,filter .17s ease;
+}
+.day-card:hover .jeju-doodle,.cost-day-row:hover .jeju-doodle,.place-name-row:hover .jeju-doodle{
+  transform:rotate(-6deg) scale(1.06);
+  filter:drop-shadow(2px 4px 2px rgba(28,72,88,.19));
+}
+.sketch-illustration .sketch-svg{filter:drop-shadow(0 3px 2px rgba(22,55,71,.16))}
+.sketch-stop-head strong{letter-spacing:-.2px}
+.sketch-number{background:#ffb34e;border:2px solid #fff}
+.sketch-transport-icon .jeju-doodle{width:100%;height:auto}
+.info-doodle-card .info-doodle-icon{transform:rotate(-3deg)}
+.info-doodle-card:nth-child(2) .info-doodle-icon{transform:rotate(5deg)}
+.info-doodle-card .info-doodle-icon svg{filter:drop-shadow(1px 3px 1px rgba(34,54,70,.12))}
+.doodle-home-hero .home-sticker.citrus{filter:drop-shadow(2px 4px 2px rgba(26,65,79,.15))}
+.doodle-home-hero .home-sticker.peak{filter:drop-shadow(3px 3px 2px rgba(26,65,79,.12))}
+.doodle-home-hero .home-sticker.splash{opacity:.84}
+.btn.primary{background:#ffbe79}
+.btn.soft{background:#d7f4f6}
+.day-card:nth-child(4n+1){background-color:#fff8ea}
+.day-card:nth-child(4n+2){background-color:#f3faf5}
+.day-card:nth-child(4n+3){background-color:#eff9fa}
+.day-card:nth-child(4n){background-color:#fff4df}
+@media(max-width:650px){
+  body{background-size:100% auto,210px 240px}
+  .doodle-home-hero{
+    background:linear-gradient(95deg,rgba(255,251,241,.95),rgba(255,251,241,.89) 72%,rgba(255,248,236,.67)),url("./jeju-fridge-magnet-background.svg") center 17% / cover no-repeat!important;
+  }
+  .pocket-hero,.budget-hero{
+    background:linear-gradient(95deg,rgba(255,250,240,.95),rgba(255,248,236,.88)),url("./jeju-fridge-magnet-background.svg") center 17% / cover no-repeat!important;
+  }
+  .sketch-poster{background-size:180px 210px}
+  .day-mini-illustration{width:72px;height:70px;right:-6px;bottom:3px}
+  .day-card em{max-width:83px}
+  .sketch-illustration .sketch-svg{height:83px}
+}
+@media(prefers-reduced-motion:reduce){.jeju-doodle,.nav-icon svg,.nav-inline-icon svg{transition:none}}
