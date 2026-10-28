@@ -74,8 +74,8 @@
  function budgetPage(){
    const opts=[["flight","往返机票（两人总价）"],["hotel","Hotel Bridge 六晚总房费"],["parking","广州机场停车及自驾相关费用"],["shopping","购物与伴手礼预算"]];
    const fmt=(k,label)=>'<label class="cost-input-label"><span>'+label+'</span><div class="cost-input-wrap"><span>¥</span><input data-budget-field="'+k+'" type="number" inputmode="decimal" min="0" step="1" placeholder="尚未录入" value="'+html(state.budget[k])+'"></div></label>';
-   return '<div class="budget-hero"><small>2026年11月3日—9日 · 双人预算</small><h1>七天花多少钱？</h1><p>每天看明细，整趟看总额；机票和酒店可按实际订单填写。</p></div>'+section("七天费用总览","按两个人估算，不是实际已付金额")+overallSummary()+
-   '<div class="cost-day-list">'+d.map((x,i)=>'<button class="cost-day-row" data-day="'+i+'"><span>D'+(i+1)+' · '+html(x.date)+' · '+html(x.name)+'</span><b>'+yuan(dailyAmounts(i)[0]/bfx())+' – '+yuan(dailyAmounts(i)[1]/bfx())+'</b></button>').join("")+'</div>'+
+   return '<div class="budget-hero"><div class="budget-hero-doodle">'+draw('wallet')+draw('orange')+'</div><small>2026年11月3日—9日 · 双人预算</small><h1>七天花多少钱？</h1><p>每天看明细，整趟看总额；机票和酒店可按实际订单填写。</p></div>'+section("七天费用总览","按两个人估算，不是实际已付金额")+overallSummary()+
+   '<div class="cost-day-list">'+d.map((x,i)=>'<button class="cost-day-row" data-day="'+i+'"><span class="cost-day-mini">'+draw(['spa','sunset','trail','crab','mountain','lighthouse','plane'][i])+'</span><span>D'+(i+1)+' · '+html(x.date)+' · '+html(x.name)+'</span><b>'+yuan(dailyAmounts(i)[0]/bfx())+' – '+yuan(dailyAmounts(i)[1]/bfx())+'</b></button>').join("")+'</div>'+
    section("把实际机票与酒店补进预算","金额均为人民币 · 自动保存在当前设备")+
    '<div class="white cost-form">'+opts.map(x=>fmt(x[0],x[1])).join("")+
    '<label class="cost-check"><input type="checkbox" data-budget-spa '+(state.budget.freeSpa?'checked':'')+'><span>O’REVE 按免费体验计费（仅在确认资格后勾选）</span></label>'+
