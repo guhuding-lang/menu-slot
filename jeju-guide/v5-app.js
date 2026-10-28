@@ -144,7 +144,32 @@
    ["hotel","全程住 Hotel Bridge","호텔 브릿지 서귀포｜제주 서귀포시 태평로 436｜11/03入住，11/09退房，共6晚"],
    ["bus","交通原则","公交优先、少换乘；机场往返600；11/07华顺换乘，11/08主选295直达涉地可支"]
   ];
-  return `<div class="hero doodle-home-hero magnet-home-hero"><div class="magnet-cover" role="img" aria-label="济州岛橘子、汉拿山、大海与飞机手绘插画"><div class="magnet-cover-name">JEJU<small>济州岛 · 橘子与大海</small></div><div class="magnet-cover-stamp">🍊 手绘冰箱贴</div></div><div class="magnet-home-body"><div class="home-hero-stickers"><div class="home-sticker citrus">${draw("tangerine")}</div><div class="home-sticker peak">${draw("hallasan")}</div><div class="home-sticker splash">${draw("sea")}</div></div><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div></div>
+  return `<section class="han-hero" aria-label="济州岛七日旅行总览">
+     <div class="han-hero-top">
+       <div class="han-hero-note han-polaroid"><span class="han-tape"></span><span class="han-polaroid-hd">JEJU / TRAVEL DIARY</span>
+         <div class="han-postcard-art">
+           <div class="han-art-hill">${draw("hallasan")}</div>
+           <div class="han-art-orange">${draw("tangerine")}</div>
+           <div class="han-art-wave">${draw("sea")}</div>
+         </div>
+         <b class="han-polaroid-title">济州岛旅行手账</b>
+       </div>
+       <div class="han-hero-receipt">
+         <div class="han-receipt-clips"><i></i><i></i></div>
+         <strong>JEJU TICKET</strong>
+         <small>7 DAYS / 6 NIGHTS</small>
+         <div class="han-receipt-lines"><span>11.03 → 11.09</span><span>2 PEOPLE</span><span>SEOGWIPO</span></div>
+         <div class="han-receipt-barcode" aria-hidden="true"></div>
+       </div>
+     </div>
+     <div class="han-hero-bottom">
+       <div class="han-hero-badge">NOVEMBER 2026 · JEJU</div>
+       <h1>去济州，<br>慢慢走七天<span class="han-doodle-dot">.</span></h1>
+       <p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p>
+       <div class="han-hero-chips"><span>✈ 往返济州</span><span>〰 海岸日落</span><span>✎ 偶来徒步</span><span>☼ 慢慢旅行</span></div>
+     </div>
+   </section>
+
   ${section("七天行程一眼看懂","点击日期查看手绘行程")}
   <div class="days">${d.map((x,i)=>`<button class="day-card" data-day="${i}"><span class="day-mini-illustration">${draw(["spa","sunset","trail","sea","mountain","lighthouse","plane"][i])}</span><small>D${i+1} · ${html(x.week)}</small><b>${html(x.date)}</b><em>${html(x.name)}</em><i>查看详情 ↗</i></button>`).join("")}</div>
   ${section("行程费用先看一眼","两人花费 · 机票酒店另录入")}
