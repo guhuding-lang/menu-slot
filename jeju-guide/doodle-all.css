@@ -1,0 +1,219 @@
+
+/* JEJU hand-drawn notebook system — 2026-10-28
+   Design source: user-supplied naïve Jeju doodle map and DAY1 itinerary.
+   Colors: tangerine / sea / grass on warm paper; flat, rough-ink outlines.
+*/
+:root{
+--bg:#fff3da;--ink:#262d2e;--blue:#288dba;--teal:#35acc8;--line:#dfcdae;--orange:#ee8c48;--muted:#747265;
+--paper:#fff8e9;--paper2:#fff1d4;--tangerine:#ffba75;--doodle-black:#263032;
+}
+html{max-width:100%;overflow-x:clip}
+body{max-width:100%;overflow-x:clip;background:radial-gradient(circle at 17% 14%,rgba(255,255,255,.45) 0 2px,transparent 3px) 0 0/44px 44px,#fff3da;color:#293236;font-family:"PingFang SC","Microsoft Yahei","Noto Sans CJK SC",system-ui,sans-serif}
+button,input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #f29a4c;outline-offset:3px}
+.jeju-doodle,.sketch-svg{overflow:visible}
+.top{background:#fff4dded;border-bottom:2px solid #30383a;box-shadow:0 2px 0 #efce99;height:69px}
+.top .wrap{max-width:1120px}
+.brand{font-family:"Comic Sans MS","PingFang SC",system-ui,sans-serif;font-weight:900;color:#253137;letter-spacing:.05em;font-size:17px}
+.brand span{border:0!important;background:transparent!important;border-radius:0!important;width:auto!important;height:auto!important;font-size:18px;display:flex!important}
+.brand .brand-art{width:36px!important;height:36px!important;display:block!important}
+.brand .brand-art use{pointer-events:none}
+.desktopnav{gap:7px}
+.desktopnav button{border:2px solid transparent;border-radius:13px 10px 15px 11px;padding:9px 12px;font-size:12px;color:#4e595c;font-weight:850}
+.desktopnav button.active{background:#ffc77a;border-color:#2b3333;color:#2c3636;transform:rotate(-1deg);box-shadow:2px 2px 0 #2c3434}
+.page{max-width:1120px;padding-top:23px}
+.sec{margin:29px 0 15px;align-items:center}
+.sec h2{font-size:21px;color:#283133;font-weight:1000;display:inline-block;position:relative;z-index:1;letter-spacing:-.2px}
+.sec h2::after{content:"";position:absolute;height:10px;bottom:1px;left:-3px;right:-6px;background:#ffd68c;z-index:-1;border-radius:50% 25% 40% 17%}
+.sec small{color:#827e6b}
+.doodle-home-hero{min-height:282px;border:3px solid #263233;color:#25383e;background:#fff7e4!important;border-radius:43px 27px 39px 30px / 25px 41px 24px 40px;box-shadow:5px 5px 0 #eac99e;padding:35px 36px;isolation:isolate}
+.doodle-home-hero .eyebrow{color:#c47a3e;font-family:system-ui,sans-serif;font-weight:950;opacity:1}
+.doodle-home-hero h1{font-weight:1000;font-size:clamp(34px,5vw,51px);line-height:1.12;color:#27363a;text-shadow:1px 1px 0 #f8d491;max-width:500px;margin:19px 0 14px}
+.doodle-home-hero p{color:#486570;font-weight:750;font-size:14px;max-width:520px}
+.doodle-home-hero .stamp{border:2px solid #2b3333;background:#ffbe75;color:#243439;right:26px;top:22px;padding:6px 13px;transform:rotate(3deg)}
+.home-hero-stickers{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.home-sticker{position:absolute}
+.home-sticker .sketch-svg{width:100%;height:100%}
+.home-sticker.citrus{right:16%;top:16%;width:110px;height:110px;transform:rotate(11deg)}
+.home-sticker.peak{right:2%;bottom:23px;width:178px;height:140px}
+.home-sticker.splash{right:26%;bottom:-11px;width:130px;height:110px}
+.doodle-home-hero .statbar{margin-top:25px;max-width:660px}
+.doodle-home-hero .statbar span{background:#fff4ce;color:#4c5d5a;border:1.5px dashed #d4a36a;border-radius:12px 9px 13px 8px;padding:7px 10px;font-size:11px}
+.day-card{position:relative;overflow:hidden;min-height:144px;padding:14px 13px 13px;border:2px solid #35383a;border-radius:21px 14px 23px 12px / 13px 24px 14px 20px;background:#fffaf0;color:#273438;box-shadow:2px 3px 0 #dfbb93;transition:transform .12s ease,box-shadow .12s ease}
+.day-card:nth-child(2n){border-radius:12px 24px 13px 20px / 20px 14px 24px 14px;background:#f4fbf4}
+.day-card:nth-child(3n){background:#eaf7fa}
+.day-card:nth-child(5n){background:#fff1d7}
+.day-card:hover{transform:translateY(-2px) rotate(-.6deg);box-shadow:3px 5px 0 #dcb18b}
+.day-card:active{transform:translateY(1px);box-shadow:0 1px 0 #dcb18b}
+.day-card small{color:#bd7138;font-size:11px}
+.day-card b{font-size:22px;letter-spacing:-.5px}
+.day-card em{font-size:12px;color:#2d5a61;position:relative;z-index:2;font-weight:850;margin-top:5px;max-width:90px}
+.day-card i{font-size:10px;font-weight:800;color:#966841;position:relative;z-index:2}
+.day-mini-illustration{position:absolute;right:-3px;bottom:8px;width:76px;height:70px;opacity:.94;pointer-events:none;transform:rotate(5deg)}
+.day-mini-illustration svg{width:100%;height:100%}
+.day-card:nth-child(even) .day-mini-illustration{transform:rotate(-8deg)}
+.white,.panel,.callout,.buscard{background:#fffbef;border:2px solid #2d3536;border-radius:23px 15px 21px 18px / 17px 24px 17px 24px;box-shadow:3px 3px 0 #e8cba5}
+.white h3{color:#273638;font-size:16px}
+.white p{color:#6e6b61;font-size:12px}
+.white .kicker{color:#bb793e;font-size:10px;font-weight:900}
+.info-doodle-card{position:relative;min-height:185px;padding:20px 18px}
+.info-doodle-icon{width:96px;height:84px;margin:0 auto 4px}
+.info-doodle-icon svg{width:100%;height:100%}
+.info-doodle-card .kicker{background:#ffe5b6;display:inline-block;padding:2px 8px;border-radius:6px;transform:rotate(-2deg)}
+.info-doodle-card h3{margin:8px 0 7px;font-size:14px}
+.info-doodle-card p{line-height:1.75}
+.feature{border-bottom:1px dashed #d2bb9b;gap:13px}
+.feature .ico{display:grid;place-items:center;width:54px;min-width:54px;flex:none;height:53px;background:#fff0cf;border:1px dashed #e5bb8f;border-radius:40% 57% 35% 54%}
+.feature .ico .sketch-svg{width:47px;height:44px}
+.feature b{font-weight:900}
+.feature p{color:#777063;line-height:1.7}
+.callout{border:2px dashed #d0a26d;box-shadow:none;background:#fff3d9;border-radius:18px 24px 13px 18px}
+.callout b,.callout p{color:#805e3f!important}
+.callout.blue{background:#e7f5f7;border-color:#67b6c2}
+.callout.blue b,.callout.blue p{color:#426e78!important}
+.btn{border:2px solid #30393a;border-radius:12px 8px 14px 9px;background:#fff9e9;color:#3b565d;box-shadow:2px 2px 0 #d5b991;font-weight:850;transition:transform .13s,box-shadow .13s}
+.btn.primary{background:#ffb969;border-color:#30393a;color:#293839}
+.btn.soft{background:#d7f0f3;border-color:#30393a;color:#2b626a}
+.btn:hover{transform:translateY(-1px);box-shadow:2px 3px 0 #d6b48f}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 #d6b48f}
+.side{border:2px solid #2b3636;background:#fff9e9;border-radius:18px 13px 17px 11px;box-shadow:3px 4px 0 #e4c69c}
+.sideheader{color:#85592c;font-weight:950}
+.side button{background:#fff9e9;border-left:4px solid transparent}
+.side button.active{background:#ffe5af;border-color:#ee8c48}
+.side button span{background:#fff0ca}
+.side button.active span{background:#f9b366;color:#333}
+.scroll-days{gap:7px}
+.scroll-days button{background:#fff9e9;border:2px solid #303b3a;border-radius:13px 9px 12px 10px;color:#546363;box-shadow:1px 2px 0 #e4c1a0}
+.scroll-days button.active{background:#ffc078;border-color:#263536;color:#263536}
+.sketch-poster{background:#fff5db;border:2.5px solid #2c3535;box-shadow:5px 5px 0 #e8c49e}
+.sketch-hdr h1{color:#273435}
+.sketch-route-outer{background:rgba(255,252,242,.52)}
+.sketch-illustration{transition:transform .15s ease}
+.sketch-illustration:hover,.sketch-illustration:active{transform:rotate(-5deg) scale(1.055)}
+.sketch-illustration .sketch-svg{width:auto;height:90px;max-width:100%;filter:none}
+.sketch-stop::after{border-color:#df8433}
+.sketch-number{background:#fdb873;color:#263435;border:2px solid #fff;box-shadow:0 0 0 2px #cf9b65}
+.sketch-stop-head strong{color:#263334}
+.sketch-stop p{color:#4c6565}
+.sketch-budget{background:#eaf9fa;border:2px solid #5dadc0}
+.sketch-total{background:#ffd47e}
+.sketch-transport{background:#fff0cb}
+.sketch-detail-disclosure{border:2px solid #2d3737;background:#fff9e9;border-radius:17px 22px 15px 20px;box-shadow:3px 3px 0 #e8c9a8}
+.sketch-detail-disclosure summary{color:#2d595b}
+.sketch-transport-icon .sketch-svg{width:80px;height:70px}
+.sketch-smallart .sketch-svg{max-height:60px}
+.pocket-hero,.budget-hero{position:relative;overflow:hidden;border:3px solid #2d3737;border-radius:34px 20px 32px 18px;background:#fff5d9!important;color:#273a3d;box-shadow:5px 5px 0 #e8c79b;padding:26px 26px}
+.pocket-hero h1,.budget-hero h1{color:#293837;font-weight:950;font-size:31px;line-height:1.28;margin:15px 0 9px;position:relative;z-index:2}
+.pocket-hero p,.budget-hero p{color:#4d6969;position:relative;z-index:2;font-weight:650}
+.pocket-hero .eyebrow,.budget-hero small{color:#ae713e;font-weight:1000}
+.pocket-hero .btnrow{position:relative;z-index:2}
+.pocket-hero-doodle,.budget-hero-doodle{position:absolute;right:-16px;bottom:5px;width:165px;height:165px;display:flex;align-items:end;z-index:1;pointer-events:none;opacity:.95}
+.pocket-hero-doodle svg,.budget-hero-doodle svg{width:108px;height:115px;position:absolute;right:24px;bottom:8px}
+.pocket-hero-doodle svg:nth-child(2),.budget-hero-doodle svg:nth-child(2){width:72px;height:70px;right:1px;bottom:88px;transform:rotate(10deg)}
+.pocket-hero h1{max-width:275px}
+.pocketgrid .white .feature .ico{background:#fff0d2}
+.check{border-bottom:1px dashed #d5c0a3;padding:13px 3px;gap:12px}
+.check input{accent-color:#f39a4e;width:19px;height:19px}
+.check.done span{text-decoration:line-through;color:#aba18e}
+.progress{height:13px;border:2px solid #323b3a;background:#fff5df;border-radius:99px}
+.progress span{background:repeating-linear-gradient(135deg,#edaa54 0 13px,#ffca7e 13px 26px)}
+.search{border:2px solid #303a3a;background:#fffdf2;border-radius:14px 11px 14px 9px}
+.search:focus{outline:2px solid #f0a957}
+.filter-pills button{border:2px solid #303a3a!important;background:#fff7e5;color:#56615c;border-radius:13px 9px 14px 10px}
+.filter-pills button.active{background:#ffc77f!important;color:#2e3838!important;border-color:#303a3a!important}
+.place,.food{border:2px solid #343a39;background:#fffaf0;box-shadow:2px 3px 0 #edd1a7;border-radius:17px 11px 19px 12px;overflow:hidden}
+.place .place-cover,.food .place-cover{border-bottom:2px solid #303b3b;position:relative}
+.place .place-cover::after,.food .place-cover::after{content:"";width:22px;height:15px;position:absolute;right:12px;top:9px;background:#ffdf9d9e;border:1px dashed #fff;transform:rotate(10deg);border-radius:2px}
+.place-inner,.food-inner{background:#fffaf0}
+.place .btn,.food .btn{border-width:1.5px}
+.refs a,.linklist a{border:1.5px solid #303b3a;border-radius:10px 14px 8px 13px;background:#fff8e9;color:#3b676c;box-shadow:1px 2px 0 #e5c59a}
+.cost-summary,.day-cost-card{background:#fffaed;border:2px solid #333b3a;border-radius:22px 15px 20px 16px / 15px 22px 16px 23px;box-shadow:3px 4px 0 #ebc99f}
+.cost-summary strong{color:#d77734;letter-spacing:-.8px}
+.cost-summary small,.day-cost-head span{color:#966738}
+.cost-summary p{color:#696957}
+.cost-totalline{border-top:1px dashed #cfb494}
+.day-cost-card{background:#eaf9fb}
+.day-cost-head strong{color:#266e88}
+.day-cost-sub,.cost-note{color:#697974}
+.cost-line{border-bottom:1px dotted #c8d4cf}
+.cost-day-list{gap:11px}
+.cost-day-row{background:#fffaee;border:2px solid #313b3a;border-radius:16px 10px 15px 12px;box-shadow:2px 3px 0 #e4cba8;color:#333b39;display:flex;justify-content:flex-start}
+.cost-day-row:hover{background:#fff0cf}
+.cost-day-row span:not(.cost-day-mini){flex:1}
+.cost-day-row b{color:#c5773d}
+.cost-day-mini{width:48px;height:47px;flex:none;display:grid;place-items:center}
+.cost-day-mini svg{width:50px;height:48px}
+.cost-input-wrap{background:#fff9e9;border:1.5px solid #303939;border-radius:12px}
+.cost-input-wrap input{color:#2f3c40}
+.cost-check{border-top:1px dashed #c9ad85}
+.cost-form{background:#fffbf1}
+.cost-breakdowns h3{font-size:14px;color:#475c57;padding-left:8px;border-left:4px solid #f0b56c}
+.photo-shell,.route-shell{background:#fff5dc;border:2px solid #343b3b;box-shadow:4px 4px 0 #dfbd8d}
+.photo-head,.route-header,.photo-foot,.route-footer{background:#fff5dc}
+.photo-head strong,.route-header strong{color:#243f43}
+.photo-body,.route-scroll{background:#fff4dc}
+.photo-credit{background:#ffedc3;color:#566961}
+.foot{color:#86765e}
+.mobile-nav{background:#fff2d7f5;border-top:2px solid #343a39;border-radius:17px 17px 0 0;box-shadow:0 -2px 0 #ead3aa;align-items:stretch}
+.mobile-nav button{color:#7a6c57;min-width:65px;padding:3px 3px;font-weight:900}
+.mobile-nav button.active{color:#a76430;transform:translateY(-1px)}
+.mobile-nav button .nav-icon{display:flex;align-items:center;justify-content:center;width:34px;height:31px;margin:auto}
+.mobile-nav button .nav-icon svg{width:32px;height:31px}
+.mobile-nav button.active .nav-icon{background:#ffd79d;border-radius:50%;box-shadow:0 0 0 1px #d3a470}
+.nav-inline-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:23px;height:23px;margin-right:2px}
+.nav-inline-icon svg{width:23px;height:23px}
+@media(max-width:900px){
+ .home-sticker.citrus{right:13%}
+ .info-doodle-card{min-height:190px}
+}
+@media(max-width:650px){
+ .top{height:59px}
+ .brand{font-size:14px}
+ .brand .brand-art{width:30px!important;height:30px!important}
+ .page{padding-top:15px}
+ .sec{margin:22px 0 12px}
+ .sec h2{font-size:18px}
+ .sec small{font-size:10px}
+ .doodle-home-hero{border-width:2.5px;border-radius:31px 19px 28px 21px / 18px 28px 19px 25px;min-height:265px;padding:23px 17px;box-shadow:3px 4px 0 #e8c69d}
+ .doodle-home-hero h1{font-size:33px;margin:44px 0 13px;max-width:240px}
+ .doodle-home-hero p{font-size:12px;max-width:220px}
+ .doodle-home-hero .stamp{top:12px;right:13px;font-size:10px;padding:5px 9px}
+ .home-sticker.citrus{right:-2px;top:53px;width:85px;height:86px}
+ .home-sticker.peak{right:-17px;bottom:46px;width:139px;height:117px}
+ .home-sticker.splash{right:7%;bottom:2px;width:86px;height:69px}
+ .doodle-home-hero .statbar{gap:5px;max-width:100%;margin-top:23px}
+ .doodle-home-hero .statbar span{font-size:10px;padding:6px 8px;background:#fff4d5ed}
+ .days{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .day-card{padding:12px 11px;min-height:129px}
+ .day-card b{font-size:20px}
+ .day-card em{font-size:11px;max-width:95px}
+ .day-mini-illustration{right:-4px;bottom:6px;width:61px;height:59px}
+ .white{padding:15px}
+ .info-doodle-card{min-height:initial;padding:14px}
+ .info-doodle-icon{width:92px;height:67px}
+ .feature .ico{width:46px;height:46px;min-width:46px}
+ .feature .ico .sketch-svg{width:42px;height:42px}
+ .pocket-hero,.budget-hero{padding:22px 16px;min-height:217px;border-width:2.5px;border-radius:26px 16px 26px 16px;box-shadow:3px 4px 0 #e8c69d}
+ .pocket-hero h1,.budget-hero h1{font-size:24px;max-width:245px}
+ .pocket-hero p,.budget-hero p{font-size:11px;max-width:245px}
+ .pocket-hero-doodle,.budget-hero-doodle{right:-30px;bottom:13px;width:115px;height:120px;opacity:.72}
+ .pocket-hero-doodle svg,.budget-hero-doodle svg{width:90px;height:95px;right:16px;bottom:3px}
+ .pocket-hero-doodle svg:nth-child(2),.budget-hero-doodle svg:nth-child(2){width:57px;height:56px;right:7px;bottom:68px}
+ .cost-day-mini{width:46px;height:43px}
+ .cost-day-mini svg{width:45px;height:43px}
+ .sketch-poster{padding:11px 10px 17px;box-shadow:2px 3px 0 #e4c096}
+ .sketch-illustration .sketch-svg{height:83px}
+ .sketch-hdr-deco .sketch-svg{height:100%;width:100%}
+ .sketch-transport-icon .sketch-svg{width:54px;height:55px}
+ .sketch-budget-row b{font-size:9px}
+ .mobile-nav{padding:7px 6px calc(9px + env(safe-area-inset-bottom))}
+}
+@media(max-width:355px){
+ .doodle-home-hero h1{font-size:30px;max-width:220px}
+ .doodle-home-hero p{max-width:215px}
+ .mobile-nav button{min-width:60px;font-size:9px}
+ .cost-day-row{gap:6px;padding:8px 7px}
+ .cost-day-row b{font-size:10px}
+ .day-mini-illustration{width:52px}
+ .sketch-budget-row b{font-size:10px}
+}
