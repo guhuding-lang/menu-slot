@@ -7,6 +7,27 @@
  const state={tab:"home",index:0,checks:[],query:"",filter:"all",expanded:{},budget:{flight:"",hotel:"",parking:"",shopping:"",fx:200,freeSpa:false},detailsOpen:false};
  const app=document.getElementById("app");
  const draw=(type)=>window.JEJU_ICON?window.JEJU_ICON(type):'<span aria-hidden="true">🍊</span>';
+ const placeArt=(name,ko)=>{
+   const v=(String(name||"")+" "+String(ko||"")).toLowerCase();
+   if(/机场|공항|airport|cju/.test(v))return "airport";
+   if(/站|巴士|公交|정류장|버스/.test(v))return "bus";
+   if(/酒店|bridge|호텔/.test(v))return "hotel";
+   if(/温泉|스파|핫스프링/.test(v))return "spa";
+   if(/忘忧|药房|망우|酒馆/.test(v))return "bar";
+   if(/蟹|게장|동문간장/.test(v))return "crab";
+   if(/瀑布|폭포/.test(v))return "falls";
+   if(/面包|bakery|베이커리|咖啡|해지개|lazy pump/.test(v))return "bakery";
+   if(/海滩|해수욕장|海岸|해안|해변|涯月|韩潭|한담|涉地可支|섭지코지|河口|쇠소깍/.test(v))return "beach";
+   if(/山房|松岳|송악|산방|汉拿山/.test(v))return "mountain";
+   if(/偶来|올레|步道|길/.test(v))return "trail";
+   if(/港|포구/.test(v))return "port";
+   if(/市场|시장/.test(v))return "market";
+   if(/购物|olive young|올리브영/.test(v))return "shop";
+   if(/龙头岩|용두암|岩石/.test(v))return "rock";
+   if(/云桥|구름다리/.test(v))return "bridge";
+   if(/烤肉|黑猪|章鱼|갈치|김밥|鳗鱼|장어|식당|음식/.test(v))return "food";
+   return "orange";
+ };
  const html=s=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 
  let currentGallery=[],photoCursor=0,photoFallback="";
@@ -162,7 +183,7 @@
  function placeCards(){
   const q=state.query.toLowerCase().trim();
   const arr=places.filter(p=>(state.filter==="all"||p[2]===state.filter||p[2].includes(state.filter))&&p.join(" ").toLowerCase().includes(q));
-  return `<div class="places">${arr.length?arr.map(p=>{const g=selectMedia(p[0],p[1],state.index);return `<div class="place">${cover(g,state.index)}<div class="place-inner"><small>${html(p[2])}</small><b>${html(p[0])}</b><div class="ko">${html(p[1])}</div><div class="btnrow" style="margin-top:9px"><button class="btn soft" data-gallery-place="${html(p[1])}">📷 相关图片</button><button class="btn" data-copy="${html(p[1])}">复制韩文</button></div></div></div>`}).join(""):'<div class="muted">没有找到匹配的地点。</div>'}</div>`;
+  return `<div class="places">${arr.length?arr.map(p=>{const g=selectMedia(p[0],p[1],state.index);return `<div class="place">${cover(g,state.index)}<div class="place-inner"><small>${html(p[2])}</small><div class="place-name-row"><span class="place-mini-icon">${draw(placeArt(p[0],p[1]))}</span><b>${html(p[0])}</b></div><div class="ko">${html(p[1])}</div><div class="btnrow" style="margin-top:9px"><button class="btn soft" data-gallery-place="${html(p[1])}">📷 相关图片</button><button class="btn" data-copy="${html(p[1])}">复制韩文</button></div></div></div>`}).join(""):'<div class="muted">没有找到匹配的地点。</div>'}</div>`;
  }
  function pocket(){
   let done=check.filter((_,i)=>state.checks[i]).length;
@@ -172,7 +193,7 @@
   ${section("韩文地点速查","按日期查找，点击复制韩文名称")}
   <div class="white"><input class="search" id="place-query" value="${html(state.query)}" placeholder="搜索中文 / 韩文，如：松岳山、酱蟹" aria-label="搜索地点"><div class="filter-pills" role="group" aria-label="按日期筛选地点">${["all","全程","D1","D2","D3","D4","D5","D6","D7","自由"].map(t=>`<button data-filter="${t}" class="${state.filter===t?"active":""}">${t==="all"?"全部":t}</button>`).join("")}</div><div id="results">${placeCards()}</div></div>
   ${section("晚间美食与购物池","日期待定，不擅自塞进固定行程")}
-  <div class="foodgrid">${food.map(f=>{const g=selectMedia(f[0],f[1],state.index);return `<div class="food">${cover(g,state.index)}<div class="food-inner"><small>${html(f[2])}</small><b>${html(f[0])}</b><p>${html(f[3])}</p><div class="btnrow"><button class="btn soft" data-gallery-place="${html(f[1])}">📷 相关图片</button><button class="btn" data-copy="${html(f[1])}">复制韩文</button></div></div></div>`}).join("")}</div>
+  <div class="foodgrid">${food.map(f=>{const g=selectMedia(f[0],f[1],state.index);return `<div class="food">${cover(g,state.index)}<div class="food-inner"><small>${html(f[2])}</small><div class="place-name-row"><span class="place-mini-icon">${draw(placeArt(f[0],f[1]))}</span><b>${html(f[0])}</b></div><p>${html(f[3])}</p><div class="btnrow"><button class="btn soft" data-gallery-place="${html(f[1])}">📷 相关图片</button><button class="btn" data-copy="${html(f[1])}">复制韩文</button></div></div></div>`}).join("")}</div>
   ${section("官方查车与路线","点击前往参考入口")}
   <div class="refs">${urls.map(u=>`<a href="${html(u[1])}" target="_blank" rel="noopener noreferrer">${html(u[0])} ↗</a>`).join("")}</div>
   <div class="callout blue" style="margin-top:13px"><b>🚌 公交参考班距 ≠ 实时候车时间</b><p>具体日期、上下行、支线、周末改线和候车站牌，出发当天在Naver Map＋济州公交官网确认。</p></div>`;
