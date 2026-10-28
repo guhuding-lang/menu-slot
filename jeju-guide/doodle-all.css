@@ -289,3 +289,123 @@ body{
   .sketch-illustration .sketch-svg{height:83px}
 }
 @media(prefers-reduced-motion:reduce){.jeju-doodle,.nav-icon svg,.nav-inline-icon svg{transition:none}}
+
+/* Visible hand-drawn fridge magnet cover — makes fresh deployment unmistakable */
+.magnet-home-hero{
+  padding:0!important;
+  min-height:initial!important;
+  overflow:hidden;
+  background:#fff8e9!important;
+  border:3px solid #2d3e4b;
+  border-radius:26px 19px 26px 17px / 19px 27px 18px 27px;
+}
+.magnet-cover{
+  height:232px;
+  background-color:#b3e7f4;
+  background-image:url("./jeju-fridge-magnet-background.svg?v=20261028-magnet4");
+  background-position:center top;
+  background-size:100% auto;
+  background-repeat:no-repeat;
+  border-bottom:3px solid #2d3f4b;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.magnet-cover::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(255,250,227,.09) 0%,transparent 65%),linear-gradient(0deg,rgba(255,249,233,.83) 0%,transparent 35%);
+  z-index:-1;
+}
+.magnet-cover-name{
+  position:absolute;
+  left:5%;
+  bottom:17px;
+  transform:rotate(-3deg);
+  font-family:system-ui,"PingFang SC",sans-serif;
+  color:#ffb34d;
+  font-size:clamp(39px,5vw,69px);
+  font-weight:1000;
+  letter-spacing:-3px;
+  line-height:1;
+  -webkit-text-stroke:2px #2b4051;
+  text-shadow:-4px -4px 0 #fff9ee,4px -4px 0 #fff9ee,-4px 4px 0 #fff9ee,4px 4px 0 #fff9ee,5px 6px 0 #6587a7;
+  z-index:2;
+}
+.magnet-cover-name small{
+  display:block;
+  margin:12px 0 2px 6px;
+  font-size:15px;
+  line-height:1.5;
+  font-weight:900;
+  letter-spacing:.03em;
+  color:#293f4c;
+  -webkit-text-stroke:0;
+  text-shadow:1px 1px 0 #fff9e9,0 -1px 0 #fff9e9;
+}
+.magnet-cover-stamp{
+  position:absolute;
+  right:17px;
+  bottom:20px;
+  display:inline-block;
+  transform:rotate(5deg);
+  background:#fff8e6;
+  border:2px solid #293b4a;
+  box-shadow:3px 4px 0 #b7ced9;
+  border-radius:16px 9px 14px 10px;
+  padding:8px 12px;
+  color:#6b744c;
+  font-size:12px;
+  font-weight:950;
+  z-index:2;
+}
+.magnet-home-body{
+  background:#fffaf0;
+  color:#31434b;
+  padding:24px 32px 30px;
+  position:relative;
+  z-index:1;
+}
+.magnet-home-body .home-hero-stickers{display:none}
+.magnet-home-body .stamp{
+  position:static;
+  display:inline-block;
+  transform:rotate(1deg);
+  margin-bottom:8px;
+  padding:5px 10px;
+  background:#fff0c8;
+  border:1.5px dashed #daa565;
+  color:#985c29;
+  font-size:10px;
+}
+.magnet-home-body .eyebrow{color:#b7773b}
+.magnet-home-body h1{
+  font-size:clamp(28px,4vw,40px);
+  margin:9px 0 9px;
+  max-width:100%;
+  color:#263c43;
+  line-height:1.16;
+}
+.magnet-home-body h1 br{display:none}
+.magnet-home-body p{font-size:13px;max-width:100%}
+.magnet-home-body .statbar{margin-top:18px}
+.magnet-home-body .statbar span{background:#fff1d7;border:1.5px dashed #deb27c;color:#3d6163}
+@media(max-width:650px){
+ .magnet-home-hero{border-width:2.5px;border-radius:24px 16px 22px 14px}
+ .magnet-cover{height:181px}
+ .magnet-cover-name{font-size:43px;left:6%;bottom:12px;-webkit-text-stroke:1.7px #2b4051;letter-spacing:-2px}
+ .magnet-cover-name small{font-size:11px;margin-top:10px;margin-left:3px}
+ .magnet-cover-stamp{right:10px;bottom:18px;padding:6px 8px;font-size:10px;box-shadow:2px 2px 0 #aacbd5}
+ .magnet-home-body{padding:14px 16px 19px}
+ .magnet-home-body h1{font-size:29px;margin:9px 0}
+ .magnet-home-body p{font-size:11px}
+ .magnet-home-body .statbar{margin-top:14px}
+ .magnet-home-body .statbar span{font-size:10px}
+}
+@media(max-width:355px){
+ .magnet-cover{height:168px}
+ .magnet-cover-name{font-size:38px}
+ .magnet-cover-stamp{font-size:9px;right:8px}
+ .magnet-home-body h1{font-size:26px}
+}
