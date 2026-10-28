@@ -101,7 +101,7 @@
  function budgetPage(){
    const opts=[["flight","往返机票（两人总价）"],["hotel","Hotel Bridge 六晚总房费"],["parking","广州机场停车及自驾相关费用"],["shopping","购物与伴手礼预算"]];
    const fmt=(k,label)=>'<label class="cost-input-label"><span>'+label+'</span><div class="cost-input-wrap"><span>¥</span><input data-budget-field="'+k+'" type="number" inputmode="decimal" min="0" step="1" placeholder="尚未录入" value="'+html(state.budget[k])+'"></div></label>';
-   return '<div class="budget-hero"><div class="budget-hero-doodle">'+draw('wallet')+draw('orange')+'</div><small>2026年11月3日—9日 · 双人预算</small><h1>七天花多少钱？</h1><p>每天看明细，整趟看总额；机票和酒店可按实际订单填写。</p></div>'+section("七天费用总览","按两个人估算，不是实际已付金额")+overallSummary()+
+   return '<div class="budget-hero"><div class="budget-hero-doodle">'+draw('wallet')+draw('tangerine')+'</div><small>2026年11月3日—9日 · 双人预算</small><h1>七天花多少钱？</h1><p>每天看明细，整趟看总额；机票和酒店可按实际订单填写。</p></div>'+section("七天费用总览","按两个人估算，不是实际已付金额")+overallSummary()+
    '<div class="cost-day-list">'+d.map((x,i)=>'<button class="cost-day-row" data-day="'+i+'"><span class="cost-day-mini">'+draw(['spa','sunset','trail','crab','mountain','lighthouse','plane'][i])+'</span><span>D'+(i+1)+' · '+html(x.date)+' · '+html(x.name)+'</span><b>'+yuan(dailyAmounts(i)[0]/bfx())+' – '+yuan(dailyAmounts(i)[1]/bfx())+'</b></button>').join("")+'</div>'+
    section("把实际机票与酒店补进预算","金额均为人民币 · 自动保存在当前设备")+
    '<div class="white cost-form">'+opts.map(x=>fmt(x[0],x[1])).join("")+
@@ -144,7 +144,7 @@
    ["hotel","全程住 Hotel Bridge","호텔 브릿지 서귀포｜제주 서귀포시 태평로 436｜11/03入住，11/09退房，共6晚"],
    ["bus","交通原则","公交优先、少换乘；机场往返600；11/07华顺换乘，11/08主选295直达涉地可支"]
   ];
-  return `<div class="hero doodle-home-hero"><div class="home-hero-stickers"><div class="home-sticker citrus">${draw("orange")}</div><div class="home-sticker peak">${draw("mountain")}</div><div class="home-sticker splash">${draw("sea")}</div></div><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div>
+  return `<div class="hero doodle-home-hero"><div class="home-hero-stickers"><div class="home-sticker citrus">${draw("tangerine")}</div><div class="home-sticker peak">${draw("hallasan")}</div><div class="home-sticker splash">${draw("sea")}</div></div><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div>
   ${section("七天行程一眼看懂","点击日期查看手绘行程")}
   <div class="days">${d.map((x,i)=>`<button class="day-card" data-day="${i}"><span class="day-mini-illustration">${draw(["spa","sunset","trail","sea","mountain","lighthouse","plane"][i])}</span><small>D${i+1} · ${html(x.week)}</small><b>${html(x.date)}</b><em>${html(x.name)}</em><i>查看详情 ↗</i></button>`).join("")}</div>
   ${section("行程费用先看一眼","两人花费 · 机票酒店另录入")}
@@ -193,7 +193,7 @@
  }
  function pocket(){
   let done=check.filter((_,i)=>state.checks[i]).length;
-  return `<div class="pocketgrid"><div class="pocket-hero"><div class="pocket-hero-doodle">${draw("bag")}${draw("orange")}</div><div class="eyebrow">JEJU POCKET / 随身手册</div><h1>要用的信息，<br>一键就能找到。</h1><p>每日路线简图 · 韩文地名 · 待办清单 · 自由美食备选</p><div class="btnrow" style="margin-top:20px"><button class="btn" data-route="${state.index}">🗺️ 查看今日行程简图</button><button class="btn" data-copyday="${state.index}">📋 当天行程</button></div></div><div class="white"><div class="kicker">⚠️ 三个关键提醒</div><div class="feature"><span class="ico">${draw("calendar")}</span><div><b>韩国快1小时</b><p>航班时间标注北京 / 韩国时区。</p></div></div><div class="feature"><span class="ico">${draw("bus")}</span><div><b>11/09清晨600路</b><p>06:25是KAL始发，非徐福站到站。</p></div></div><div class="feature"><span class="ico">${draw("trail")}</span><div><b>徒步安全</b><p>11月海风大、日落早，关闭步道不进入。</p></div></div></div></div>
+  return `<div class="pocketgrid"><div class="pocket-hero"><div class="pocket-hero-doodle">${draw("luggage")}${draw("tangerine")}</div><div class="eyebrow">JEJU POCKET / 随身手册</div><h1>要用的信息，<br>一键就能找到。</h1><p>每日路线简图 · 韩文地名 · 待办清单 · 自由美食备选</p><div class="btnrow" style="margin-top:20px"><button class="btn" data-route="${state.index}">🗺️ 查看今日行程简图</button><button class="btn" data-copyday="${state.index}">📋 当天行程</button></div></div><div class="white"><div class="kicker">⚠️ 三个关键提醒</div><div class="feature"><span class="ico">${draw("calendar")}</span><div><b>韩国快1小时</b><p>航班时间标注北京 / 韩国时区。</p></div></div><div class="feature"><span class="ico">${draw("bus")}</span><div><b>11/09清晨600路</b><p>06:25是KAL始发，非徐福站到站。</p></div></div><div class="feature"><span class="ico">${draw("trail")}</span><div><b>徒步安全</b><p>11月海风大、日落早，关闭步道不进入。</p></div></div></div></div>
   ${section("行前清单",`${done}/${check.length}已完成 · 自动保存在本设备`)}
   <div class="white"><div class="progress"><span style="width:${Math.round(done/check.length*100)}%"></span></div>${check.map((t,i)=>`<label class="check ${state.checks[i]?"done":""}"><input type="checkbox" data-check="${i}" ${state.checks[i]?"checked":""}><span>${html(t)}</span></label>`).join("")}</div>
   ${section("韩文地点速查","按日期查找，点击复制韩文名称")}
