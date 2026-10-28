@@ -114,7 +114,7 @@
  }
 
  let modalDay=0;
- const routeSrc=i=>"./route-maps/day-"+(i+1)+".svg?v=20261028route";
+ const routeSrc=i=>"./route-maps/day-"+(i+1)+".svg?v=20261028-han6";
  function openRoute(index){
    modalDay=Math.max(0,Math.min(d.length-1,Number(index)||0));
    const dlg=document.getElementById("route-dialog");
