@@ -55,7 +55,7 @@
   ${section("行前清单",`${done}/${check.length}已完成 · 自动保存在本设备`)}
   <div class="white"><div class="progress"><span style="width:${Math.round(done/check.length*100)}%"></span></div>${check.map((t,i)=>`<label class="check ${state.checks[i]?"done":""}"><input type="checkbox" data-check="${i}" ${state.checks[i]?"checked":""}><span>${html(t)}</span></label>`).join("")}</div>
   ${section("韩文地点速查","复制名称或直接打开Naver")}
-  <div class="white"><input class="search" id="place-query" value="${html(state.query)}" placeholder="搜索中文 / 韩文，如：松岳山、酱蟹" aria-label="搜索地点"><div class="scroll-days" style="margin:10px 0">${["all","全程","D1","D2","D3","D4","D5","D6","D7","自由"].map(t=>`<button data-filter="${t}" class="${state.filter===t?"active":""}">${t==="all"?"全部":t}</button>`).join("")}</div><div id="results">${placeCards()}</div></div>
+  <div class="white"><input class="search" id="place-query" value="${html(state.query)}" placeholder="搜索中文 / 韩文，如：松岳山、酱蟹" aria-label="搜索地点"><div class="filter-pills" role="group" aria-label="按日期筛选地点">${["all","全程","D1","D2","D3","D4","D5","D6","D7","自由"].map(t=>`<button data-filter="${t}" class="${state.filter===t?"active":""}">${t==="all"?"全部":t}</button>`).join("")}</div><div id="results">${placeCards()}</div></div>
   ${section("晚间美食与购物池","日期待定，不擅自塞进固定行程")}
   <div class="foodgrid">${food.map(f=>`<div class="food"><small>${html(f[2])}</small><b>${html(f[0])}</b><p>${html(f[3])}</p><div class="btnrow"><button class="btn soft" data-map="${html(f[1])}">Naver找店 ↗</button><button class="btn" data-copy="${html(f[1])}">复制韩文</button></div></div>`).join("")}</div>
   ${section("官方查车与路线","点击前往参考入口")}
