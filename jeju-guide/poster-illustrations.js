@@ -1,6 +1,6 @@
 window.JEJU_ICON=(function(){
- const aliases={tangerine:"orange",wave:"sea",flowers:"flower",hibiscus:"flower",boots:"trail",airplane:"plane"};
- const known=new Set(["orange","car","plane","airport","bus","hotel","spa","bar","moon","beach","coast","food","trail","sunset","bag","river","port","falls","shop","market","rock","bridge","sea","bakery","crab","mountain","lighthouse","passport","calendar","wallet","checklist","camera","coffee","flower","ferry","hiking","hotpot","restaurant","pin","route","sunrise"]);
+ const aliases={tangerine:"tangerine",wave:"sea",flowers:"hydrangea",hibiscus:"camellia",boots:"trail",airplane:"plane"};
+ const known=new Set(["orange","car","plane","airport","bus","hotel","spa","bar","moon","beach","coast","food","trail","sunset","bag","river","port","falls","shop","market","rock","bridge","sea","bakery","crab","mountain","lighthouse","passport","calendar","wallet","checklist","camera","coffee","flower","ferry","hiking","hotpot","restaurant","pin","route","sunrise","harubang","hallasan","haenyeo","tangerine","camellia","hydrangea","jeju-map","flag","ferry","fish","gimbap","eel-rice","wine","ticket","luggage"]);
  return function(type,cls=""){
    const mapped=aliases[type]||type;
    const id=known.has(mapped)?mapped:"orange";
