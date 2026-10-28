@@ -4,6 +4,6 @@ window.JEJU_ICON=(function(){
  return function(type,cls=""){
    const mapped=aliases[type]||type;
    const id=known.has(mapped)?mapped:"orange";
-   return '<svg class="sketch-svg jeju-doodle '+cls+'" aria-hidden="true" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><use href="./jeju-doodle-icons.svg#'+id+'"></use></svg>';
+   return '<svg class="sketch-svg jeju-doodle '+cls+'" aria-hidden="true" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><use href="./jeju-doodle-icons.svg?v=20261028-magnet3#'+id+'"></use></svg>';
  };
 })();
