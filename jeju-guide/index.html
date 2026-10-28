@@ -6,15 +6,17 @@
 <meta name="theme-color" content="#f2f7fa">
 <meta name="description" content="2026年11月3日至9日济州岛慢行七日：七天交互攻略，七天总览、每日时间轴、交通备选、韩文地名和随身待办。">
 <title>济州岛慢行七日 · 七天旅行攻略</title>
-<link rel="stylesheet" href="./v5.css?v=20261028route">
+<link rel="stylesheet" href="./v5.css?v=20261028photos">
 <script defer src="./v5-data.js?v=20261028route"></script>
-<script defer src="./v5-app.js?v=20261028route"></script>
+<script defer src="./media-data.js?v=20261028photos"></script>
+<script defer src="./budget-data.js?v=20261028photos"></script>
+<script defer src="./v5-app.js?v=20261028photos"></script>
 </head>
 <body>
-<header class="top"><div class="wrap"><div class="brand"><span>🌊</span> JEJU · 济州慢行七日</div><nav class="desktopnav" aria-label="页面导航"><button data-nav="home" class="active">🧭 行程总览</button><button data-nav="day">🗓️ 每日时间轴</button><button data-nav="pocket">🎒 随身口袋</button></nav></div></header>
+<header class="top"><div class="wrap"><div class="brand"><span>🌊</span> JEJU · 济州慢行七日</div><nav class="desktopnav" aria-label="页面导航"><button data-nav="home" class="active">🧭 行程总览</button><button data-nav="day">🗓️ 每日时间轴</button><button data-nav="pocket">🎒 随身口袋</button><button data-nav="budget">💰 费用预算</button></nav></div></header>
 <main id="app" class="wrap page"><div class="white">正在加载济州岛七天行程……</div></main>
 <footer class="foot wrap">依据《济州岛慢行七日 · 2026年11月3—9日 · 七天交互攻略》（2026-10-28）。特别注明北京时间的项目除外，文中时间均为韩国时间。<br>公交班距均为线路整体参考，非站点实时到站；运营、营业时间、步道开放及入境要求以出发当天官方信息为准。</footer>
-<nav class="mobile-nav" aria-label="移动端导航"><button data-nav="home" class="active"><span>🧭</span>总览</button><button data-nav="day"><span>🗓️</span>逐日</button><button data-nav="pocket"><span>🎒</span>口袋</button></nav>
+<nav class="mobile-nav" aria-label="移动端导航"><button data-nav="home" class="active"><span>🧭</span>总览</button><button data-nav="day"><span>🗓️</span>逐日</button><button data-nav="pocket"><span>🎒</span>口袋</button><button data-nav="budget"><span>💰</span>预算</button></nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="route-dialog" id="route-dialog" aria-labelledby="route-title" aria-modal="true">
  <div class="route-shell">
@@ -27,6 +29,20 @@
    <button type="button" class="btn" id="route-prev" data-route-prev>← 前一天</button>
    <span id="route-count" aria-live="polite">1 / 7</span>
    <button type="button" class="btn primary" id="route-next" data-route-next>后一天 →</button>
+  </div>
+ </div>
+</dialog>
+<dialog class="photo-dialog" id="photo-dialog" aria-labelledby="photo-title" aria-modal="true">
+ <div class="photo-shell">
+  <div class="photo-head">
+   <div><strong id="photo-title">相关图片</strong><small id="photo-caption">景点、菜品与酒店相关图片</small></div>
+   <button type="button" class="btn" data-close-photo aria-label="关闭图片">✕ 关闭</button>
+  </div>
+  <div class="photo-body"><img id="photo-image" alt="相关地点图片"><div id="photo-credit" class="photo-credit"></div></div>
+  <div class="photo-foot">
+   <button type="button" class="btn" id="photo-prev" data-photo-prev>← 上一张</button>
+   <span id="photo-count" aria-live="polite">1 / 1</span>
+   <button type="button" class="btn primary" id="photo-next" data-photo-next>下一张 →</button>
   </div>
  </div>
 </dialog>
