@@ -6,6 +6,7 @@
  const prices=window.JEJU_COSTS||{days:[],rate:200,spaNonFree:[63000,200000],sources:[]};
  const state={tab:"home",index:0,checks:[],query:"",filter:"all",expanded:{},budget:{flight:"",hotel:"",parking:"",shopping:"",fx:200,freeSpa:false},detailsOpen:false};
  const app=document.getElementById("app");
+ const draw=(type)=>window.JEJU_ICON?window.JEJU_ICON(type):'<span aria-hidden="true">🍊</span>';
  const html=s=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 
  let currentGallery=[],photoCursor=0,photoFallback="";
@@ -112,20 +113,20 @@
  function navbar(){document.querySelectorAll("[data-nav]").forEach(el=>el.classList.toggle("active",el.dataset.nav===state.tab))}
  function home(){
   const boxes=[
-   ["✈️","固定航班","11/03 广州T3 07:45（北京时间）→ 济州11:30（韩国时间）；11/09 济州11:10（韩国时间）→ 广州T3 14:00（北京时间）"],
-   ["🏨","全程住 Hotel Bridge","호텔 브릿지 서귀포｜제주 서귀포시 태평로 436｜11/03入住，11/09退房，共6晚"],
-   ["🚌","交通原则","公交优先、少换乘；机场往返600；11/07华顺换乘，11/08主选295直达涉地可支"]
+   ["plane","固定航班","11/03 广州T3 07:45（北京时间）→ 济州11:30（韩国时间）；11/09 济州11:10（韩国时间）→ 广州T3 14:00（北京时间）"],
+   ["hotel","全程住 Hotel Bridge","호텔 브릿지 서귀포｜제주 서귀포시 태평로 436｜11/03入住，11/09退房，共6晚"],
+   ["bus","交通原则","公交优先、少换乘；机场往返600；11/07华顺换乘，11/08主选295直达涉地可支"]
   ];
-  return `<div class="hero hasimage"><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div>
+  return `<div class="hero doodle-home-hero"><div class="home-hero-stickers"><div class="home-sticker citrus">${draw("orange")}</div><div class="home-sticker peak">${draw("mountain")}</div><div class="home-sticker splash">${draw("sea")}</div></div><div class="stamp">2026.11.03—11.09</div><div class="eyebrow">JEJU ISLAND / 7 DAYS 6 NIGHTS</div><h1>去济州，<br>慢慢走七天。</h1><p>11月3日—9日 · 两个人 · 住西归浦 · 公交优先</p><div class="statbar"><span>🗓️ 七天六晚</span><span>👫 双人旅行</span><span>🚶 6号线＋10号线精华</span><span>🕒 韩国比中国快1小时</span></div></div>
   ${section("七天行程一眼看懂","点击日期查看手绘行程")}
-  <div class="days">${d.map((x,i)=>`<button class="day-card" data-day="${i}"><small>D${i+1} · ${html(x.week)}</small><b>${html(x.date)}</b><em>${html(x.name)}</em><i>查看详情 ↗</i></button>`).join("")}</div>
+  <div class="days">${d.map((x,i)=>`<button class="day-card" data-day="${i}"><span class="day-mini-illustration">${draw(["spa","sunset","trail","sea","mountain","lighthouse","plane"][i])}</span><small>D${i+1} · ${html(x.week)}</small><b>${html(x.date)}</b><em>${html(x.name)}</em><i>查看详情 ↗</i></button>`).join("")}</div>
   ${section("行程费用先看一眼","两人花费 · 机票酒店另录入")}
   ${overallSummary()}<div class="btnrow" style="margin:11px 0 18px"><button class="btn primary" data-goto="budget">💰 查看七天费用明细 →</button></div>
   ${section("航班、酒店、交通","出发前最先确认")}
-  <div class="grid3">${boxes.map(x=>`<div class="white"><div class="kicker">${x[0]} &nbsp; 已确认</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}</div>
+  <div class="grid3">${boxes.map(x=>`<div class="white info-doodle-card"><div class="info-doodle-icon">${draw(x[0])}</div><div class="kicker">行前必知 · 已确认</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}</div>
   ${section("本次旅行的四大重点","只展示需要关注的事")}
   <div class="duo"><div class="white">
-  ${[["♨️","11/03 纪念日","O'REVE温泉16:00–19:00完整3小时，20:00左右忘忧药房传统酒晚餐（未订座）。"],["🌅","11/04 看日落","郭支→韩潭海岸步道，Lazy Pump / Haejigae当天二选一，日落约17:39。"],["🦀","11/06 东门酱蟹","上午睡懒觉，中午北海岸Citywalk，17:00固定晚餐。"],["🥾","11/07 长徒步","松岳山完整开放海岸环线＋10号线反穿精华至华顺，约11–12公里（估算），17:00高恩水。"]].map(x=>`<div class="feature"><span class="ico">${x[0]}</span><div><b>${x[1]}</b><p>${x[2]}</p></div></div>`).join("")}
+  ${[["spa","11/03 纪念日","O'REVE温泉16:00–19:00完整3小时，20:00左右忘忧药房传统酒晚餐（未订座）。"],["sunset","11/04 看日落","郭支→韩潭海岸步道，Lazy Pump / Haejigae当天二选一，日落约17:39。"],["crab","11/06 东门酱蟹","上午睡懒觉，中午北海岸Citywalk，17:00固定晚餐。"],["trail","11/07 长徒步","松岳山完整开放海岸环线＋10号线反穿精华至华顺，约11–12公里（估算），17:00高恩水。"]].map(x=>`<div class="feature"><span class="ico">${draw(x[0])}</span><div><b>${x[1]}</b><p>${x[2]}</p></div></div>`).join("")}
   </div><div style="display:grid;gap:12px;align-content:start"><div class="callout"><b>⚠️ 返程巴士要重点复核</b><p>11/09 06:25是600路从KAL酒店的始发时刻，并非徐福展示馆站上车时刻。11/08晚上确认具体到站分钟。</p></div><div class="callout blue"><b>🚏 班距不是候车时长</b><p>本页全部公交间隔只作整线参考。特别注意202区间车、752-2乡村巴士和295稀疏班次。当天以Naver Map和官方站牌为准。</p></div><div class="white"><div class="kicker">旅行中的快捷操作</div><h3>不用再翻长文找韩文地名</h3><p>在口袋工具里查看每日路线简图、复制韩文地名、查看美食备选和准备清单。</p><div class="btnrow" style="margin-top:14px"><button class="btn primary" data-goto="pocket">🎒 打开随身口袋</button><button class="btn" data-day="0">D1 开始阅读 →</button></div></div></div></div>`;
  }
  function scrollDays(){return `<div class="scroll-days">${d.map((x,i)=>`<button class="${state.index===i?"active":""}" data-day="${i}">D${i+1} · ${html(x.date)} ${html(x.week)}</button>`).join("")}</div>`}
