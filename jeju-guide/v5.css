@@ -48,3 +48,86 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 .route-header .btn,.route-footer .btn{padding:9px 10px;font-size:11px}
 .route-scroll{max-height:calc(100dvh - 144px)}
 }
+
+/* All itinerary items: genuine photos wherever available, honest scene fallback otherwise */
+.step .entry:has(.place-cover){padding:0;overflow:hidden}
+.step .entry .step-content{padding:12px 13px 13px}
+.place-cover{height:124px;min-height:124px;position:relative;background-color:#3c7291;background-size:cover;background-position:center;overflow:hidden;display:flex;align-items:end;padding:11px 13px}
+.place-cover::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,27,48,.22),transparent 80%);pointer-events:none}
+.place-cover span{color:#fff;position:relative;z-index:1;background:rgba(13,43,69,.65);backdrop-filter:blur(5px);padding:3px 9px;font-size:10px;font-weight:800;border-radius:7px}
+.step .entry .buttons button[data-gallery-step]{background:#e4f4ff;color:#126ba8}
+.place,.food{overflow:hidden;padding:0}
+.place .place-cover,.food .place-cover{height:116px;min-height:116px}
+.place-inner,.food-inner{padding:12px 13px 13px}
+.place .btnrow,.food .btnrow{gap:6px}
+.place .btn,.food .btn{font-size:10px;padding:7px 9px}
+.place .ko{overflow-wrap:anywhere}
+
+/* Full-screen vertical photo gallery, no sideways scrolling */
+.photo-dialog:not([open]){display:none}
+.photo-dialog{border:0;padding:6px;background:transparent;color:var(--ink);width:min(100vw,530px);max-width:100vw;max-height:100dvh;overflow:hidden}
+.photo-dialog::backdrop{background:rgba(6,23,40,.88);backdrop-filter:blur(6px)}
+.photo-shell{background:#fff;border-radius:16px;max-height:calc(100dvh - 12px);height:min(94dvh,1040px);display:flex;flex-direction:column;overflow:hidden}
+.photo-head,.photo-foot{background:#fff;flex:none;display:flex;align-items:center;gap:10px;padding:12px 13px}
+.photo-head{justify-content:space-between;border-bottom:1px solid var(--line)}
+.photo-head strong{display:block;font-size:14px;line-height:1.4}
+.photo-head small{display:block;font-size:11px;color:var(--muted);max-width:235px;line-height:1.5;overflow-wrap:anywhere}
+.photo-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#eaf4fa;display:flex;flex-direction:column;align-items:stretch;justify-content:center}
+.photo-body img{display:block;width:100%;height:auto;max-height:calc(100dvh - 200px);object-fit:contain;object-position:center;min-height:90px}
+.photo-credit{font-size:11px;color:#5f7f96;background:#f5fafc;text-align:center;padding:10px 16px;line-height:1.65}
+.photo-foot{justify-content:space-between;border-top:1px solid var(--line)}
+.photo-foot span{font-size:12px;font-weight:900;color:var(--muted)}
+.photo-foot button:disabled{opacity:.3;cursor:default}
+
+/* Daily and whole-trip expense blocks, 2-person planning estimate */
+.cost-summary{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 5px 18px #174d7312;margin:8px 0}
+.cost-summary small{display:block;color:#56829d;font-size:11px;font-weight:800}
+.cost-summary strong{display:block;font-size:clamp(24px,4vw,35px);font-weight:900;color:#166eaa;letter-spacing:-.8px;line-height:1.35;margin:6px 0}
+.cost-summary p{font-size:12px;margin:0;color:#728ba0}
+.cost-totalline{margin-top:12px;border-top:1px solid #e6f0f6;padding-top:10px;font-size:12px;color:#426c87}
+.cost-totalline b{line-height:1.6}
+.day-cost-card{border:1px solid #d8eafa;background:#f5fbff;border-radius:14px;padding:14px 15px;margin:12px 0}
+.day-cost-head{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.day-cost-head span{font-size:12px;font-weight:900;color:#2c668f}
+.day-cost-head strong{font-size:17px;font-weight:900;color:#126eae;text-align:right}
+.day-cost-sub{font-size:11px;color:#7290a5;margin-top:5px}
+.cost-lines{margin-top:12px;border-top:1px solid #daeaf5;padding-top:8px}
+.cost-line{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;font-size:12px;padding:5px 0}
+.cost-line span{color:#486d88;min-width:0;flex:1}
+.cost-line b{color:#2a5877;font-size:11px;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.cost-note{font-size:11px;line-height:1.75;color:#71899a;margin:10px 0 0}
+.budget-hero{background:linear-gradient(110deg,#12486f,#168ba7);border-radius:19px;padding:25px 26px;color:#fff}
+.budget-hero small{font-size:11px;opacity:.86;letter-spacing:.03em}
+.budget-hero h1{font-size:30px;line-height:1.2;margin:10px 0 9px}
+.budget-hero p{font-size:12px;margin:0;opacity:.9}
+.cost-day-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cost-day-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px 13px;text-align:left}
+.cost-day-row span{font-size:11px;font-weight:750;color:#4d6c82}
+.cost-day-row b{white-space:nowrap;color:#1972aa;font-size:11px}
+.cost-form{display:grid;gap:13px}
+.cost-input-label{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,155px);align-items:center;gap:10px;font-size:12px;font-weight:750}
+.cost-input-wrap{display:flex;align-items:center;gap:5px;border:1px solid #d1e2ee;border-radius:9px;padding:0 10px;background:#fafcfe}
+.cost-input-wrap>span{color:#7891a5}
+.cost-input-wrap input{width:100%;background:transparent;border:0;min-width:0;padding:10px 0;font-size:14px;color:#194768;outline:0}
+.cost-check{display:flex;gap:9px;align-items:center;border-top:1px solid #e9f0f5;padding-top:13px;color:#4f6f87;font-size:12px}
+.cost-check input{accent-color:#1781ba;width:17px;height:17px;flex:none}
+.cost-breakdowns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.cost-breakdowns>div{min-width:0}
+.cost-breakdowns h3{font-size:13px;margin:0 0 4px;color:#3f6580}
+@media(max-width:650px){
+ .place-cover{height:112px;min-height:112px}
+ .place .place-cover,.food .place-cover{height:110px;min-height:110px}
+ .photo-dialog{width:100vw;max-width:100vw;padding:4px}
+ .photo-shell{height:calc(100dvh - 8px);max-height:calc(100dvh - 8px);border-radius:13px}
+ .photo-head,.photo-foot{padding:10px}
+ .photo-head .btn,.photo-foot .btn{padding:8px 10px;font-size:11px}
+ .photo-body img{max-height:calc(100dvh - 175px)}
+ .cost-summary{padding:15px}
+ .cost-summary strong{font-size:25px}
+ .day-cost-card{padding:12px 13px}
+ .day-cost-head strong{font-size:16px}
+ .cost-day-list,.cost-breakdowns{grid-template-columns:1fr}
+ .cost-input-label{grid-template-columns:minmax(0,1fr) minmax(112px,140px)}
+ .cost-day-row{padding:12px}
+ .cost-day-row b{font-size:12px}
+}
