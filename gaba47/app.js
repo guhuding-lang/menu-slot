@@ -2174,8 +2174,6 @@ function drawProfileSharePoster(canvas, member) {
   const descriptor = catProfileDescriptor(catProfileFor(member));
   const record = reportAssetRecord(descriptor.asset);
   if (record?.loaded) ctx.drawImage(record.image, 650, 42, 340, 340);
-  const outfit = reportAssetRecord(winterOverlayDataUrl(descriptor.value));
-  if (outfit?.loaded) ctx.drawImage(outfit.image, 650, 42, 340, 340);
   const cards = [[stats.count, "次打卡"], [formatReportHours(stats.minutes), "小时训练"], [member.streak || 0, "天连续"]];
   cards.forEach(([value, label], index) => { const x = 56 + index * 330; ctx.fillStyle = "#fffdf8"; roundedPath(ctx, x, 454, 308, 180, 34); ctx.fill(); ctx.strokeStyle = "#302b26"; ctx.lineWidth = 4; ctx.stroke(); drawPosterText(ctx, value, x + 154, 520, 250, { weight: 900, size: 62, minSize: 44, align: "center", color: "#302b26" }); drawPosterText(ctx, label, x + 154, 585, 250, { weight: 700, size: 25, align: "center", color: "#766e66" }); });
   ctx.fillStyle = "#fffdf8"; roundedPath(ctx, 56, 680, 968, 590, 44); ctx.fill(); ctx.strokeStyle = "#302b26"; ctx.lineWidth = 4; ctx.stroke();
@@ -2197,8 +2195,7 @@ function paintProfilePoster() {
 async function saveProfilePoster(member) {
   const descriptor = catProfileDescriptor(catProfileFor(member));
   const record = reportAssetRecord(descriptor.asset);
-  const coat = reportAssetRecord(winterOverlayDataUrl(descriptor.value));
-  await Promise.all([record?.promise, coat?.promise].filter(Boolean));
+  if (record?.promise) await record.promise;
   const canvas = document.createElement("canvas");
   drawProfileSharePoster(canvas, member);
   const link = document.createElement("a");
