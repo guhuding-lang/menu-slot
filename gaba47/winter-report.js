@@ -289,11 +289,14 @@ export function drawWinterReportPoster(canvas,report,drawCat,drawText,page=0){
   if(!canvas || !report) return;
   const totalPages=winterReportPageCount(report);
   const safePage=Math.max(0,Math.min(totalPages-1,Math.floor(Number(page)||0)));
-  canvas.width=WINTER_REPORT_WIDTH;
-  canvas.height=WINTER_REPORT_HEIGHT;
+  // Feed thumbnails render at half resolution. The modal and saved image stay 1080x2340.
+  const thumb = typeof canvas.hasAttribute === "function" && canvas.hasAttribute("data-report-canvas");
+  const scale = thumb ? .5 : 1;
+  canvas.width = WINTER_REPORT_WIDTH * scale;
+  canvas.height = WINTER_REPORT_HEIGHT * scale;
   const ctx=canvas.getContext("2d",{alpha:false});
   if(!ctx) return;
-  ctx.setTransform(1,0,0,1,0,0);
+  ctx.setTransform(scale,0,0,scale,0,0);
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality="high";
   ctx.textBaseline="middle";
