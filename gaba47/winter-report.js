@@ -1,352 +1,194 @@
-/*
- * GABA47 winter report artwork
- * Both exported canvases use a 9:19.5 phone portrait (1080 x 2340).
- * Monthly participation pages are paginated, not clipped or reduced to unreadable microtype.
- */
+/* GABA47 · 冬日运动周报/月报 —— 使用手绘背景素材，数据层独立可更新。 */
 export const WINTER_REPORT_WIDTH = 1080;
 export const WINTER_REPORT_HEIGHT = 2340;
-export const MONTHLY_MEMBERS_PER_PAGE = 12;
+export const MONTHLY_MEMBERS_PER_PAGE = 15;
+const INK = "#203b59";
+const BLUE = "#447eb6";
+const LIME = "#c5ee5d";
+const MUTED = "#5d7485";
 
 export function winterReportPageCount(report) {
   if (report?.reportType !== "month") return 1;
-  const count = (report.ranking || []).filter((item) => Number(item.minutes) > 0).length;
-  return Math.max(1, Math.ceil(count / MONTHLY_MEMBERS_PER_PAGE));
+  const total = (report.ranking || []).filter(member => Number(member.minutes) > 0).length;
+  return Math.max(1, Math.ceil(total / MONTHLY_MEMBERS_PER_PAGE));
 }
 
-function pathRound(ctx, x, y, width, height, radius = 22) {
-  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+function write(ctx, drawText, value, x, y, maxWidth, size, color=INK, opts={}) {
+  drawText(ctx, String(value ?? "—"), x, y, maxWidth, {
+    weight: opts.weight ?? 900,
+    size,
+    minSize: opts.minSize ?? Math.max(13, Math.round(size * 0.65)),
+    color,
+    align: opts.align ?? "left",
+  });
+}
+function rounded(ctx,x,y,w,h,r=16) {
+  const radius=Math.min(r,w/2,h/2);
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + width - r, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-  ctx.lineTo(x + width, y + height - r);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-  ctx.lineTo(x + r, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
+  ctx.moveTo(x+radius,y);ctx.lineTo(x+w-radius,y);ctx.quadraticCurveTo(x+w,y,x+w,y+radius);
+  ctx.lineTo(x+w,y+h-radius);ctx.quadraticCurveTo(x+w,y+h,x+w-radius,y+h);
+  ctx.lineTo(x+radius,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-radius);
+  ctx.lineTo(x,y+radius);ctx.quadraticCurveTo(x,y,x+radius,y);ctx.closePath();
 }
+function number(value) { return Math.max(0, Math.round(Number(value)||0)); }
 
-function panel(ctx, x, y, w, h, radius, fill, stroke, lineWidth = 1) {
-  pathRound(ctx, x, y, w, h, radius);
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
-}
-
-function winterText(drawText, ctx, value, x, y, width, size, color, options = {}) {
-  drawText(ctx, String(value), x, y, width, {
-    weight: options.weight || 900, size, minSize: options.minSize || Math.max(12, Math.round(size * .62)),
-    align: options.align || "left", color,
-  });
-}
-
-function seeded(number) {
-  const n = Math.sin(number * 133.721 + 27.14) * 43758.5453;
-  return n - Math.floor(n);
-}
-
-function drawSnowflake(ctx, x, y, size, alpha) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "rgba(230,248,255," + alpha + ")";
-  ctx.lineWidth = Math.max(1.8, size / 7);
-  ctx.lineCap = "round";
-  for (let i = 0; i < 3; i++) {
-    ctx.rotate(Math.PI / 3);
-    ctx.beginPath(); ctx.moveTo(-size, 0); ctx.lineTo(size, 0); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawWinterBackground(ctx, report) {
-  const W = WINTER_REPORT_WIDTH, H = WINTER_REPORT_HEIGHT, ink="#19344f", snow="#fffaf0";
-  const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,"#1b4e88");sky.addColorStop(.25,"#6db5e7");
-  sky.addColorStop(.70,"#c7e6f5");sky.addColorStop(1,"#e4f1f8");
-  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  for(let i=0;i<120;i++) {
-    const x=seeded(i*5+1)*W,y=seeded(i*5+2)*H,r=1.3+seeded(i*5+3)*4;
-    ctx.fillStyle="rgba(255,255,255,"+(.35+seeded(i*5+4)*.55)+")";
-    ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.fill();
-  }
-  const cloud=(x,y,k)=>{
-    ctx.fillStyle="#fff8ee";
-    [[-55,5,49],[-18,-17,58],[35,-4,46],[77,15,30]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(x+dx*k,y+dy*k,r*k,0,Math.PI*2);ctx.fill()});
-  };
-  cloud(220,62,.68);cloud(885,47,.57);
-  const mountain=(x,y,w,h,col)=>{
-    ctx.fillStyle=col;ctx.beginPath();
-    ctx.moveTo(x,y);ctx.lineTo(x+w*.46,y-h);
-    ctx.lineTo(x+w,y);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#f5f9fc";ctx.beginPath();
-    ctx.moveTo(x+w*.46,y-h);ctx.lineTo(x+w*.30,y-h*.62);
-    ctx.lineTo(x+w*.43,y-h*.69);ctx.lineTo(x+w*.52,y-h*.57);
-    ctx.lineTo(x+w*.64,y-h*.63);ctx.closePath();ctx.fill();
-  };
-  mountain(-110,462,470,225,"#94bed9");
-  mountain(225,440,500,275,"#669bc8");
-  mountain(555,470,625,335,"#8ab4d6");
-  const pine=(x,y,k)=>{
-    ctx.save();ctx.translate(x,y);ctx.scale(k,k);
-    ctx.lineWidth=7;ctx.strokeStyle=ink;
-    ctx.fillStyle="#986b4d";ctx.fillRect(-10,-2,20,73);
-    for(let i=0;i<3;i++){
-      const yy=-150+i*51,half=67-i*8;
-      ctx.fillStyle=i===0?"#347c71":"#438b78";
-      ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(-half,yy+105);ctx.lineTo(half,yy+105);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle="#fcffff";ctx.beginPath();ctx.moveTo(0,yy+1);
-      ctx.lineTo(-half*.47,yy+49);ctx.lineTo(-half*.1,yy+43);
-      ctx.lineTo(half*.18,yy+51);ctx.lineTo(half*.59,yy+55);ctx.closePath();ctx.fill();
-    }
-    ctx.restore();
-  };
-  [-35,111,1040,1116].forEach((x,i)=>pine(x,572,i%2?.89:1.22));
-  // The page is a cartoon winter athletics scene, not glossy glassmorphism.
-  ctx.fillStyle="#eef7f9";
-  ctx.beginPath();ctx.moveTo(0,575);
-  ctx.bezierCurveTo(230,523,440,631,700,565);
-  ctx.bezierCurveTo(880,519,1040,592,1080,563);
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  // Winding blue winter running track at the foot of the page.
-  ctx.fillStyle="#78abd0";
-  ctx.beginPath();ctx.moveTo(-120,2340);ctx.bezierCurveTo(280,2162,696,2232,1152,2114);
-  ctx.lineTo(1128,2340);ctx.closePath();ctx.fill();
-  for(let i=0;i<3;i++){
-    ctx.beginPath();ctx.moveTo(-60+i*118,2345);
-    ctx.bezierCurveTo(370+i*86,2180+i*30,750+i*80,2262+i*15,1110,2165+i*42);
-    ctx.strokeStyle="#eafbff";ctx.lineWidth=5;ctx.stroke();
-  }
-  // Small non-distracting paw marks in the snow.
-  const paw=(x,y,k)=>{
-    ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.fillStyle="#8fbad1";
-    ctx.beginPath();ctx.ellipse(0,15,20,14,0,0,Math.PI*2);ctx.fill();
-    [[-19,-9],[-5,-18],[10,-18],[24,-7]].forEach(([xx,yy])=>{
-      ctx.beginPath();ctx.ellipse(xx,yy,7,10,0,0,Math.PI*2);ctx.fill();
-    });ctx.restore();
-  };
-  paw(875,2201,.75);paw(948,2168,.64);paw(1000,2220,.53);
-  // Main illustrated title board has the same bold line style as the original cats.
-  ctx.shadowColor="rgba(22,54,81,.13)";ctx.shadowBlur=12;ctx.shadowOffsetY=8;
-  panel(ctx,41,178,996,386,50,snow,ink,7);
-  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-  // Lime track accents, on-board snow pile and hand-drawn motion cues.
-  ctx.fillStyle="#c6ee66";
-  ctx.beginPath();ctx.moveTo(60,501);ctx.quadraticCurveTo(530,535,1020,493);
-  ctx.lineTo(1020,520);ctx.quadraticCurveTo(520,569,60,525);ctx.closePath();ctx.fill();
-  ctx.strokeStyle=ink;ctx.lineWidth=6;ctx.beginPath();
-  ctx.moveTo(62,525);ctx.quadraticCurveTo(520,571,1015,522);ctx.stroke();
-  ctx.fillStyle=snow;
-  [[150,179,60],[206,176,52],[263,177,43],[830,185,39],[882,182,48],[936,183,37]].forEach(([x,y,r])=>{
-    ctx.beginPath();ctx.arc(x,y,r,Math.PI,0,false);ctx.fill();
-  });
-  // Hand-drawn wind streaks keep the winter fitness theme energetic.
-  ctx.strokeStyle="rgba(40,97,132,.24)";ctx.lineCap="round";ctx.lineWidth=6;
-  [[68,594,178,589],[842,604,972,599],[96,1084,167,1077],[914,1561,1007,1553]].forEach(([x1,y1,x2,y2])=>{
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  });
-}
-function drawHeader(ctx, report, drawCat, drawText, page, pages) {
-  const ice = "#203b52", lime = "#6a981b", muted = "#5d7c8c";
-  const month = report.reportType === "month";
-  const year = new Date(report.periodStart).getFullYear();
-  panel(ctx, 65, 66, 75, 67, 19, "#dbf66f");
-  winterText(drawText, ctx, "47", 102.5, 100, 58, 44, "#10293d", {align:"center"});
-  winterText(drawText, ctx, "GABA", 160, 103, 280, 36, "#f9ffff");
-  winterText(drawText, ctx, "WINTER  /  " + year, 1006, 101, 330, 23, "#dbeefa", {align:"right",weight:800});
-  ctx.beginPath(); ctx.moveTo(65, 155); ctx.lineTo(1015, 155);
-  ctx.lineWidth = 2; ctx.strokeStyle = "rgba(231,246,246,.24)"; ctx.stroke();
-
-  winterText(drawText, ctx, "冬日训练", 66, 245, 630, 111, ice);
-  winterText(drawText, ctx, month ? "月报" : "周报", 66, 353, 470, 112, lime);
-  winterText(drawText, ctx, month ? "MONTHLY TRAINING REPORT" : "WEEKLY TRAINING REPORT",
-    70, 429, 560, 25, muted, {weight:750});
-  panel(ctx, 70, 474, month ? 365 : 321, 66, 33, "#244e75", "#19344f", 4);
-  winterText(drawText, ctx, report.periodLabel, 95, 506, month ? 316 : 273, 29, "#fffdf8", {weight:850});
-  if (pages > 1) winterText(drawText, ctx, String(page + 1).padStart(2,"0") + " / " + String(pages).padStart(2,"0"),
-    1002, 519, 190, 23, lime, {align:"right"});
-
-  // Frosted circle preserves each member's original selected cat.
-  const halo = ctx.createRadialGradient(835, 314, 50, 835, 314, 250);
-  halo.addColorStop(0, "rgba(215,255,205,.35)");
-  halo.addColorStop(.65, "rgba(197,244,244,.16)");
-  halo.addColorStop(1, "rgba(197,244,244,0)");
-  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(835, 314, 250, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = "rgba(224,244,244,.38)"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(835, 314, 211, Math.PI*.1, Math.PI*1.56); ctx.stroke();
-  const topMember = (report.ranking || []).find((m) => Number(m.minutes) > 0);
-  drawCat(ctx, topMember, {x:663,y:135,width:354,height:398}, 1.02);
-  // Chilled air streaks around the runner.
-  ctx.strokeStyle = "rgba(224,248,251,.55)";
-  ctx.lineWidth = 3; ctx.lineCap = "round";
-  [[622,280,645,274],[640,314,658,311],[967,440,1008,431]].forEach((p) => {
-    ctx.beginPath(); ctx.moveTo(p[0],p[1]);ctx.lineTo(p[2],p[3]);ctx.stroke();
-  });
-}
-
-function drawOverview(ctx, report, drawText) {
-  const dark = "#102d40", pale = "#eef7f4", green = "#cbf777";
-  const month = report.reportType === "month";
-  const totalMinutes = Math.round(Number(report.totalMinutes) || 0);
-  const avg = report.activeCount ? Math.round(totalMinutes / report.activeCount) : 0;
-  const activeDays = (report.daily || []).filter((d) => Number(d.minutes) > 0).length;
-  const stats = month
-    ? [[report.activeCount || 0,"参与人数","人"],[report.checkinCount || 0,"打卡次数","次"],[activeDays,"运动天数","天"],[avg,"人均训练","分钟"]]
-    : [[report.activeCount || 0,"活跃人数","人"],[report.checkinCount || 0,"打卡次数","次"],[report.maxStreak || 0,"最长连续","天"],[avg,"人均训练","分钟"]];
-  ctx.save();
-  ctx.shadowColor = "rgba(24,55,87,.12)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 9;
-  panel(ctx, 42, 620, 996, 468, 45, pale, "#1e3a54", 7);
-  ctx.restore();
-  panel(ctx, 71, 658, 312, 53, 26, dark);
-  winterText(drawText, ctx, "本期累计训练", 100, 684, 250, 26, "#eef9f6");
-  winterText(drawText, ctx, totalMinutes, 85, 845, 375, 140, dark, {minSize:80});
-  winterText(drawText, ctx, "分钟", 88, 931, 180, 34, "#477083");
-  ctx.beginPath(); ctx.moveTo(493, 671); ctx.lineTo(493, 1040);
-  ctx.lineWidth = 2; ctx.strokeStyle = "#d0e1df"; ctx.stroke();
-  winterText(drawText, ctx, "GABA 47", 87, 1031, 250, 27, "#5a8087",{weight:850});
-  stats.forEach((stat, i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const x = 522 + col * 243, y = 668 + row * 186;
-    panel(ctx, x, y, 223, 165, 25, i === 0 ? green : (i === 3 ? "#e3eef0" : "#ffffff"));
-    winterText(drawText, ctx, stat[1], x + 18, y + 32, 192, 23, "#52707b",{weight:800});
-    winterText(drawText, ctx, stat[0], x + 18, y + 100, 147, 72, dark,{minSize:46});
-    winterText(drawText, ctx, stat[2], x + 176, y + 115, 73, 20, "#4a6875",{weight:750,align:"center"});
-  });
-}
-
-function drawWeeklyActivity(ctx, report, drawText) {
-  const navy = "#153347", ink = "#0e3044", bright = "#b9e95d";
-  panel(ctx, 42, 1115, 996, 417, 42, "#e8f3f7", "#1e3a54", 7);
-  winterText(drawText, ctx, "七日训练节奏", 78, 1183, 500, 43, ink);
-  winterText(drawText, ctx, "按每日训练分钟统计", 999, 1186, 355, 22, "#65818c",{align:"right",weight:750});
-  const days = (report.daily || []).slice(0,7);
-  const peak = Math.max(1,...days.map((d)=>Number(d.minutes)||0));
-  const names = ["一","二","三","四","五","六","日"];
-  days.forEach((day,i)=>{
-    const x = 89 + i*135;
-    const minutes = Math.max(0,Number(day.minutes)||0);
-    const height = minutes ? 26 + Math.round(154 * minutes / peak) : 13;
-    panel(ctx,x,1257,97,192,25,"#d1e1e3");
-    panel(ctx,x,1449-height,97,height,Math.min(23,height/2),minutes ? (i%2 ? "#bde76d" : "#9dd8cf") : "#b7c9cf");
-    winterText(drawText,ctx,minutes ? minutes : "—",x+48.5,1427-height,88,23,ink,{align:"center",weight:850});
-    winterText(drawText,ctx,"周"+names[i],x+48.5,1481,84,21,navy,{align:"center"});
-  });
-  if (!days.length) winterText(drawText,ctx,"暂无每日记录",540,1370,600,28,ink,{align:"center"});
-}
-
-function drawMonthlyActivity(ctx, report, drawText) {
-  const ink = "#0e3044";
-  panel(ctx,42,1115,996,417,42,"#e8f3f7","#1e3a54",7);
-  const days = report.daily || [];
-  const activity = days.filter((day) => Number(day.minutes)>0).length;
-  winterText(drawText,ctx,"月度训练日历",78,1183,530,43,ink);
-  winterText(drawText,ctx,activity+" / "+days.length+" 天有训练",999,1185,385,23,"#577585",{align:"right",weight:800});
-  const left = 79, width = 125, gap = 10;
-  const weekdays = ["一","二","三","四","五","六","日"];
-  weekdays.forEach((label,i)=>winterText(drawText,ctx,label,left+i*(width+gap)+width/2,1250,60,20,"#597784",{align:"center"}));
-  const start = new Date(report.periodStart);
-  const offset = (start.getDay()+6)%7;
-  days.forEach((day,index)=>{
-    const indexInGrid=offset+index, col=indexInGrid%7, row=Math.floor(indexInGrid/7);
-    const x=left+col*(width+gap),y=1283+row*37;
-    const isActive=Number(day.minutes)>0;
-    panel(ctx,x,y,width,32,9,isActive?"#a7d968":"#d3e2e4");
-    winterText(drawText,ctx,day.day,x+16,y+16,31,17,ink,{weight:850});
-    if(isActive){
-      ctx.fillStyle="#245a47";
-      ctx.beginPath();ctx.arc(x+width-18,y+16,5,0,Math.PI*2);ctx.fill();
-    }
-  });
-  winterText(drawText,ctx,"绿色表示当天有训练记录",78,1503,470,19,"#587782",{weight:700});
-}
-
-function drawWeeklyRanking(ctx, report, drawCat, drawText) {
-  const white="#e9f6f6", green="#d8ff79", muted="#a7c3d0";
-  panel(ctx,42,1558,996,649,42,"#204e78","#19344f",7);
-  winterText(drawText,ctx,"训练时长 TOP 3",60,1610,590,45,white);
-  winterText(drawText,ctx,"按累计训练分钟排序",1021,1611,320,22,muted,{align:"right",weight:750});
-  const members = report.top3 || [];
-  const colors=["#d6f777","#c9e4f0","#f8b897"];
-  for(let i=0;i<3;i++){
-    const m=members[i]||null,x=48+i*334,y=1665,w=316,h=424;
-    panel(ctx,x,y,w,h,33,"rgba(229,245,249,.11)","rgba(211,238,245,.32)",2);
-    panel(ctx,x+18,y+20,67,52,17,colors[i]);
-    winterText(drawText,ctx,String(i+1).padStart(2,"0"),x+51.5,y+47,57,27,"#0f3041",{align:"center"});
-    drawCat(ctx,m,{x:x+55,y:y+45,width:206,height:222},1.0);
-    winterText(drawText,ctx,m?.name||"暂无记录",x+w/2,y+284,w-28,31,white,{align:"center",minSize:18});
-    winterText(drawText,ctx,m?Math.round(m.minutes)+" 分钟":"—",x+w/2,y+348,w-28,40,green,{align:"center",minSize:23});
-    winterText(drawText,ctx,m?m.checkins+" 次打卡":"",x+w/2,y+389,w-28,21,muted,{align:"center",weight:750});
-  }
-  const others = (report.ranking||[]).slice(3);
-  ctx.beginPath();ctx.moveTo(61,2130);ctx.lineTo(1018,2130);
-  ctx.lineWidth=2;ctx.strokeStyle="rgba(217,239,244,.23)";ctx.stroke();
-  winterText(drawText,ctx,"其他成员",65,2175,174,29,white);
-  const names=others.slice(0,6).map((m)=>m.name).join("  /  ");
-  winterText(drawText,ctx,names || "暂无其他成员",248,2175,768,24,muted,{weight:750});
-  if(others.length>6) winterText(drawText,ctx,"另有 "+(others.length-6)+" 人",1018,2225,320,19,muted,{align:"right",weight:700});
-}
-
-function drawMonthlyMembers(ctx, report, drawCat, drawText, page, pages) {
-  const white="#edf8fa", lime="#d6ff76", muted="#9bbdcc";
-  const members=(report.ranking||[]).filter((m)=>Number(m.minutes)>0);
-  panel(ctx,42,1558,996,649,42,"#204e78","#19344f",7);
-  winterText(drawText,ctx,"全员训练记录",60,1607,540,45,white);
-  winterText(drawText,ctx,members.length+" 位成员 · 第 "+(page+1)+"/"+pages+" 页",1021,1610,420,23,muted,{align:"right",weight:750});
-  const start=page*MONTHLY_MEMBERS_PER_PAGE;
-  const shown=members.slice(start,start+MONTHLY_MEMBERS_PER_PAGE);
-  if(!shown.length) {
-    panel(ctx,59,1660,960,480,28,"rgba(213,241,243,.09)","rgba(216,241,247,.25)");
-    winterText(drawText,ctx,"本月暂无训练记录",540,1880,700,37,white,{align:"center"});
+function paintBackground(ctx, image) {
+  ctx.fillStyle="#e4eff8";
+  ctx.fillRect(0,0,WINTER_REPORT_WIDTH,WINTER_REPORT_HEIGHT);
+  if (image?.complete !== false && image?.naturalWidth > 0) {
+    ctx.drawImage(image,0,0,WINTER_REPORT_WIDTH,WINTER_REPORT_HEIGHT);
     return;
   }
-  const cardWidth=234,cardHeight=177,stepX=252,stepY=189;
+  // 不阻塞首帧：素材到达后由主程序自动重绘。
+  ctx.fillStyle="#fffdfa";
+  for (const [x,y,w,h] of [[90,190,900,290],[55,600,970,305],[35,950,1010,710],[35,1710,1010,500]]) {
+    rounded(ctx,x,y,w,h,42);ctx.fill();
+  }
+}
+function topHeader(ctx,report,drawCat,drawText){
+  const monthly=report.reportType==="month";
+  const period=report.periodLabel || "";
+  write(ctx,drawText,"嘎巴47 / 冬日运动",166,224,610,28,MUTED,{weight:850});
+  write(ctx,drawText,monthly?"训练月报":"上周训练周报",163,320,monthly?730:695,69,INK,{minSize:55});
+  write(ctx,drawText,period,170,399,600,32,INK,{weight:800});
+  // 周报封面展示本期榜首的原始角色冬装版；月报不突出任何成员。
+  if (!monthly && report.top3?.[0]) {
+    drawCat(ctx,report.top3[0],{x:798,y:216,width:145,height:177},1);
+  }
+}
+function metric(ctx,drawText,x,y,w,label,value,unit,large=false){
+  const cx=x+w/2;
+  write(ctx,drawText,label,cx,y,w-20,25,MUTED,{weight:800,align:"center"});
+  write(ctx,drawText,value,cx,y+78,w-20,large?63:58,INK,{minSize:34,align:"center"});
+  write(ctx,drawText,unit,cx,y+128,w-20,23,MUTED,{weight:750,align:"center"});
+}
+function weeklyMetrics(ctx,report,drawText){
+  const v=[
+    ["训练时长",number(report.totalMinutes),"分钟"],
+    ["打卡次数",number(report.checkinCount),"次"],
+    ["活跃成员",number(report.activeCount),"人"],
+    ["最长连续",number(report.maxStreak),"天"],
+  ];
+  const centers=[168,417,666,913];
+  v.forEach(([label,value,unit],i)=>metric(ctx,drawText,centers[i]-110,655,220,label,value,unit,i===0));
+  ctx.save();ctx.strokeStyle="#aec5d7";ctx.lineWidth=2;
+  [292,540,788].forEach(x=>{ctx.beginPath();ctx.moveTo(x,644);ctx.lineTo(x,843);ctx.stroke();});
+  ctx.restore();
+}
+function weeklyActivity(ctx,report,drawText){
+  write(ctx,drawText,"七日训练记录",103,1040,510,42,INK);
+  write(ctx,drawText,"每日训练分钟",960,1044,310,23,MUTED,{align:"right",weight:750});
+  const daily=(report.daily||[]).slice(0,7);
+  const peak=Math.max(1,...daily.map(row=>number(row.minutes)));
+  const labels=["周一","周二","周三","周四","周五","周六","周日"];
+  const base=1462;
+  ctx.save();ctx.strokeStyle="#b4cadb";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(108,base);ctx.lineTo(963,base);ctx.stroke();
+  daily.forEach((row,i)=>{
+    const min=number(row.minutes),w=79,cx=159+i*125;
+    const height=min?Math.max(24,Math.round(min/peak*300)):7;
+    rounded(ctx,cx-w/2,base-height,w,height,15);
+    ctx.fillStyle=min?(i%2===0?BLUE:LIME):"#cbdce5";ctx.fill();
+    if(min){ctx.lineWidth=2;ctx.strokeStyle=INK;ctx.stroke();}
+    write(ctx,drawText,min?min:"—",cx,base-height-28,104,22,INK,{align:"center",minSize:17});
+    write(ctx,drawText,labels[i],cx,1511,111,25,INK,{align:"center",weight:850});
+  });
+  ctx.restore();
+  const active=daily.filter(d=>number(d.minutes)>0).length;
+  write(ctx,drawText,"有训练："+active+" / 7 天",113,1591,400,25,MUTED,{weight:800});
+  write(ctx,drawText,"单日最高："+Math.max(0,...daily.map(d=>number(d.minutes)))+" 分钟",969,1591,470,25,MUTED,{align:"right",weight:800});
+}
+function weeklyRanking(ctx,report,drawCat,drawText){
+  const leaders=report.top3||[];
+  write(ctx,drawText,"训练时长 TOP 3",104,1771,630,40,INK);
+  const slots=[
+    {rank:2,member:leaders[1],center:228,x:162,y:1887,w:132,h:146,label:2100},
+    {rank:1,member:leaders[0],center:537,x:454,y:1834,w:166,h:174,label:2095},
+    {rank:3,member:leaders[2],center:856,x:790,y:1887,w:132,h:146,label:2100},
+  ];
+  slots.forEach(slot=>{
+    if (slot.member) drawCat(ctx,slot.member,{x:slot.x,y:slot.y,width:slot.w,height:slot.h},1);
+    write(ctx,drawText,slot.member?.name||"暂无记录",slot.center,slot.label,220,27,INK,{align:"center",minSize:18});
+    write(ctx,drawText,slot.member?number(slot.member.minutes)+" 分钟":"—",slot.center,slot.label+41,220,25,INK,{align:"center",weight:850});
+  });
+  const rest=Math.max(0,(report.ranking||[]).length-3);
+  if (rest) write(ctx,drawText,"另外 " + rest + " 位成员参与了本周训练",540,2250,790,24,MUTED,{weight:800,align:"center"});
+}
+function monthlyMetrics(ctx,report,drawText){
+  const days=(report.daily||[]).filter(d=>number(d.minutes)>0).length;
+  const metrics=[
+    ["训练时长",number(report.totalMinutes),"分钟"],
+    ["打卡次数",number(report.checkinCount),"次"],
+    ["参与人数",number(report.activeCount),"人"],
+    ["运动天数",days,"天"],
+  ];
+  const centers=[152,409,669,924];
+  metrics.forEach(([label,v,unit],i)=>metric(ctx,drawText,centers[i]-102,575,204,label,v,unit,i===0));
+}
+function monthlyCalendar(ctx,report,drawText){
+  const days=report.daily||[];
+  write(ctx,drawText,"本月运动日历",103,895,520,41,INK);
+  const active=days.filter(d=>number(d.minutes)>0).length;
+  write(ctx,drawText,active+" / "+days.length+" 天有训练",961,895,385,24,MUTED,{align:"right",weight:800});
+  const date=new Date(report.periodStart);
+  const offset=(date.getDay()+6)%7;
+  const week=["一","二","三","四","五","六","日"];
+  const baseX=154, step=128;
+  week.forEach((day,i)=>write(ctx,drawText,day,baseX+i*step,955,75,22,MUTED,{align:"center",weight:800}));
+  days.forEach((day,index)=>{
+    const place=offset+index, col=place%7,row=Math.floor(place/7);
+    const x=baseX+col*step,y=1018+row*61;
+    const yes=number(day.minutes)>0;
+    rounded(ctx,x-47,y-24,94,48,14);
+    ctx.fillStyle=yes?LIME:"#e5eff7";ctx.fill();
+    ctx.lineWidth=yes?2.6:1.6;ctx.strokeStyle=yes?INK:"#afc5d5";ctx.stroke();
+    write(ctx,drawText,day.day,x,y,73,23,INK,{align:"center",weight:yes?900:750});
+  });
+  write(ctx,drawText,"绿色日期表示当天有运动记录",107,1302,595,21,MUTED,{weight:700});
+}
+function monthlyMembers(ctx,report,drawCat,drawText,page,pages){
+  const all=(report.ranking||[]).filter(member=>number(member.minutes)>0);
+  const shown=all.slice(page*MONTHLY_MEMBERS_PER_PAGE,(page+1)*MONTHLY_MEMBERS_PER_PAGE);
+  write(ctx,drawText,"训练成员 · "+all.length+" 人",100,1411,620,35,INK);
+  if(pages>1)write(ctx,drawText,"第 "+(page+1)+" / "+pages+" 页",955,1414,290,22,MUTED,{weight:750,align:"right"});
+  if(!shown.length){
+    write(ctx,drawText,"本月没有训练记录",540,1825,720,35,MUTED,{align:"center"});
+    return;
+  }
+  // 背景素材原生 3列×5行成员框：昵称和训练数据横排，不缩小文字。
+  const left=[68,401,735], top=[1484,1616,1747,1879,2011];
   shown.forEach((member,index)=>{
-    const col=index%4,row=Math.floor(index/4);
-    const x=42+col*stepX,y=1660+row*stepY;
-    panel(ctx,x,y,cardWidth,cardHeight,25,"rgba(224,245,247,.13)","rgba(223,246,251,.25)",2);
-    if(start+index<3){
-      panel(ctx,x+12,y+11,39,31,9,lime);
-      winterText(drawText,ctx,start+index+1,x+31.5,y+26.5,34,18,"#193649",{align:"center"});
+    const col=index%3,row=Math.floor(index/3),x=left[col],y=top[row];
+    drawCat(ctx,member,{x:x+5,y:y+7,width:88,height:89},1);
+    const fullName=String(member.name||"群友");
+    const trimmed=[...fullName].length>9?[...fullName].slice(0,8).join("")+"…":fullName;
+    write(ctx,drawText,trimmed,x+100,y+37,190,24,INK,{minSize:17});
+    write(ctx,drawText,number(member.minutes)+"分  ·  "+number(member.checkins)+"次",x+100,y+75,192,20,MUTED,{weight:800,minSize:14});
+    if(page===0&&index<3){
+      rounded(ctx,x+270,y+9,30,28,9);ctx.fillStyle=LIME;ctx.fill();ctx.lineWidth=1;ctx.strokeStyle=INK;ctx.stroke();
+      write(ctx,drawText,index+1,x+285,y+23,25,18,INK,{align:"center"});
     }
-    drawCat(ctx,member,{x:x+64,y:y+3,width:108,height:104},.98);
-    const displayName=[...String(member.name||"群友")].length>9
-      ? [...String(member.name)].slice(0,8).join("")+"…" : member.name;
-    winterText(drawText,ctx,displayName,x+cardWidth/2,y+124,cardWidth-18,24,white,{align:"center",minSize:14});
-    winterText(drawText,ctx,Math.round(member.minutes)+"分 · "+member.checkins+"次",x+cardWidth/2,y+155,cardWidth-18,20,muted,{align:"center",weight:750,minSize:12});
   });
 }
-
-function drawFooter(ctx,report,drawText,page,pages){
-  ctx.beginPath();ctx.moveTo(65,2265);ctx.lineTo(1015,2265);
-  ctx.lineWidth=2;ctx.strokeStyle="rgba(207,231,238,.27)";ctx.stroke();
-  winterText(drawText,ctx,"GABA 47",65,2300,250,23,"#d4eef0");
-  winterText(drawText,ctx,report.reportType==="week"?"WEEKLY  /  WINTER":"MONTHLY  /  WINTER",1009,2300,380,20,"#a3c3cf",{align:"right",weight:750});
-}
-
-export function drawWinterReportPoster(canvas,report,drawCat,drawText,page=0){
-  if(!canvas || !report) return;
+export function drawWinterReportPoster(canvas,report,drawCat,drawText,page=0,backgroundImage=null){
+  if(!canvas||!report)return;
   const totalPages=winterReportPageCount(report);
-  const safePage=Math.max(0,Math.min(totalPages-1,Math.floor(Number(page)||0)));
-  // Feed thumbnails render at half resolution. The modal and saved image stay 1080x2340.
-  const thumb = typeof canvas.hasAttribute === "function" && canvas.hasAttribute("data-report-canvas");
-  const scale = thumb ? .5 : 1;
-  canvas.width = WINTER_REPORT_WIDTH * scale;
-  canvas.height = WINTER_REPORT_HEIGHT * scale;
-  const ctx=canvas.getContext("2d",{alpha:false});
-  if(!ctx) return;
-  ctx.setTransform(scale,0,0,scale,0,0);
-  ctx.imageSmoothingEnabled=true;
-  ctx.imageSmoothingQuality="high";
+  const p=Math.max(0,Math.min(totalPages-1,Math.floor(Number(page)||0)));
+  const thumb=typeof canvas.hasAttribute==="function"&&canvas.hasAttribute("data-report-canvas");
+  const scale=thumb?.5:1;
+  canvas.width=WINTER_REPORT_WIDTH*scale;canvas.height=WINTER_REPORT_HEIGHT*scale;
+  const ctx=canvas.getContext("2d",{alpha:false});if(!ctx)return;
+  ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
   ctx.textBaseline="middle";
-  drawWinterBackground(ctx,report);
-  drawHeader(ctx,report,drawCat,drawText,safePage,totalPages);
-  drawOverview(ctx,report,drawText);
+  paintBackground(ctx,backgroundImage);
+  topHeader(ctx,report,drawCat,drawText);
   if(report.reportType==="month"){
-    drawMonthlyActivity(ctx,report,drawText);
-    drawMonthlyMembers(ctx,report,drawCat,drawText,safePage,totalPages);
-  } else {
-    drawWeeklyActivity(ctx,report,drawText);
-    drawWeeklyRanking(ctx,report,drawCat,drawText);
+    monthlyMetrics(ctx,report,drawText);
+    monthlyCalendar(ctx,report,drawText);
+    monthlyMembers(ctx,report,drawCat,drawText,p,totalPages);
+  }else{
+    weeklyMetrics(ctx,report,drawText);
+    weeklyActivity(ctx,report,drawText);
+    weeklyRanking(ctx,report,drawCat,drawText);
   }
-  drawFooter(ctx,report,drawText,safePage,totalPages);
 }
