@@ -60,64 +60,100 @@ function drawSnowflake(ctx, x, y, size, alpha) {
 }
 
 function drawWinterBackground(ctx, report) {
-  const W = WINTER_REPORT_WIDTH, H = WINTER_REPORT_HEIGHT;
-  const back = ctx.createLinearGradient(0, 0, 420, H);
-  back.addColorStop(0, "#09182a");
-  back.addColorStop(.47, "#153651");
-  back.addColorStop(1, "#0c2439");
-  ctx.fillStyle = back; ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(840, 320, 40, 840, 320, 480);
-  glow.addColorStop(0, "rgba(116,203,214,.47)");
-  glow.addColorStop(.65, "rgba(99,173,196,.17)");
-  glow.addColorStop(1, "rgba(99,173,196,0)");
-  ctx.fillStyle = glow; ctx.fillRect(360, 0, 720, 700);
-  // Snowfall: deterministic positions so previews do not flicker on redraw.
-  for (let i = 0; i < 145; i++) {
-    const x = 24 + seeded(i * 4 + 1) * 1035;
-    const y = 26 + seeded(i * 4 + 2) * 2280;
-    const radius = 1.1 + seeded(i * 4 + 3) * 2.7;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(211,238,247," + (.12 + seeded(i * 4 + 4) * .48) + ")";
-    ctx.fill();
+  const W = WINTER_REPORT_WIDTH, H = WINTER_REPORT_HEIGHT, ink="#19344f", snow="#fffaf0";
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#1b4e88");sky.addColorStop(.25,"#6db5e7");
+  sky.addColorStop(.70,"#c7e6f5");sky.addColorStop(1,"#e4f1f8");
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  for(let i=0;i<120;i++) {
+    const x=seeded(i*5+1)*W,y=seeded(i*5+2)*H,r=1.3+seeded(i*5+3)*4;
+    ctx.fillStyle="rgba(255,255,255,"+(.35+seeded(i*5+4)*.55)+")";
+    ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.fill();
   }
-  [[590,155,10,.68],[1000,130,11,.48],[510,540,8,.42],[1005,594,9,.52],[57,1092,8,.4]].forEach((flake) => {
-    drawSnowflake(ctx, flake[0], flake[1], flake[2], flake[3]);
+  const cloud=(x,y,k)=>{
+    ctx.fillStyle="#fff8ee";
+    [[-55,5,49],[-18,-17,58],[35,-4,46],[77,15,30]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(x+dx*k,y+dy*k,r*k,0,Math.PI*2);ctx.fill()});
+  };
+  cloud(220,62,.68);cloud(885,47,.57);
+  const mountain=(x,y,w,h,col)=>{
+    ctx.fillStyle=col;ctx.beginPath();
+    ctx.moveTo(x,y);ctx.lineTo(x+w*.46,y-h);
+    ctx.lineTo(x+w,y);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#f5f9fc";ctx.beginPath();
+    ctx.moveTo(x+w*.46,y-h);ctx.lineTo(x+w*.30,y-h*.62);
+    ctx.lineTo(x+w*.43,y-h*.69);ctx.lineTo(x+w*.52,y-h*.57);
+    ctx.lineTo(x+w*.64,y-h*.63);ctx.closePath();ctx.fill();
+  };
+  mountain(-110,462,470,225,"#94bed9");
+  mountain(225,440,500,275,"#669bc8");
+  mountain(555,470,625,335,"#8ab4d6");
+  const pine=(x,y,k)=>{
+    ctx.save();ctx.translate(x,y);ctx.scale(k,k);
+    ctx.lineWidth=7;ctx.strokeStyle=ink;
+    ctx.fillStyle="#986b4d";ctx.fillRect(-10,-2,20,73);
+    for(let i=0;i<3;i++){
+      const yy=-150+i*51,half=67-i*8;
+      ctx.fillStyle=i===0?"#347c71":"#438b78";
+      ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(-half,yy+105);ctx.lineTo(half,yy+105);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle="#fcffff";ctx.beginPath();ctx.moveTo(0,yy+1);
+      ctx.lineTo(-half*.47,yy+49);ctx.lineTo(-half*.1,yy+43);
+      ctx.lineTo(half*.18,yy+51);ctx.lineTo(half*.59,yy+55);ctx.closePath();ctx.fill();
+    }
+    ctx.restore();
+  };
+  [-35,111,1040,1116].forEach((x,i)=>pine(x,572,i%2?.89:1.22));
+  // The page is a cartoon winter athletics scene, not glossy glassmorphism.
+  ctx.fillStyle="#eef7f9";
+  ctx.beginPath();ctx.moveTo(0,575);
+  ctx.bezierCurveTo(230,523,440,631,700,565);
+  ctx.bezierCurveTo(880,519,1040,592,1080,563);
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+  // Winding blue winter running track at the foot of the page.
+  ctx.fillStyle="#78abd0";
+  ctx.beginPath();ctx.moveTo(-120,2340);ctx.bezierCurveTo(280,2162,696,2232,1152,2114);
+  ctx.lineTo(1128,2340);ctx.closePath();ctx.fill();
+  for(let i=0;i<3;i++){
+    ctx.beginPath();ctx.moveTo(-60+i*118,2345);
+    ctx.bezierCurveTo(370+i*86,2180+i*30,750+i*80,2262+i*15,1110,2165+i*42);
+    ctx.strokeStyle="#eafbff";ctx.lineWidth=5;ctx.stroke();
+  }
+  // Small non-distracting paw marks in the snow.
+  const paw=(x,y,k)=>{
+    ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.fillStyle="#8fbad1";
+    ctx.beginPath();ctx.ellipse(0,15,20,14,0,0,Math.PI*2);ctx.fill();
+    [[-19,-9],[-5,-18],[10,-18],[24,-7]].forEach(([xx,yy])=>{
+      ctx.beginPath();ctx.ellipse(xx,yy,7,10,0,0,Math.PI*2);ctx.fill();
+    });ctx.restore();
+  };
+  paw(875,2201,.75);paw(948,2168,.64);paw(1000,2220,.53);
+  // Main illustrated title board has the same bold line style as the original cats.
+  ctx.shadowColor="rgba(22,54,81,.13)";ctx.shadowBlur=12;ctx.shadowOffsetY=8;
+  panel(ctx,41,178,996,386,50,snow,ink,7);
+  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  // Lime track accents, on-board snow pile and hand-drawn motion cues.
+  ctx.fillStyle="#c6ee66";
+  ctx.beginPath();ctx.moveTo(60,501);ctx.quadraticCurveTo(530,535,1020,493);
+  ctx.lineTo(1020,520);ctx.quadraticCurveTo(520,569,60,525);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=ink;ctx.lineWidth=6;ctx.beginPath();
+  ctx.moveTo(62,525);ctx.quadraticCurveTo(520,571,1015,522);ctx.stroke();
+  ctx.fillStyle=snow;
+  [[150,179,60],[206,176,52],[263,177,43],[830,185,39],[882,182,48],[936,183,37]].forEach(([x,y,r])=>{
+    ctx.beginPath();ctx.arc(x,y,r,Math.PI,0,false);ctx.fill();
   });
-  // Mountain ridge and a winter running track behind the report card.
-  ctx.fillStyle = "rgba(139,187,196,.21)";
-  ctx.beginPath();
-  ctx.moveTo(0, 640); ctx.lineTo(210, 488); ctx.lineTo(320, 562);
-  ctx.lineTo(508, 412); ctx.lineTo(652, 578); ctx.lineTo(850, 432);
-  ctx.lineTo(1080, 610); ctx.lineTo(1080, 710); ctx.lineTo(0, 710); ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "rgba(207,240,246,.29)";
-  ctx.lineWidth = 4; ctx.beginPath();
-  ctx.moveTo(0, 640); ctx.lineTo(210, 488); ctx.lineTo(320, 562);
-  ctx.lineTo(508, 412); ctx.lineTo(652, 578); ctx.lineTo(850, 432); ctx.lineTo(1080, 610);
-  ctx.stroke();
-  for (let i = 0; i < 3; i++) {
-    ctx.beginPath();
-    ctx.moveTo(560 + i * 20, 505 + i * 24);
-    ctx.bezierCurveTo(720 + i * 24, 475 + i * 24, 916 + i * 15, 510 + i * 29, 1110, 466 + i * 29);
-    ctx.strokeStyle = "rgba(224,249,251," + (.2 - i * .045) + ")";
-    ctx.lineWidth = 4; ctx.stroke();
-  }
-  // Thin print border creates a finished poster instead of a screenshot.
-  ctx.strokeStyle = "rgba(229,245,247,.20)";
-  ctx.lineWidth = 2;
-  pathRound(ctx, 22, 22, W - 44, H - 44, 32);
-  ctx.stroke();
+  // Hand-drawn wind streaks keep the winter fitness theme energetic.
+  ctx.strokeStyle="rgba(40,97,132,.24)";ctx.lineCap="round";ctx.lineWidth=6;
+  [[68,594,178,589],[842,604,972,599],[96,1084,167,1077],[914,1561,1007,1553]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  });
 }
-
 function drawHeader(ctx, report, drawCat, drawText, page, pages) {
-  const ice = "#e7f6f6", lime = "#d9ff64", muted = "#a8cfdf";
+  const ice = "#203b52", lime = "#6a981b", muted = "#5d7c8c";
   const month = report.reportType === "month";
   const year = new Date(report.periodStart).getFullYear();
-  panel(ctx, 65, 66, 75, 67, 19, lime);
+  panel(ctx, 65, 66, 75, 67, 19, "#dbf66f");
   winterText(drawText, ctx, "47", 102.5, 100, 58, 44, "#10293d", {align:"center"});
-  winterText(drawText, ctx, "GABA", 160, 103, 280, 36, ice);
-  winterText(drawText, ctx, "WINTER  /  " + year, 1006, 101, 330, 23, muted, {align:"right",weight:800});
+  winterText(drawText, ctx, "GABA", 160, 103, 280, 36, "#f9ffff");
+  winterText(drawText, ctx, "WINTER  /  " + year, 1006, 101, 330, 23, "#dbeefa", {align:"right",weight:800});
   ctx.beginPath(); ctx.moveTo(65, 155); ctx.lineTo(1015, 155);
   ctx.lineWidth = 2; ctx.strokeStyle = "rgba(231,246,246,.24)"; ctx.stroke();
 
@@ -125,8 +161,8 @@ function drawHeader(ctx, report, drawCat, drawText, page, pages) {
   winterText(drawText, ctx, month ? "月报" : "周报", 66, 353, 470, 112, lime);
   winterText(drawText, ctx, month ? "MONTHLY TRAINING REPORT" : "WEEKLY TRAINING REPORT",
     70, 429, 560, 25, muted, {weight:750});
-  panel(ctx, 70, 474, month ? 365 : 321, 66, 33, "rgba(13,42,62,.86)", "rgba(202,237,244,.52)", 2);
-  winterText(drawText, ctx, report.periodLabel, 95, 506, month ? 316 : 273, 29, ice, {weight:850});
+  panel(ctx, 70, 474, month ? 365 : 321, 66, 33, "#244e75", "#19344f", 4);
+  winterText(drawText, ctx, report.periodLabel, 95, 506, month ? 316 : 273, 29, "#fffdf8", {weight:850});
   if (pages > 1) winterText(drawText, ctx, String(page + 1).padStart(2,"0") + " / " + String(pages).padStart(2,"0"),
     1002, 519, 190, 23, lime, {align:"right"});
 
@@ -158,8 +194,8 @@ function drawOverview(ctx, report, drawText) {
     ? [[report.activeCount || 0,"参与人数","人"],[report.checkinCount || 0,"打卡次数","次"],[activeDays,"运动天数","天"],[avg,"人均训练","分钟"]]
     : [[report.activeCount || 0,"活跃人数","人"],[report.checkinCount || 0,"打卡次数","次"],[report.maxStreak || 0,"最长连续","天"],[avg,"人均训练","分钟"]];
   ctx.save();
-  ctx.shadowColor = "rgba(0,14,25,.26)"; ctx.shadowBlur = 34; ctx.shadowOffsetY = 16;
-  panel(ctx, 42, 620, 996, 468, 45, pale);
+  ctx.shadowColor = "rgba(24,55,87,.12)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 9;
+  panel(ctx, 42, 620, 996, 468, 45, pale, "#1e3a54", 7);
   ctx.restore();
   panel(ctx, 71, 658, 312, 53, 26, dark);
   winterText(drawText, ctx, "本期累计训练", 100, 684, 250, 26, "#eef9f6");
@@ -180,7 +216,7 @@ function drawOverview(ctx, report, drawText) {
 
 function drawWeeklyActivity(ctx, report, drawText) {
   const navy = "#153347", ink = "#0e3044", bright = "#b9e95d";
-  panel(ctx, 42, 1115, 996, 417, 42, "#e5eff0");
+  panel(ctx, 42, 1115, 996, 417, 42, "#e8f3f7", "#1e3a54", 7);
   winterText(drawText, ctx, "七日训练节奏", 78, 1183, 500, 43, ink);
   winterText(drawText, ctx, "按每日训练分钟统计", 999, 1186, 355, 22, "#65818c",{align:"right",weight:750});
   const days = (report.daily || []).slice(0,7);
@@ -200,7 +236,7 @@ function drawWeeklyActivity(ctx, report, drawText) {
 
 function drawMonthlyActivity(ctx, report, drawText) {
   const ink = "#0e3044";
-  panel(ctx,42,1115,996,417,42,"#e5eff0");
+  panel(ctx,42,1115,996,417,42,"#e8f3f7","#1e3a54",7);
   const days = report.daily || [];
   const activity = days.filter((day) => Number(day.minutes)>0).length;
   winterText(drawText,ctx,"月度训练日历",78,1183,530,43,ink);
@@ -226,6 +262,7 @@ function drawMonthlyActivity(ctx, report, drawText) {
 
 function drawWeeklyRanking(ctx, report, drawCat, drawText) {
   const white="#e9f6f6", green="#d8ff79", muted="#a7c3d0";
+  panel(ctx,42,1558,996,649,42,"#204e78","#19344f",7);
   winterText(drawText,ctx,"训练时长 TOP 3",60,1610,590,45,white);
   winterText(drawText,ctx,"按累计训练分钟排序",1021,1611,320,22,muted,{align:"right",weight:750});
   const members = report.top3 || [];
@@ -252,6 +289,7 @@ function drawWeeklyRanking(ctx, report, drawCat, drawText) {
 function drawMonthlyMembers(ctx, report, drawCat, drawText, page, pages) {
   const white="#edf8fa", lime="#d6ff76", muted="#9bbdcc";
   const members=(report.ranking||[]).filter((m)=>Number(m.minutes)>0);
+  panel(ctx,42,1558,996,649,42,"#204e78","#19344f",7);
   winterText(drawText,ctx,"全员训练记录",60,1607,540,45,white);
   winterText(drawText,ctx,members.length+" 位成员 · 第 "+(page+1)+"/"+pages+" 页",1021,1610,420,23,muted,{align:"right",weight:750});
   const start=page*MONTHLY_MEMBERS_PER_PAGE;
