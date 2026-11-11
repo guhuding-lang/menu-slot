@@ -1,12 +1,11 @@
-import { winterOverlayDataUrl } from "./winter-wardrobe.js?v=1";
 import {
   CAT_FUR_OPTIONS,
   catCharacter,
   catProfileDescriptor,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./sports-cat-ui.js?v=4";
-import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=3";
+} from "./sports-cat-ui.js?v=5";
+import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=4";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -1051,7 +1050,8 @@ function monthlyZodiacStats(report) {
 }
 function reportAssetSources(report) {
   const sources = [];
-  for (const member of report.ranking || []) { const descriptor = reportMemberVisual(member).descriptor; sources.push(descriptor.asset); sources.push(winterOverlayDataUrl(descriptor.value)); }
+  for (const member of report.ranking || []) sources.push(reportMemberVisual(member).descriptor.asset);
+  sources.push(report.reportType === "month" ? "./assets/winter-reports/monthly.webp" : "./assets/winter-reports/weekly.webp");
   return [...new Set(sources.filter(Boolean))];
 }
 async function preloadReportAssets(report) {
@@ -1153,8 +1153,6 @@ function drawWeeklyCat(ctx, member, box, roleScale = 1) {
   ctx.rect(box.x, box.y, box.width, box.height);
   ctx.clip();
   ctx.drawImage(image, source.x, source.y, source.width, source.height, x, y, width, height);
-  const coat = reportAssetRecord(winterOverlayDataUrl(descriptor.value));
-  if (coat?.loaded) ctx.drawImage(coat.image, x, y, width, height);
   ctx.restore();
 }
 function drawWeeklyRewardAsset(ctx, index, box) {
@@ -1843,7 +1841,8 @@ function drawMonthlyReportPoster(canvas, report) {
 }
 function drawReportPoster(canvas, report, page = 0) {
   if (report.reportType === "week" || report.reportType === "month") {
-    drawWinterReportPoster(canvas, report, drawWeeklyCat, drawPosterText, page);
+    const bg = reportAssetRecord(report.reportType === "week" ? "./assets/winter-reports/weekly.webp" : "./assets/winter-reports/monthly.webp");
+    drawWinterReportPoster(canvas, report, drawWeeklyCat, drawPosterText, page, bg?.loaded ? bg.image : null);
     return;
   }
   const baseWidth = 540;
