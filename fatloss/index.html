@@ -51,6 +51,26 @@
 .legend .measure{background:#76aaca}
 @media(max-width:380px){.body-metric .metric-value{font-size:22px}.body-metric{padding:12px 9px}.measure-grid{gap:9px}.body-actions{flex-wrap:wrap}}
 
+
+/* 体测图片识别：入口、进度与核对状态 */
+.ocr-box{border:1px solid #dce9df;background:#f4f9f5;border-radius:17px;padding:14px}
+.ocr-title{font-weight:800;font-size:14px;margin:0 0 6px}
+.ocr-sub{font-size:12px;color:#668273;line-height:1.6;margin:0 0 12px}
+.ocr-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ocr-btn{display:flex;justify-content:center;align-items:center;gap:6px;text-align:center;border:1px solid #b9d8c5;border-radius:12px;background:#fff;color:#216b57;padding:13px 7px;font-size:13px;font-weight:750;min-height:48px}
+.ocr-btn.primary{background:#216b57;color:#fff;border-color:#216b57}
+.ocr-btn[disabled]{opacity:.55}
+.ocr-preview{margin-top:12px;border-radius:12px;width:100%;max-height:160px;object-fit:contain;background:white;border:1px solid #d7e5d9}
+.ocr-progress{margin-top:10px;display:none}
+.ocr-progress.show{display:block}
+.ocr-bar{height:6px;background:#dce9df;overflow:hidden;border-radius:99px;margin-top:7px}
+.ocr-bar>div{height:100%;background:#216b57;width:0%;border-radius:99px;transition:width .25s}
+.ocr-status{color:#587c67;font-size:12px;line-height:1.65;margin-top:10px;white-space:pre-line}
+.ocr-review{color:#236a51;font-size:12px;font-weight:680;margin-top:10px;line-height:1.65}
+.ocr-raw{margin-top:9px;color:#557363;font-size:12px}
+.ocr-raw summary{cursor:pointer}
+.ocr-raw pre{white-space:pre-wrap;word-break:break-word;max-height:160px;overflow:auto;background:white;border-radius:10px;padding:10px;font-size:11px;line-height:1.6}
+@media(max-width:380px){.ocr-btn{font-size:12px;padding:11px 4px}}
 </style>
 </head>
 <body>
@@ -115,6 +135,20 @@
 
 <div class="overlay" id="measureOverlay"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="measureTitle"><div class="sheet-top"><div><h2 id="measureTitle">记录身体指标</h2><small>每次测量保存一条记录，可随时修改</small></div><button class="close" id="closeMeasure" aria-label="关闭体测记录">×</button></div>
   <div class="sheet-body">
+    <div class="sheet-sec">
+      <div class="ocr-box">
+        <p class="ocr-title">图片识别体测数据</p>
+        <p class="ocr-sub">拍摄体脂秤报告，或上传已有截图；识别后核对数据再保存。</p>
+        <div class="ocr-actions"><button class="ocr-btn primary" type="button" id="measureCameraBtn">📷 拍照识别</button><button class="ocr-btn" type="button" id="measureUploadBtn">▧ 上传截图</button></div>
+        <input type="file" id="measureCameraFile" accept="image/*" capture="environment" hidden>
+        <input type="file" id="measureUploadFile" accept="image/*" hidden>
+        <img id="measurePhotoPreview" class="ocr-preview" alt="待识别的体测照片" hidden>
+        <div class="ocr-progress" id="ocrProgress"><div class="ocr-bar"><div id="ocrProgressBar"></div></div></div>
+        <div id="ocrStatus" class="ocr-status" role="status" aria-live="polite">首次识别需要联网下载中文文字识别组件。照片仅在本机浏览器中处理。</div>
+        <div id="ocrReview" class="ocr-review" hidden></div>
+        <details id="ocrRawBox" class="ocr-raw" hidden><summary>查看识别原文（用于纠错）</summary><pre id="ocrRawText"></pre></details>
+      </div>
+    </div>
     <div class="sheet-sec"><div class="measure-topline"><div><label for="measureDate">测量日期</label><input type="date" id="measureDate" min="2026-11-10" max="2027-01-31"></div><div><label for="measureTime">测量时间</label><input type="time" id="measureTime"></div></div></div>
     <div class="sheet-sec"><h3>主要指标</h3><div class="measure-grid" id="measurePrimary"></div><details class="measure-more" id="measureMore"><summary>其他13项指标（可选）</summary><div class="measure-grid" id="measureExtra"></div></details><p class="measure-note">可以只记录主要指标。数据保留小数；同一天再次保存会更新当日体测，不会新增重复记录。</p></div>
   </div>
@@ -219,10 +253,151 @@ function renderTrend(){
    const details=document.createElement('details');details.className='measure-detail';const sum=document.createElement('summary');sum.textContent=`全部指标（${Object.keys(o.metrics).length}项）`;details.append(sum);const grid=document.createElement('div');grid.className='measure-detail-grid';for(const [field,label,unit] of BODY_FIELDS){if(o.metrics[field]===undefined)continue;const cell=document.createElement('div');const name=document.createElement('span');name.textContent=label;const val=document.createElement('strong');val.textContent=`${fmtMetric(o.metrics[field],field)} ${unit}`;cell.append(name,val);grid.append(cell)}details.append(grid);item.append(details);history.append(item);
  }
 }
+
+// OCR runs locally in the browser; model/runtime files are loaded from a CDN at first use.
+const OCR_SOURCES=[
+ {script:'https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js',worker:'https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/worker.min.js'},
+ {script:'https://unpkg.com/tesseract.js@6/dist/tesseract.min.js',worker:'https://unpkg.com/tesseract.js@6/dist/worker.min.js'}
+];
+let ocrBusy=false,ocrWorker=null,ocrScriptSource=null,ocrPreviewURL='';
+const OCR_NAMES={
+ weight:['体重'],bodyFatRate:['体脂率','体脂百分比'],visceralFatLevel:['内脏脂肪等级','内脏脂肪级别','内脏脂肪'],
+ skeletalMuscleMass:['骨骼肌量'],muscleMass:['肌肉量'],fatMass:['脂肪量','体脂肪量'],boneMass:['骨量'],
+ muscleRate:['肌肉率'],bodyWaterRate:['体水分率','水分率'],bodyWaterMass:['体水分量','水分量'],
+ proteinMass:['蛋白质含量','蛋白质量'],subcutaneousFatRate:['皮下脂肪率'],proteinRate:['蛋白质占比','蛋白质率'],
+ boneRate:['骨量占比'],skeletalMuscleRate:['骨骼肌率'],subcutaneousFatMass:['皮下脂肪量'],
+ bmr:['基础代谢率','基础代谢'],leanBodyMass:['去脂体重','瘦体重']
+};
+function parseBodyOcr(raw){
+ const lines=String(raw||'').normalize('NFKC').replace(/\r/g,'').split('\n').map(x=>x.replace(/[\s　]/g,'').replace(/[，]/g,',').replace(/[：]/g,':').replace(/[。]/g,'.').replace(/(?<=\d)[oO](?=\d|$)/g,'0')).filter(Boolean);
+ const list=Object.entries(OCR_NAMES).flatMap(([key,arr])=>arr.map(name=>({key,name}))).sort((a,b)=>b.name.length-a.name.length);
+ const metrics={},hits={};
+ for(let i=0;i<lines.length;i++){
+   const line=lines[i],matches=[];
+   for(const o of list){let pos=line.indexOf(o.name);if(pos<0)continue;
+     // A longer matched label takes precedence over substrings, e.g. 骨骼肌量 vs 肌肉量.
+     if(matches.some(v=>pos>=v.pos&&pos<v.pos+v.name.length))continue;
+     matches.push({...o,pos});
+   }
+   matches.sort((a,b)=>a.pos-b.pos);
+   for(let j=0;j<matches.length;j++){
+     const hit=matches[j];if(Object.hasOwn(metrics,hit.key))continue;
+     const end=j+1<matches.length?matches[j+1].pos:line.length;
+     let tail=line.slice(hit.pos+hit.name.length,end);
+     let m=tail.match(/[:：]?[^\d]{0,10}(-?\d{1,5}(?:[.,]\d{1,2})?)/);
+     if(!m && tail.length<8 && i+1<lines.length && /^\d{1,5}(?:[.,]\d{1,2})?\s*(?:kg|%|kcal)?$/i.test(lines[i+1]))m=[null,lines[i+1].match(/^\d{1,5}(?:[.,]\d{1,2})?/)[0]];
+     if(!m)continue;
+     const n=Number(m[1].replace(',','.'));
+     const field=BODY_FIELDS.find(f=>f[0]===hit.key);
+     if(field&&Number.isFinite(n)&&n>=field[3]&&n<=field[4]){metrics[hit.key]=n;hits[hit.key]=line}
+   }
+ }
+ // If the entire known 18-row report is detected, repair labels lost by OCR using row order.
+ // Requires multiple exact label anchors at their expected positions; other layouts never use this inference.
+ const template=['weight','visceralFatLevel','bodyFatRate','fatMass','boneMass','skeletalMuscleMass','muscleRate','muscleMass','bodyWaterRate','bodyWaterMass','proteinMass','subcutaneousFatRate','proteinRate','boneRate','skeletalMuscleRate','subcutaneousFatMass','bmr','leanBodyMass'];
+ const candidates=[];
+ for(const line of lines){
+   // Skip clock/time and header lines unless a separate numeric body value has its own unit.
+   const formatted=line.match(/(-?\d{1,5}(?:[.,]\d{1,2})?)(?=kg|kcal|%)/i);
+   if(/(?:条记录|共\d+条|身体指标记录)/.test(line)&&!formatted)continue;
+   let m=formatted;
+   if(!m && !line.match(/\d{1,2}:\d{2}/) && /[\u3400-\u9fff]/.test(line))m=line.match(/(-?\d{1,5}(?:[.,]\d{1,2})?)(?![\d:])/);
+   if(m)candidates.push({line,n:Number(m[1].replace(',','.'))});
+ }
+ let inferred=0;
+ if(candidates.length>=template.length && candidates.length<=template.length+4){
+   let best=null;
+   for(let offset=0;offset<=candidates.length-template.length;offset++){
+     const window=candidates.slice(offset,offset+template.length);
+     let anchors=0,compatible=0;
+     for(let i=0;i<template.length;i++){
+       const key=template[i],field=BODY_FIELDS.find(f=>f[0]===key),row=window[i];
+       if(row.n>=field[3]&&row.n<=field[4])compatible++;
+       if((OCR_NAMES[key]||[]).some(name=>row.line.includes(name)))anchors++;
+     }
+     if(anchors>=8&&compatible>=17&&(!best||anchors>best.anchors))best={window,anchors};
+   }
+   if(best){for(let i=0;i<template.length;i++){
+       const key=template[i],row=best.window[i],field=BODY_FIELDS.find(f=>f[0]===key);
+       if(Object.hasOwn(metrics,key)||row.n<field[3]||row.n>field[4])continue;
+       metrics[key]=row.n;hits[key]='按18项指标固定顺序推断：'+row.line;inferred++;
+     }}
+ }
+ // Prefer the record time printed by the scale app, not the screenshot's system status bar clock.
+ const mt=String(raw||'').replace(/[\s　]/g,'').match(/(?:更新于|测量时间|记录时间|测量于)[:：]?([01]?\d|2[0-3])[:：]([0-5]\d)/);
+ return {metrics,time:mt?`${pad(+mt[1])}:${mt[2]}`:'',hits,inferred};
+}
+function setOcrStatus(msg){$('ocrStatus').textContent=msg}
+function setOcrProgress(n){$('ocrProgress').classList.add('show');$('ocrProgressBar').style.width=`${Math.max(2,Math.min(100,Math.round(n)))}%`}
+function addRemoteScript(src){return new Promise((resolve,reject)=>{const tag=document.createElement('script');tag.src=src;tag.async=true;tag.onload=resolve;tag.onerror=()=>{tag.remove();reject(Error('识别组件加载失败'))};document.head.append(tag)})}
+async function initOcrLibrary(){if(window.Tesseract?.createWorker)return;
+ let error=null;for(const source of OCR_SOURCES){try{await addRemoteScript(source.script);if(!window.Tesseract?.createWorker)throw Error('识别组件不可用');ocrScriptSource=source;return}catch(e){error=e}}
+ throw error||Error('无法加载识别组件');
+}
+async function createOcrWorker(){if(ocrWorker)return ocrWorker;
+ await initOcrLibrary();setOcrStatus('首次加载中文识别模型，请保持网页打开…');setOcrProgress(8);
+ let lastErr;for(const options of [
+  {workerPath:ocrScriptSource?.worker},
+  {workerPath:ocrScriptSource?.worker,langPath:'https://tessdata.projectnaptha.com/4.0.0'}
+ ]){
+  try{ocrWorker=await window.Tesseract.createWorker(['chi_sim','eng'],1,{...options,logger:msg=>{
+    if(typeof msg.progress==='number')setOcrProgress(10+Math.round(msg.progress*66));
+    if(msg.status)setOcrStatus('正在加载/识别：'+({"loading language traineddata":"加载中文语言包","recognizing text":"识别文字"}[msg.status]||msg.status));
+  }});return ocrWorker}catch(e){lastErr=e;ocrWorker=null}
+ }
+ throw lastErr||Error('中文识别模型加载失败');
+}
+async function normalizeOcrImage(file){
+ // Downscale very large phone photos to limit memory usage and amplify small text contrast.
+ const bmp=await createImageBitmap(file);let target=Math.min(2400,Math.max(1350,bmp.width)),scale=Math.min(2.2,target/bmp.width,2400/bmp.width,3000/bmp.height);
+ if(bmp.width>=1350)scale=Math.min(1,2400/bmp.width,3000/bmp.height);
+ const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('图片处理不可用');ctx.drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close?.();
+ // Keep dark-on-light label typography; avoid destructive black/white thresholds on photos.
+ if(canvas.width*canvas.height<=8500000){const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),a=pixels.data;
+   for(let i=0;i<a.length;i+=4){const gray=.299*a[i]+.587*a[i+1]+.114*a[i+2];const v=Math.max(0,Math.min(255,(gray-128)*1.20+135));a[i]=a[i+1]=a[i+2]=v}ctx.putImageData(pixels,0,0);
+ }
+ return canvas;
+}
+function fillOcrMetrics(parsed){
+ let filled=0;for(const field of BODY_KEYS){if(parsed.metrics[field]!==undefined){$('m_'+field).value=parsed.metrics[field];filled++}}
+ if(parsed.time && !$('measureTime').value)$('measureTime').value=parsed.time;
+ $('measureMore').open=true;
+ $('ocrReview').hidden=false;
+ $('ocrReview').textContent=`识别到 ${filled}/18 项${parsed.inferred?`（其中${parsed.inferred}项按报告行序补全）`:''}。请核对数值、单位和测量日期，确认后点击底部「保存体测」。缺失的指标可手动补充。`;
+ setOcrStatus(`识别完成 · 已填入 ${filled} 项（尚未保存）`);
+ return filled;
+}
+async function recognizeMeasureImage(file){
+ if(ocrBusy)return;
+ if(!file||!file.type.startsWith('image/')){setOcrStatus('请选择 JPG、PNG、HEIC 等图片');return}
+ if(file.size>20*1024*1024){setOcrStatus('图片超过20MB，请先裁剪或压缩');return}
+ ocrBusy=true;$('measureCameraBtn').disabled=$('measureUploadBtn').disabled=true;
+ if(ocrPreviewURL)URL.revokeObjectURL(ocrPreviewURL);ocrPreviewURL=URL.createObjectURL(file);
+ $('measurePhotoPreview').src=ocrPreviewURL;$('measurePhotoPreview').hidden=false;
+ $('ocrReview').hidden=true;$('ocrRawBox').hidden=true;$('ocrRawText').textContent='';
+ setOcrStatus('准备识别图片…');setOcrProgress(3);
+ try{
+   const img=await normalizeOcrImage(file),worker=await createOcrWorker();setOcrStatus('正在识别图片中的中文指标…');setOcrProgress(78);
+   const result=await worker.recognize(img);setOcrProgress(100);
+   const raw=result?.data?.text||'';
+   $('ocrRawText').textContent=raw.slice(0,10000);$('ocrRawBox').hidden=!raw;
+   const parsed=parseBodyOcr(raw);const count=Object.keys(parsed.metrics).length;
+   if(!count){setOcrStatus('暂未识别出有效指标。建议截取清晰的指标列表重新上传；也可手动录入。');}
+   else fillOcrMetrics(parsed);
+ }catch(err){console.warn('识别失败',err);setOcrStatus(`识别失败：${err?.message||'网络或图片解析异常'}。请检查网络后重试，或手动填写。`)}
+ finally{ocrBusy=false;$('measureCameraBtn').disabled=$('measureUploadBtn').disabled=false;}
+}
+function setupOcr(){
+ $('measureCameraBtn').addEventListener('click',()=>$('measureCameraFile').click());
+ $('measureUploadBtn').addEventListener('click',()=>$('measureUploadFile').click());
+ for(const id of ['measureCameraFile','measureUploadFile'])$(id).addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(file)await recognizeMeasureImage(file)});
+}
+
 function setupMeasureForm(){for(const [key,label,unit] of BODY_FIELDS){const div=document.createElement('div');div.className='measure-field';const lab=document.createElement('label');lab.htmlFor='m_'+key;lab.textContent=label+(unit?`（${unit}）`:'');const input=document.createElement('input');input.id='m_'+key;input.type='number';input.inputMode='decimal';input.step='any';input.placeholder='可选';div.append(lab,input);$(MAIN_BODY_KEYS.includes(key)?'measurePrimary':'measureExtra').append(div)}}
 let editingMeasureDate='';
-function openMeasure(k){const key=k&&validMeasurementDate(k)?k:dateKey(now),o=cleanMeasure(state.measurements[key]);editingMeasureDate=o?key:'';$('measureDate').value=key;$('measureTime').value=o?.time||'';$('measureTitle').textContent=o?'编辑身体指标':'记录身体指标';$('deleteMeasure').style.display=o?'inline-block':'none';$('measureMore').open=false;for(const field of BODY_KEYS)$('m_'+field).value=o?.metrics[field]??'';$('measureOverlay').classList.add('show');document.body.style.overflow='hidden'}
-function closeMeasure(){$('measureOverlay').classList.remove('show');document.body.style.overflow=''}
+function openMeasure(k){const key=k&&validMeasurementDate(k)?k:dateKey(now),o=cleanMeasure(state.measurements[key]);editingMeasureDate=o?key:'';$('measureDate').value=key;$('measureTime').value=o?.time||'';$('measureTitle').textContent=o?'编辑身体指标':'记录身体指标';$('deleteMeasure').style.display=o?'inline-block':'none';$('measureMore').open=false;$('ocrProgress').classList.remove('show');$('ocrReview').hidden=true;$('ocrRawBox').hidden=true;setOcrStatus('首次识别需要联网下载中文文字识别组件。照片仅在本机浏览器中处理。');for(const field of BODY_KEYS)$('m_'+field).value=o?.metrics[field]??'';$('measureOverlay').classList.add('show');document.body.style.overflow='hidden'}
+function closeMeasure(){if(ocrBusy){toast('识别进行中，请识别结束后关闭');return}$('measureOverlay').classList.remove('show');document.body.style.overflow='';if(ocrPreviewURL){URL.revokeObjectURL(ocrPreviewURL);ocrPreviewURL='';$('measurePhotoPreview').hidden=true;$('measurePhotoPreview').removeAttribute('src')}}
 function saveMeasure(){const date=$('measureDate').value;if(!validMeasurementDate(date)){toast('请选择计划期间的有效日期');return}const metrics={};for(const [key,label,,min,max] of BODY_FIELDS){const input=$('m_'+key),raw=input.value.trim();if(!raw)continue;const n=Number(raw);if(!Number.isFinite(n)||n<min||n>max){toast(`${label}数值不在有效范围内`);input.focus();return}metrics[key]=n}if(!Object.keys(metrics).length){toast('至少填写一项指标');return}const entry=cleanMeasure({time:$('measureTime').value,metrics});if(!entry){toast('请检查测量数据');return}if(state.measurements[date]&&editingMeasureDate!==date&&!confirm('该日期已有记录，确认覆盖吗？'))return;if(editingMeasureDate&&editingMeasureDate!==date)delete state.measurements[editingMeasureDate];state.measurements[date]=entry;if(saveStorage()){closeMeasure();renderAll();toast('体测已保存')}}
 // A private, one-time link transfers data only through the URL fragment. The public GitHub code contains no personal measurements.
 function readMeasureLink(){if(!location.hash.startsWith('#m='))return;const hash=location.hash.slice(3);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
@@ -238,7 +413,7 @@ function updateSheet(){for(const m of ['breakfast','lunch','dinner']){document.q
 function openSheet(){draft=get(selected);$('sheetTitle').textContent=`${pretty(selected)} · ${weekdays[selected.getDay()]}`;for(const m of ['breakfast','lunch','dinner'])$(m+'Other').value=draft.other[m];$('exerciseMinutes').value=draft.exerciseMinutes;$('weightInput').value=draft.weight;$('memoInput').value=draft.memo;updateSheet();$('overlay').classList.add('show');document.body.style.overflow='hidden'}function closeSheet(){$('overlay').classList.remove('show');document.body.style.overflow=''}
 function switchScreen(name){screen=name;document.querySelectorAll('.screen').forEach(el=>el.classList.toggle('active',el.id===`screen-${name}`));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.screen===name));renderAll();window.scrollTo({top:0,behavior:'instant'})}
 function validateImport(obj){if(!obj||typeof obj!=='object'||!obj.days||typeof obj.days!=='object'||Array.isArray(obj.days))throw Error('文件格式不正确');const days={};for(const [k,r] of Object.entries(obj.days)){const d=fromKey(k);if(!Number.isFinite(+d)||!inRange(d)||dateKey(d)!==k)continue;const n=r.exercise!==undefined&&r.flags!==undefined?convertOld(r):clean(r);if(isLogged(n))days[k]=n}const measurements={};for(const [k,v] of Object.entries(obj.measurements||{})){if(!validMeasurementDate(k))continue;const m=cleanMeasure(v);if(m)measurements[k]=m}const settings=obj.settings||{};const min=Number(settings.goalMin??settings.min??67),max=Number(settings.goalMax??settings.max??68);return {days,measurements,settings:{goalMin:Number.isFinite(min)&&min>=35&&min<=250?min:67,goalMax:Number.isFinite(max)&&max>=35&&max<=250&&max>=min?max:68}}}
-function init(){setupChoices();setupMeasureForm();$('addBodyMeasure').addEventListener('click',()=>openMeasure());$('closeMeasure').addEventListener('click',closeMeasure);$('measureOverlay').addEventListener('click',e=>{if(e.target===$('measureOverlay'))closeMeasure()});$('saveMeasure').addEventListener('click',saveMeasure);$('deleteMeasure').addEventListener('click',()=>{const k=editingMeasureDate;if(!k)return;if(!confirm(`确定删除 ${k} 的体测记录吗？`))return;delete state.measurements[k];if(saveStorage()){closeMeasure();renderAll();toast('体测记录已删除')}});$('trendMetric').addEventListener('change',renderTrend);window.addEventListener('hashchange',readMeasureLink);document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchScreen(b.dataset.screen)));$('goToday').addEventListener('click',()=>{selected=now;month=new Date(now.getFullYear(),now.getMonth(),1);switchScreen('calendar')});$('prevMonth').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()});$('nextMonth').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()});$('openDay').addEventListener('click',openSheet);$('closeSheet').addEventListener('click',closeSheet);$('overlay').addEventListener('click',e=>{if(e.target===$('overlay'))closeSheet()});window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeMeasure()}});document.querySelectorAll('[data-flag]').forEach(b=>b.addEventListener('click',()=>{draft[b.dataset.flag]=!draft[b.dataset.flag];updateSheet()}));for(const [id,delta] of [['lessExercise',-1],['moreExercise',1]])$(id).addEventListener('click',()=>{draft.exerciseCount=Math.max(0,Math.min(5,draft.exerciseCount+delta));if(!draft.exerciseCount)draft.exerciseType='';updateSheet()});for(const [id,delta] of [['lessAlcohol',-1],['moreAlcohol',1]])$(id).addEventListener('click',()=>{draft.alcoholCups=Math.max(0,Math.min(10,draft.alcoholCups+delta));updateSheet()});$('saveDay').addEventListener('click',()=>{for(const m of ['breakfast','lunch','dinner'])draft.other[m]=$(m+'Other').value.trim();draft.exerciseMinutes=$('exerciseMinutes').value.trim();draft.weight=$('weightInput').value.trim();draft.memo=$('memoInput').value.trim();if(draft.weight&&(Number(draft.weight)<20||Number(draft.weight)>300)){toast('体重请输入20–300kg');return}const rec=clean(draft),k=dateKey(selected);if(isLogged(rec))state.days[k]=rec;else delete state.days[k];if(saveStorage()){closeSheet();renderAll();const s=stats(getWeek(selected));toast(s.treat>1||s.alcohol>1||s.alcoholDays>1?'已保存，本周额度超出':'打卡已保存')}});$('saveGoal').addEventListener('click',()=>{const a=Number($('goalMin').value),b=Number($('goalMax').value);if(!Number.isFinite(a)||!Number.isFinite(b)||a<35||b>250||a>b){toast('目标范围无效');return}state.settings={goalMin:a,goalMax:b};if(saveStorage())toast('目标已保存')});$('exportBtn').addEventListener('click',()=>{const obj={app:'减脂日历',version:4,exportedAt:new Date().toISOString(),days:state.days,measurements:state.measurements,settings:state.settings};const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='减脂日历_打卡备份.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('已导出备份')});$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>3000000)throw Error('文件太大');const obj=validateImport(JSON.parse(await file.text()));if(!confirm(`将用备份中的 ${Object.keys(obj.days).length} 天打卡和 ${Object.keys(obj.measurements).length} 条体测记录覆盖当前数据，是否继续？`))return;state=obj;if(saveStorage()){renderAll();toast('备份导入成功')}}catch(err){toast('导入失败：'+err.message)}finally{e.target.value=''}});$('clearBtn').addEventListener('click',()=>{if(!confirm('确定清空所有打卡和体测记录？操作不可撤销。'))return;if(!confirm('请再次确认：将永久清空本机全部打卡数据。'))return;state.days={};state.measurements={};if(saveStorage()){renderAll();toast('记录已清空')}});renderAll();readMeasureLink()}
+function init(){setupChoices();setupMeasureForm();setupOcr();$('addBodyMeasure').addEventListener('click',()=>openMeasure());$('closeMeasure').addEventListener('click',closeMeasure);$('measureOverlay').addEventListener('click',e=>{if(e.target===$('measureOverlay'))closeMeasure()});$('saveMeasure').addEventListener('click',saveMeasure);$('deleteMeasure').addEventListener('click',()=>{const k=editingMeasureDate;if(!k)return;if(!confirm(`确定删除 ${k} 的体测记录吗？`))return;delete state.measurements[k];if(saveStorage()){closeMeasure();renderAll();toast('体测记录已删除')}});$('trendMetric').addEventListener('change',renderTrend);window.addEventListener('hashchange',readMeasureLink);document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchScreen(b.dataset.screen)));$('goToday').addEventListener('click',()=>{selected=now;month=new Date(now.getFullYear(),now.getMonth(),1);switchScreen('calendar')});$('prevMonth').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()});$('nextMonth').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()});$('openDay').addEventListener('click',openSheet);$('closeSheet').addEventListener('click',closeSheet);$('overlay').addEventListener('click',e=>{if(e.target===$('overlay'))closeSheet()});window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeMeasure()}});document.querySelectorAll('[data-flag]').forEach(b=>b.addEventListener('click',()=>{draft[b.dataset.flag]=!draft[b.dataset.flag];updateSheet()}));for(const [id,delta] of [['lessExercise',-1],['moreExercise',1]])$(id).addEventListener('click',()=>{draft.exerciseCount=Math.max(0,Math.min(5,draft.exerciseCount+delta));if(!draft.exerciseCount)draft.exerciseType='';updateSheet()});for(const [id,delta] of [['lessAlcohol',-1],['moreAlcohol',1]])$(id).addEventListener('click',()=>{draft.alcoholCups=Math.max(0,Math.min(10,draft.alcoholCups+delta));updateSheet()});$('saveDay').addEventListener('click',()=>{for(const m of ['breakfast','lunch','dinner'])draft.other[m]=$(m+'Other').value.trim();draft.exerciseMinutes=$('exerciseMinutes').value.trim();draft.weight=$('weightInput').value.trim();draft.memo=$('memoInput').value.trim();if(draft.weight&&(Number(draft.weight)<20||Number(draft.weight)>300)){toast('体重请输入20–300kg');return}const rec=clean(draft),k=dateKey(selected);if(isLogged(rec))state.days[k]=rec;else delete state.days[k];if(saveStorage()){closeSheet();renderAll();const s=stats(getWeek(selected));toast(s.treat>1||s.alcohol>1||s.alcoholDays>1?'已保存，本周额度超出':'打卡已保存')}});$('saveGoal').addEventListener('click',()=>{const a=Number($('goalMin').value),b=Number($('goalMax').value);if(!Number.isFinite(a)||!Number.isFinite(b)||a<35||b>250||a>b){toast('目标范围无效');return}state.settings={goalMin:a,goalMax:b};if(saveStorage())toast('目标已保存')});$('exportBtn').addEventListener('click',()=>{const obj={app:'减脂日历',version:4,exportedAt:new Date().toISOString(),days:state.days,measurements:state.measurements,settings:state.settings};const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='减脂日历_打卡备份.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('已导出备份')});$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>3000000)throw Error('文件太大');const obj=validateImport(JSON.parse(await file.text()));if(!confirm(`将用备份中的 ${Object.keys(obj.days).length} 天打卡和 ${Object.keys(obj.measurements).length} 条体测记录覆盖当前数据，是否继续？`))return;state=obj;if(saveStorage()){renderAll();toast('备份导入成功')}}catch(err){toast('导入失败：'+err.message)}finally{e.target.value=''}});$('clearBtn').addEventListener('click',()=>{if(!confirm('确定清空所有打卡和体测记录？操作不可撤销。'))return;if(!confirm('请再次确认：将永久清空本机全部打卡数据。'))return;state.days={};state.measurements={};if(saveStorage()){renderAll();toast('记录已清空')}});renderAll();readMeasureLink()}
 init();
 })();
 </script>
