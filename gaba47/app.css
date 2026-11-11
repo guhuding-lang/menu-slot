@@ -1533,3 +1533,86 @@ html, body { background: var(--bg); }
   .primary-paw { width: 102px; }
   .primary-paw-shape { font-size: 98px; }
 }
+
+
+/* GABA47 winter report: phone-poster preview and monthly pagination */
+.report-modal { background: #0c2337; }
+.report-modal > header {
+  border-bottom: 1px solid #cddcde;
+  background: #ebf4f3;
+}
+.report-modal > header small { color: #587785; }
+.report-modal > header h2 { color: #102e41; }
+.report-close { border-color: #17394d; background: #17394d; }
+.report-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 14px 12px 24px;
+  background: #0c2337;
+}
+.report-canvas-wrap canvas,
+.report-canvas-wrap img {
+  width: min(100%, 440px);
+  max-width: 100%;
+  height: auto;
+  flex: 0 0 auto;
+  border: 1px solid rgba(217, 248, 249, .30);
+  border-radius: 12px;
+  background: #102d43;
+  box-shadow: 0 12px 35px rgba(0, 9, 22, .35);
+}
+.report-page-nav {
+  display: flex;
+  position: sticky;
+  z-index: 1;
+  top: -14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(100%, 440px);
+  padding: 7px 9px;
+  border: 1px solid rgba(210, 241, 244, .22);
+  border-radius: 14px;
+  color: #e8f6f6;
+  background: rgba(17, 49, 70, .96);
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+  font-weight: 800;
+}
+.report-page-nav span { flex: 1; text-align: center; }
+.report-page-nav button {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  color: #162f40;
+  background: #d8fa7b;
+  font-size: 27px;
+  line-height: 1;
+}
+.report-page-nav button:disabled { opacity: .33; }
+.report-modal-actions {
+  border-top: 1px solid #cddcde;
+  background: #edf5f3;
+}
+.report-modal-actions p { color: #526d77; }
+.report-modal-actions button {
+  color: #153344;
+  border-color: #163b4f;
+  background: #d9fb79;
+  box-shadow: none;
+}
+.report-preview { background: #102c42; }
+.report-preview canvas { background: #102c42; }
+.report-preview > span {
+  color: #163544;
+  border-top-color: #bedadd;
+  background: #d6f279;
+}
