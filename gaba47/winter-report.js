@@ -46,21 +46,25 @@ function paintBackground(ctx, image) {
   }
 }
 function topHeader(ctx,report,drawCat,drawText){
+  // Use different baselines because the two illustrated banners have different heights.
   const monthly=report.reportType==="month";
   const period=report.periodLabel || "";
-  write(ctx,drawText,"嘎巴47 / 冬日运动",166,224,610,28,MUTED,{weight:850});
-  write(ctx,drawText,monthly?"训练月报":"上周训练周报",163,320,monthly?730:695,69,INK,{minSize:55});
-  write(ctx,drawText,period,170,399,600,32,INK,{weight:800});
-  // 周报封面展示本期榜首的原始角色冬装版；月报不突出任何成员。
-  if (!monthly && report.top3?.[0]) {
-    drawCat(ctx,report.top3[0],{x:798,y:216,width:145,height:177},1);
+  if(monthly){
+    write(ctx,drawText,"嘎巴47  ·  冬日运动",155,232,660,27,MUTED,{weight:750});
+    write(ctx,drawText,"训练月报",152,299,730,72,INK,{minSize:60});
+    write(ctx,drawText,period,157,360,560,29,INK,{weight:800});
+  }else{
+    write(ctx,drawText,"嘎巴47  ·  冬日运动",176,268,620,29,MUTED,{weight:800});
+    write(ctx,drawText,"上周训练周报",171,348,685,73,INK,{minSize:60});
+    write(ctx,drawText,period,177,423,600,32,INK,{weight:850});
   }
 }
-function metric(ctx,drawText,x,y,w,label,value,unit,large=false){
+function metric(ctx,drawText,x,y,w,label,value,unit){
   const cx=x+w/2;
-  write(ctx,drawText,label,cx,y,w-20,25,MUTED,{weight:800,align:"center"});
-  write(ctx,drawText,value,cx,y+78,w-20,large?63:58,INK,{minSize:34,align:"center"});
-  write(ctx,drawText,unit,cx,y+128,w-20,23,MUTED,{weight:750,align:"center"});
+  // Each statistic stays inside its own illustrated column; never manually offset its unit.
+  write(ctx,drawText,label,cx,y,w-18,30,MUTED,{weight:850,align:"center",minSize:25});
+  write(ctx,drawText,value,cx,y+76,w-18,69,INK,{minSize:43,align:"center"});
+  write(ctx,drawText,unit,cx,y+132,w-18,28,MUTED,{weight:800,align:"center",minSize:22});
 }
 function weeklyMetrics(ctx,report,drawText){
   const v=[
@@ -70,49 +74,54 @@ function weeklyMetrics(ctx,report,drawText){
     ["最长连续",number(report.maxStreak),"天"],
   ];
   const centers=[168,417,666,913];
-  v.forEach(([label,value,unit],i)=>metric(ctx,drawText,centers[i]-110,655,220,label,value,unit,i===0));
-  ctx.save();ctx.strokeStyle="#aec5d7";ctx.lineWidth=2;
-  [292,540,788].forEach(x=>{ctx.beginPath();ctx.moveTo(x,644);ctx.lineTo(x,843);ctx.stroke();});
+  v.forEach(([label,value,unit],i)=>metric(ctx,drawText,centers[i]-110,655,220,label,value,unit));
+  ctx.save();ctx.strokeStyle="#bdd2e1";ctx.lineWidth=2;
+  [292,540,788].forEach(x=>{ctx.beginPath();ctx.moveTo(x,654);ctx.lineTo(x,838);ctx.stroke();});
   ctx.restore();
 }
 function weeklyActivity(ctx,report,drawText){
-  write(ctx,drawText,"七日训练记录",103,1040,510,42,INK);
-  write(ctx,drawText,"每日训练分钟",960,1044,310,23,MUTED,{align:"right",weight:750});
+  write(ctx,drawText,"七日训练记录",106,1041,560,43,INK);
+  write(ctx,drawText,"单位：分钟",965,1044,260,24,MUTED,{align:"right",weight:750});
   const daily=(report.daily||[]).slice(0,7);
   const peak=Math.max(1,...daily.map(row=>number(row.minutes)));
   const labels=["周一","周二","周三","周四","周五","周六","周日"];
-  const base=1462;
-  ctx.save();ctx.strokeStyle="#b4cadb";ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(108,base);ctx.lineTo(963,base);ctx.stroke();
-  daily.forEach((row,i)=>{
-    const min=number(row.minutes),w=79,cx=159+i*125;
-    const height=min?Math.max(24,Math.round(min/peak*300)):7;
-    rounded(ctx,cx-w/2,base-height,w,height,15);
+  const base=1484;
+  ctx.save();
+  ctx.strokeStyle="#bccddd";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(108,base);ctx.lineTo(970,base);ctx.stroke();
+  for(let i=0;i<7;i++){
+    const row=daily[i]||{minutes:0};
+    const min=number(row.minutes),w=80,cx=159+i*125;
+    const height=min?Math.max(22,Math.round(min/peak*296)):7;
+    rounded(ctx,cx-w/2,base-height,w,height,12);
     ctx.fillStyle=min?(i%2===0?BLUE:LIME):"#cbdce5";ctx.fill();
-    if(min){ctx.lineWidth=2;ctx.strokeStyle=INK;ctx.stroke();}
-    write(ctx,drawText,min?min:"—",cx,base-height-28,104,22,INK,{align:"center",minSize:17});
-    write(ctx,drawText,labels[i],cx,1511,111,25,INK,{align:"center",weight:850});
-  });
+    if(min){ctx.lineWidth=2;ctx.strokeStyle="#315470";ctx.stroke();}
+    // Fix: values are anchored to their own bars, not to the background artwork.
+    write(ctx,drawText,min||"—",cx,Math.max(1127,base-height-25),102,26,INK,{align:"center",minSize:22});
+    write(ctx,drawText,labels[i],cx,1543,110,28,INK,{align:"center",weight:850,minSize:23});
+  }
   ctx.restore();
   const active=daily.filter(d=>number(d.minutes)>0).length;
-  write(ctx,drawText,"有训练："+active+" / 7 天",113,1591,400,25,MUTED,{weight:800});
-  write(ctx,drawText,"单日最高："+Math.max(0,...daily.map(d=>number(d.minutes)))+" 分钟",969,1591,470,25,MUTED,{align:"right",weight:800});
+  write(ctx,drawText,"有训练 " + active + " / 7 天",114,1619,380,27,MUTED,{weight:800});
+  write(ctx,drawText,"单日最高 " + Math.max(0,...daily.map(d=>number(d.minutes))) + " 分钟",968,1619,420,27,MUTED,{align:"right",weight:800});
 }
 function weeklyRanking(ctx,report,drawCat,drawText){
   const leaders=report.top3||[];
-  write(ctx,drawText,"训练时长 TOP 3",104,1771,630,40,INK);
+  write(ctx,drawText,"训练时长 TOP 3",104,1784,640,43,INK);
+  // Foreground figures keep their full round silhouettes and sit above the podium.
   const slots=[
-    {rank:2,member:leaders[1],center:228,x:162,y:1887,w:132,h:146,label:2100},
-    {rank:1,member:leaders[0],center:537,x:454,y:1834,w:166,h:174,label:2095},
-    {rank:3,member:leaders[2],center:856,x:790,y:1887,w:132,h:146,label:2100},
+    {member:leaders[1],center:225,x:141,y:1880,w:175,h:177,label:2104},
+    {member:leaders[0],center:540,x:444,y:1833,w:192,h:190,label:2088},
+    {member:leaders[2],center:853,x:769,y:1880,w:175,h:177,label:2104},
   ];
   slots.forEach(slot=>{
-    if (slot.member) drawCat(ctx,slot.member,{x:slot.x,y:slot.y,width:slot.w,height:slot.h},1);
-    write(ctx,drawText,slot.member?.name||"暂无记录",slot.center,slot.label,220,27,INK,{align:"center",minSize:18});
-    write(ctx,drawText,slot.member?number(slot.member.minutes)+" 分钟":"—",slot.center,slot.label+41,220,25,INK,{align:"center",weight:850});
+    if(slot.member)drawCat(ctx,slot.member,{x:slot.x,y:slot.y,width:slot.w,height:slot.h},1.03);
+    const raw=String(slot.member?.name||"暂无记录");
+    const name=[...raw].length>7?[...raw].slice(0,6).join("")+"…":raw;
+    write(ctx,drawText,name,slot.center,slot.label,238,30,INK,{align:"center",minSize:23});
+    write(ctx,drawText,slot.member?number(slot.member.minutes)+" 分钟":"—",slot.center,slot.label+45,230,28,INK,{align:"center",weight:900,minSize:24});
   });
   const rest=Math.max(0,(report.ranking||[]).length-3);
-  if (rest) write(ctx,drawText,"另外 " + rest + " 位成员参与了本周训练",540,2250,790,24,MUTED,{weight:800,align:"center"});
+  if(rest)write(ctx,drawText,"另有 "+rest+" 位成员参与训练",540,2260,790,27,MUTED,{weight:750,align:"center"});
 }
 function monthlyMetrics(ctx,report,drawText){
   const days=(report.daily||[]).filter(d=>number(d.minutes)>0).length;
@@ -123,50 +132,51 @@ function monthlyMetrics(ctx,report,drawText){
     ["运动天数",days,"天"],
   ];
   const centers=[152,409,669,924];
-  metrics.forEach(([label,v,unit],i)=>metric(ctx,drawText,centers[i]-102,575,204,label,v,unit,i===0));
+  metrics.forEach(([label,v,unit],i)=>metric(ctx,drawText,centers[i]-102,585,204,label,v,unit));
 }
 function monthlyCalendar(ctx,report,drawText){
   const days=report.daily||[];
-  write(ctx,drawText,"本月运动日历",103,895,520,41,INK);
+  write(ctx,drawText,"本月运动日历",103,882,530,41,INK);
   const active=days.filter(d=>number(d.minutes)>0).length;
-  write(ctx,drawText,active+" / "+days.length+" 天有训练",961,895,385,24,MUTED,{align:"right",weight:800});
+  write(ctx,drawText,active+" / "+days.length+" 天训练",955,882,400,26,MUTED,{align:"right",weight:800});
   const date=new Date(report.periodStart);
   const offset=(date.getDay()+6)%7;
   const week=["一","二","三","四","五","六","日"];
-  const baseX=154, step=128;
-  week.forEach((day,i)=>write(ctx,drawText,day,baseX+i*step,955,75,22,MUTED,{align:"center",weight:800}));
+  const baseX=155,stepX=127,rowStart=1019,rowStep=45;
+  week.forEach((day,i)=>write(ctx,drawText,day,baseX+i*stepX,968,76,25,MUTED,{align:"center",weight:800}));
+  // Support all 31-day calendars, including those occupying six visual rows.
   days.forEach((day,index)=>{
-    const place=offset+index, col=place%7,row=Math.floor(place/7);
-    const x=baseX+col*step,y=1018+row*61;
+    const place=offset+index,col=place%7,row=Math.floor(place/7);
+    const x=baseX+col*stepX,y=rowStart+row*rowStep;
     const yes=number(day.minutes)>0;
-    rounded(ctx,x-47,y-24,94,48,14);
-    ctx.fillStyle=yes?LIME:"#e5eff7";ctx.fill();
-    ctx.lineWidth=yes?2.6:1.6;ctx.strokeStyle=yes?INK:"#afc5d5";ctx.stroke();
-    write(ctx,drawText,day.day,x,y,73,23,INK,{align:"center",weight:yes?900:750});
+    rounded(ctx,x-45,y-20,90,40,11);
+    ctx.fillStyle=yes?LIME:"#eef4f8";ctx.fill();
+    ctx.lineWidth=yes?2.2:1.3;ctx.strokeStyle=yes?INK:"#bbcede";ctx.stroke();
+    write(ctx,drawText,day.day,x,y,73,24,INK,{align:"center",weight:yes?900:750,minSize:20});
   });
-  write(ctx,drawText,"绿色日期表示当天有运动记录",107,1302,595,21,MUTED,{weight:700});
+  write(ctx,drawText,"绿色日期表示当天有运动记录",107,1314,590,24,MUTED,{weight:750});
 }
 function monthlyMembers(ctx,report,drawCat,drawText,page,pages){
   const all=(report.ranking||[]).filter(member=>number(member.minutes)>0);
   const shown=all.slice(page*MONTHLY_MEMBERS_PER_PAGE,(page+1)*MONTHLY_MEMBERS_PER_PAGE);
-  write(ctx,drawText,"训练成员 · "+all.length+" 人",100,1411,620,35,INK);
-  if(pages>1)write(ctx,drawText,"第 "+(page+1)+" / "+pages+" 页",955,1414,290,22,MUTED,{weight:750,align:"right"});
+  write(ctx,drawText,"训练成员  ·  "+all.length+" 人",100,1404,610,36,INK);
+  if(pages>1)write(ctx,drawText,"第 "+(page+1)+" / "+pages+" 页",952,1404,300,26,MUTED,{weight:750,align:"right"});
   if(!shown.length){
-    write(ctx,drawText,"本月没有训练记录",540,1825,720,35,MUTED,{align:"center"});
+    write(ctx,drawText,"本月暂无训练记录",540,1840,780,36,MUTED,{align:"center"});
     return;
   }
-  // 背景素材原生 3列×5行成员框：昵称和训练数据横排，不缩小文字。
-  const left=[68,401,735], top=[1484,1616,1747,1879,2011];
+  // 3x5 members exactly follow the 15 pre-drawn blank slots in the monthly background.
+  const left=[68,401,735],top=[1484,1616,1747,1879,2011];
   shown.forEach((member,index)=>{
     const col=index%3,row=Math.floor(index/3),x=left[col],y=top[row];
-    drawCat(ctx,member,{x:x+5,y:y+7,width:88,height:89},1);
-    const fullName=String(member.name||"群友");
-    const trimmed=[...fullName].length>9?[...fullName].slice(0,8).join("")+"…":fullName;
-    write(ctx,drawText,trimmed,x+100,y+37,190,24,INK,{minSize:17});
-    write(ctx,drawText,number(member.minutes)+"分  ·  "+number(member.checkins)+"次",x+100,y+75,192,20,MUTED,{weight:800,minSize:14});
+    drawCat(ctx,member,{x:x+8,y:y+10,width:90,height:92},1.06);
+    const raw=String(member.name||"群友");
+    const name=[...raw].length>6?[...raw].slice(0,5).join("")+"…":raw;
+    write(ctx,drawText,name,x+107,y+41,155,26,INK,{minSize:21});
+    write(ctx,drawText,number(member.minutes)+"分 · "+number(member.checkins)+"次",x+107,y+78,180,22,MUTED,{weight:800,minSize:18});
     if(page===0&&index<3){
-      rounded(ctx,x+270,y+9,30,28,9);ctx.fillStyle=LIME;ctx.fill();ctx.lineWidth=1;ctx.strokeStyle=INK;ctx.stroke();
-      write(ctx,drawText,index+1,x+285,y+23,25,18,INK,{align:"center"});
+      rounded(ctx,x+265,y+7,29,29,9);ctx.fillStyle=LIME;ctx.fill();ctx.lineWidth=1;ctx.strokeStyle=INK;ctx.stroke();
+      write(ctx,drawText,index+1,x+279.5,y+21.5,25,18,INK,{align:"center"});
     }
   });
 }
