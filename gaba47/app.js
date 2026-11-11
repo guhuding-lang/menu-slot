@@ -6,7 +6,7 @@ import {
   normalizeCatProfile,
 } from "./sports-cat-ui.js?v=5";
 import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=5";
-import { paintWinterAccessory } from "./winter-cat-accessories.js?v=1";
+import { paintWinterAccessory, winterAccessoryMarkup } from "./winter-cat-accessories.js?v=1";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -2076,7 +2076,7 @@ function catEditorPanel(member, profile) {
   if (!state.catEditor.open) return "";
   const draft = normalizeCatProfile(state.catEditor.draft || profile, state.user.id);
   const selected = catProfileDescriptor(draft);
-  const options = CAT_FUR_OPTIONS.map((item) => `<button class="zodiac-choice ${draft.furType === item.value ? "is-selected" : ""}" data-cat-field="furType" data-cat-value="${item.value}" aria-pressed="${draft.furType === item.value}"><img src="${item.asset}" alt="" loading="lazy" decoding="async" /><span><strong>${item.label}</strong><small>${item.breed}</small></span></button>`).join("");
+  const options = CAT_FUR_OPTIONS.map((item) => `<button class="zodiac-choice ${draft.furType === item.value ? "is-selected" : ""}" data-cat-field="furType" data-cat-value="${item.value}" aria-pressed="${draft.furType === item.value}"><span class="winter-choice-art"><img src="${item.asset}" alt="" loading="lazy" decoding="async" />${winterAccessoryMarkup(item.value)}</span><span><strong>${item.label}</strong><small>${item.breed}</small></span></button>`).join("");
   return `<section class="cat-editor"><div class="cat-editor-preview">${catCharacter(draft, { label: "运动猫形象预览" })}<div><span>当前选择</span><strong>${selected.label} · ${selected.breed}</strong><small>保存后会同步成为全站头像</small></div></div><section class="cat-option-group"><h3>选择你的运动猫</h3><div class="zodiac-choice-grid">${options}</div></section>${state.catEditor.status ? `<p class="cat-save-status">${escapeHTML(state.catEditor.status)}</p>` : ""}<div class="cat-editor-actions"><button class="secondary-button" data-action="close-cat-editor">取消</button><button class="primary-button" data-action="save-cat" ${state.catEditor.saving ? "disabled" : ""}>${state.catEditor.saving ? "正在保存…" : "保存形象"}</button></div></section>`;
 }
 function catDenPage() {
