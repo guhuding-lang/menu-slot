@@ -1616,3 +1616,20 @@ html, body { background: var(--bg); }
   border-top-color: #bedadd;
   background: #d6f279;
 }
+
+
+/* Seasonal costume layer: the original 760px sports-cat character remains intact. */
+.cat-character > img.winter-outfit-overlay,
+.cat-character .winter-outfit-overlay {
+  position: absolute !important;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto !important;
+  filter: none !important;
+  pointer-events: none;
+  user-select: none;
+}
