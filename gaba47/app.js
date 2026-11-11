@@ -5,7 +5,8 @@ import {
   defaultCatProfile,
   normalizeCatProfile,
 } from "./sports-cat-ui.js?v=5";
-import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=4";
+import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=5";
+import { paintWinterAccessory } from "./winter-cat-accessories.js?v=1";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -1153,6 +1154,8 @@ function drawWeeklyCat(ctx, member, box, roleScale = 1) {
   ctx.rect(box.x, box.y, box.width, box.height);
   ctx.clip();
   ctx.drawImage(image, source.x, source.y, source.width, source.height, x, y, width, height);
+  // Original 14-round-cat sprite remains intact: winter wear is a separate layer.
+  if (descriptor.value) paintWinterAccessory(ctx, descriptor.value, x, y, width, height);
   ctx.restore();
 }
 function drawWeeklyRewardAsset(ctx, index, box) {
