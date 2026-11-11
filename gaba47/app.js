@@ -5,7 +5,7 @@ import {
   defaultCatProfile,
   normalizeCatProfile,
 } from "./sports-cat-ui.js?v=3";
-import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=1";
+import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=2";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
