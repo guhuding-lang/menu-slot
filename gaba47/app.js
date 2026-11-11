@@ -1,3 +1,4 @@
+import { winterOverlayDataUrl } from "./winter-wardrobe.js?v=1";
 import {
   CAT_FUR_OPTIONS,
   catCharacter,
@@ -1050,7 +1051,7 @@ function monthlyZodiacStats(report) {
 }
 function reportAssetSources(report) {
   const sources = [];
-  for (const member of report.ranking || []) sources.push(reportMemberVisual(member).descriptor.asset);
+  for (const member of report.ranking || []) { const descriptor = reportMemberVisual(member).descriptor; sources.push(descriptor.asset); sources.push(winterOverlayDataUrl(descriptor.value)); }
   return [...new Set(sources.filter(Boolean))];
 }
 async function preloadReportAssets(report) {
@@ -1152,6 +1153,8 @@ function drawWeeklyCat(ctx, member, box, roleScale = 1) {
   ctx.rect(box.x, box.y, box.width, box.height);
   ctx.clip();
   ctx.drawImage(image, source.x, source.y, source.width, source.height, x, y, width, height);
+  const coat = reportAssetRecord(winterOverlayDataUrl(descriptor.value));
+  if (coat?.loaded) ctx.drawImage(coat.image, x, y, width, height);
   ctx.restore();
 }
 function drawWeeklyRewardAsset(ctx, index, box) {
