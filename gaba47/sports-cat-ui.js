@@ -1,4 +1,3 @@
-import { winterOverlayDataUrl } from "./winter-wardrobe.js?v=1";
 export const CAT_FUR_OPTIONS = [
   ["hiking", "徒步猫", "背上包，慢慢走", "01-hiking-cat.webp"],
   ["bench", "卧推猫", "今天也有认真用力", "02-bench-press-cat.webp"],
@@ -14,7 +13,7 @@ export const CAT_FUR_OPTIONS = [
   ["snack", "放松猫", "偶尔松一口气", "12-fast-food-cat.webp"],
   ["working", "加班猫", "忙完也记得动一动", "13-working-overtime-cat.webp"],
   ["aerobics", "跳操猫", "跟着节拍出发", "14-aerobics-cat.webp"],
-].map(([value, label, breed, file]) => ({ value, label, breed, asset: `./assets/sports-cats/${file}` }));
+].map(([value, label, breed, file]) => ({ value, label, breed, asset: `./assets/winter-cats/${file}` }));
 
 // 继续使用旧表的通用字段，不要求数据库迁移。
 export const CAT_HEADWEAR_OPTIONS = [{ value: "none", label: "固定造型" }];
@@ -91,5 +90,5 @@ export function catCharacter(rawProfile, { label = "运动猫咪" } = {}) {
   const profile = normalizeCatProfile(rawProfile, rawProfile?.userId || rawProfile?.user_id || "47");
   // 角色身份只由用户选择决定。页面场景不再覆盖成另一只猫。
   const option = optionForValue(profile.furType, profile.userId);
-  return `<span class="cat-character sports-cat sports-cat-${option.value}" role="img" aria-label="${safeText(label)}，${option.label}"><img src="${option.asset}" alt="" loading="lazy" decoding="async" draggable="false" /><img class="winter-outfit-overlay" src="${winterOverlayDataUrl(option.value)}" alt="" loading="lazy" decoding="async" draggable="false" /></span>`;
+  return `<span class="cat-character sports-cat sports-cat-${option.value}" role="img" aria-label="${safeText(label)}，${option.label}"><img src="${option.asset}" alt="" loading="lazy" decoding="async" draggable="false" /></span>`;
 }
