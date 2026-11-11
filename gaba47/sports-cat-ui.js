@@ -13,7 +13,7 @@ export const CAT_FUR_OPTIONS = [
   ["snack", "放松猫", "偶尔松一口气", "12-fast-food-cat.webp"],
   ["working", "加班猫", "忙完也记得动一动", "13-working-overtime-cat.webp"],
   ["aerobics", "跳操猫", "跟着节拍出发", "14-aerobics-cat.webp"],
-].map(([value, label, breed, file]) => ({ value, label, breed, asset: `./assets/winter-cats/${file}` }));
+].map(([value, label, breed, file]) => ({ value, label, breed, asset: `./assets/sports-cats/${file}` }));
 
 // 继续使用旧表的通用字段，不要求数据库迁移。
 export const CAT_HEADWEAR_OPTIONS = [{ value: "none", label: "固定造型" }];
