@@ -4,9 +4,7 @@ import {
   catProfileDescriptor,
   defaultCatProfile,
   normalizeCatProfile,
-} from "./sports-cat-ui.js?v=5";
-import { WINTER_REPORT_WIDTH, WINTER_REPORT_HEIGHT, winterReportPageCount, drawWinterReportPoster } from "./winter-report.js?v=5";
-import { paintWinterAccessory, winterAccessoryMarkup } from "./winter-cat-accessories.js?v=1";
+} from "./sports-cat-ui.js?v=3";
 
 const SUPABASE_URL = "https://jujvzrpqagjxeeafqlyo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_eg6Dbh9a46pa14-yPqrFiQ_AQgER7J-";
@@ -49,7 +47,6 @@ const state = {
   profileEditor: { open: false, name: "", avatar: null, avatarUrl: "", removeAvatar: false, status: "", saving: false },
   deleteConfirm: false,
   reportModal: null,
-  reportPage: 0,
   profilePosterOpen: false,
   memberModal: null,
   showAllMembers: false,
@@ -940,8 +937,8 @@ const REPORT_BACKGROUNDS = {
   month: null,
 };
 const REPORT_REWARD_ASSETS = [];
-const WEEKLY_POSTER_SIZE = { width: WINTER_REPORT_WIDTH, height: WINTER_REPORT_HEIGHT };
-const MONTHLY_POSTER_SIZE = { width: WINTER_REPORT_WIDTH, height: WINTER_REPORT_HEIGHT };
+const WEEKLY_POSTER_SIZE = { width: 1024, height: 1536 };
+const MONTHLY_POSTER_SIZE = { width: 1024, height: 1536 };
 const WEEKLY_LAYOUT = {
   title: { x: 216, y: 192, width: 596, height: 96 },
   date: { x: 306, y: 289, width: 412, height: 45 },
@@ -1052,7 +1049,6 @@ function monthlyZodiacStats(report) {
 function reportAssetSources(report) {
   const sources = [];
   for (const member of report.ranking || []) sources.push(reportMemberVisual(member).descriptor.asset);
-  sources.push(report.reportType === "month" ? "./assets/winter-reports/monthly.webp" : "./assets/winter-reports/weekly.webp");
   return [...new Set(sources.filter(Boolean))];
 }
 async function preloadReportAssets(report) {
@@ -1154,8 +1150,6 @@ function drawWeeklyCat(ctx, member, box, roleScale = 1) {
   ctx.rect(box.x, box.y, box.width, box.height);
   ctx.clip();
   ctx.drawImage(image, source.x, source.y, source.width, source.height, x, y, width, height);
-  // Original 14-round-cat sprite remains intact: winter wear is a separate layer.
-  if (descriptor.value) paintWinterAccessory(ctx, descriptor.value, x, y, width, height);
   ctx.restore();
 }
 function drawWeeklyRewardAsset(ctx, index, box) {
@@ -1842,10 +1836,13 @@ function drawMonthlyReportPoster(canvas, report) {
   drawPosterText(ctx, "这个月的每一次运动，都已经好好记住。", 512, posterHeight - 45, 820, { weight: 850, size: 23, minSize: 19, align: "center", color: "#625a53" });
   ctx.beginPath(); ctx.moveTo(242, posterHeight - 20); ctx.lineTo(782, posterHeight - 20); ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.strokeStyle = coral; ctx.stroke();
 }
-function drawReportPoster(canvas, report, page = 0) {
-  if (report.reportType === "week" || report.reportType === "month") {
-    const bg = reportAssetRecord(report.reportType === "week" ? "./assets/winter-reports/weekly.webp" : "./assets/winter-reports/monthly.webp");
-    drawWinterReportPoster(canvas, report, drawWeeklyCat, drawPosterText, page, bg?.loaded ? bg.image : null);
+function drawReportPoster(canvas, report) {
+  if (report.reportType === "week") {
+    drawWeeklyReportPoster(canvas, report);
+    return;
+  }
+  if (report.reportType === "month") {
+    drawMonthlyReportPoster(canvas, report);
     return;
   }
   const baseWidth = 540;
@@ -1887,7 +1884,7 @@ function paintReportCanvases() {
     const canvas = document.createElement("canvas");
     canvas.width = report.reportType === "week" ? WEEKLY_POSTER_SIZE.width : MONTHLY_POSTER_SIZE.width;
     canvas.height = report.reportType === "week" ? WEEKLY_POSTER_SIZE.height : MONTHLY_POSTER_SIZE.height;
-    drawReportPoster(canvas, report, Number(image.dataset.reportPage || 0));
+    drawReportPoster(canvas, report);
     image.src = canvas.toDataURL("image/png");
   });
 }
@@ -1896,14 +1893,12 @@ async function saveReportImage(report) {
   const canvas = document.createElement("canvas");
   canvas.width = report.reportType === "week" ? WEEKLY_POSTER_SIZE.width : MONTHLY_POSTER_SIZE.width;
   canvas.height = report.reportType === "week" ? WEEKLY_POSTER_SIZE.height : MONTHLY_POSTER_SIZE.height;
-  const page = report.reportType === "month" ? Math.max(0, Math.min(winterReportPageCount(report) - 1, state.reportPage || 0)) : 0;
-  drawReportPoster(canvas, report, page);
+  drawReportPoster(canvas, report);
   try {
     const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
-    const part = winterReportPageCount(report) > 1 ? `-第${page + 1}页` : "";
-    link.download = `嘎巴47-${report.reportName}-${localDateKey(report.periodStart)}${part}.png`;
+    link.download = `嘎巴47-${report.reportName}-${localDateKey(report.periodStart)}.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -1919,27 +1914,9 @@ function reportCard(report) {
 }
 function reportModal(report) {
   if (!report) return "";
-  const pages = winterReportPageCount(report);
-  const page = Math.max(0, Math.min(pages - 1, state.reportPage || 0));
-  const name = escapeHTML(report.reportName);
-  const id = escapeHTML(report.id);
-  const pager = pages > 1
-    ? '<nav class="report-page-nav" aria-label="月报分页">' +
-      '<button data-action="report-prev" aria-label="上一页" ' + (page === 0 ? 'disabled' : '') + '>‹</button>' +
-      '<span>第 ' + (page + 1) + ' / ' + pages + ' 页 · 共 ' + (report.ranking || []).length + ' 人</span>' +
-      '<button data-action="report-next" aria-label="下一页" ' + (page >= pages - 1 ? 'disabled' : '') + '>›</button></nav>'
-    : '';
-  const note = pages > 1 ? '按页查看全部成员，当前页可单独保存。' : '长按图片可保存，也可以点击右侧按钮。';
-  return '<div class="report-modal-backdrop" role="presentation">' +
-    '<section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">' +
-    '<header><div><small>' + escapeHTML(report.periodLabel) + '</small><h2 id="report-modal-title">' + name + '</h2></div>' +
-    '<button class="report-close" data-action="close-report" aria-label="关闭报表">' + icon("x") + '</button></header>' +
-    '<div class="report-canvas-wrap">' + pager +
-    '<img data-report-image="' + id + '" data-report-page="' + page + '" alt="' + name + '高清海报第' + (page + 1) + '页" /></div>' +
-    '<div class="report-modal-actions"><p>' + note + '</p>' +
-    '<button data-action="save-report" data-report-id="' + id + '">' + icon("download-simple") + ' 保存图片</button></div>' +
-    '</section></div>';
+  return `<div class="report-modal-backdrop" role="presentation"><section class="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title"><header><div><small>${escapeHTML(report.periodLabel)}</small><h2 id="report-modal-title">${escapeHTML(report.reportName)}</h2></div><button class="report-close" data-action="close-report" aria-label="关闭报表">${icon("x")}</button></header><div class="report-canvas-wrap"><img data-report-image="${escapeHTML(report.id)}" alt="${escapeHTML(report.reportName)}高清海报" /></div><div class="report-modal-actions"><p>长按海报可保存；普通浏览器也可点右侧按钮。</p><button data-action="save-report" data-report-id="${escapeHTML(report.id)}">${icon("download-simple")} 保存图片</button></div></section></div>`;
 }
+
 function activityCard(item) {
   const own = item.userId === state.user?.id;
   const heart = item.liked ? `<span class="liked-heart" aria-hidden="true">♥</span>` : icon("heart-straight");
@@ -2076,7 +2053,7 @@ function catEditorPanel(member, profile) {
   if (!state.catEditor.open) return "";
   const draft = normalizeCatProfile(state.catEditor.draft || profile, state.user.id);
   const selected = catProfileDescriptor(draft);
-  const options = CAT_FUR_OPTIONS.map((item) => `<button class="zodiac-choice ${draft.furType === item.value ? "is-selected" : ""}" data-cat-field="furType" data-cat-value="${item.value}" aria-pressed="${draft.furType === item.value}"><span class="winter-choice-art"><img src="${item.asset}" alt="" loading="lazy" decoding="async" />${winterAccessoryMarkup(item.value)}</span><span><strong>${item.label}</strong><small>${item.breed}</small></span></button>`).join("");
+  const options = CAT_FUR_OPTIONS.map((item) => `<button class="zodiac-choice ${draft.furType === item.value ? "is-selected" : ""}" data-cat-field="furType" data-cat-value="${item.value}" aria-pressed="${draft.furType === item.value}"><img src="${item.asset}" alt="" loading="lazy" decoding="async" /><span><strong>${item.label}</strong><small>${item.breed}</small></span></button>`).join("");
   return `<section class="cat-editor"><div class="cat-editor-preview">${catCharacter(draft, { label: "运动猫形象预览" })}<div><span>当前选择</span><strong>${selected.label} · ${selected.breed}</strong><small>保存后会同步成为全站头像</small></div></div><section class="cat-option-group"><h3>选择你的运动猫</h3><div class="zodiac-choice-grid">${options}</div></section>${state.catEditor.status ? `<p class="cat-save-status">${escapeHTML(state.catEditor.status)}</p>` : ""}<div class="cat-editor-actions"><button class="secondary-button" data-action="close-cat-editor">取消</button><button class="primary-button" data-action="save-cat" ${state.catEditor.saving ? "disabled" : ""}>${state.catEditor.saving ? "正在保存…" : "保存形象"}</button></div></section>`;
 }
 function catDenPage() {
@@ -2439,18 +2416,10 @@ app.addEventListener("click", async (event) => {
     const report = reportById(actionButton.dataset.reportId);
     if (!report) { showToast("这期报表暂时不可用"); return; }
     state.reportModal = report.id;
-    state.reportPage = 0;
     render();
     return;
   }
-  if (action === "close-report") { state.reportModal = null; state.reportPage = 0; render(); return; }
-  if (action === "report-prev" || action === "report-next") {
-    const report = reportById(state.reportModal);
-    if (!report) return;
-    const delta = action === "report-next" ? 1 : -1;
-    state.reportPage = Math.max(0, Math.min(winterReportPageCount(report) - 1, (state.reportPage || 0) + delta));
-    render(); return;
-  }
+  if (action === "close-report") { state.reportModal = null; render(); return; }
   if (action === "save-report") {
     const report = reportById(actionButton.dataset.reportId);
     if (report) saveReportImage(report);

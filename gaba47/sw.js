@@ -1,13 +1,11 @@
-const CACHE = 'gaba47-v72'
+const CACHE = 'gaba47-v67'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
-  './app.css?v=36',
+  './app.css?v=31',
   './photo-fix.js?v=1',
-  './app.js?v=64',
-  './sports-cat-ui.js?v=6',
-  './winter-report.js?v=5',
-  './winter-cat-accessories.js?v=1',
+  './app.js?v=58',
+  './sports-cat-ui.js?v=3',
   './assets/sports-cats/01-hiking-cat.webp',
   './assets/sports-cats/02-bench-press-cat.webp',
   './assets/sports-cats/03-ice-skating-cat.webp',
@@ -22,8 +20,6 @@ const APP_SHELL = [
   './assets/sports-cats/12-fast-food-cat.webp',
   './assets/sports-cats/13-working-overtime-cat.webp',
   './assets/sports-cats/14-aerobics-cat.webp',
-  './assets/winter-reports/weekly.webp',
-  './assets/winter-reports/monthly.webp',
   './assets/phosphor/phosphor.css',
   './assets/phosphor/Phosphor-Regular.woff2',
   './assets/app-icon-192.webp',
