@@ -1,3 +1,4 @@
+import { winterAccessoryMarkup } from "./winter-cat-accessories.js?v=1";
 export const CAT_FUR_OPTIONS = [
   ["hiking", "徒步猫", "背上包，慢慢走", "01-hiking-cat.webp"],
   ["bench", "卧推猫", "今天也有认真用力", "02-bench-press-cat.webp"],
@@ -90,5 +91,5 @@ export function catCharacter(rawProfile, { label = "运动猫咪" } = {}) {
   const profile = normalizeCatProfile(rawProfile, rawProfile?.userId || rawProfile?.user_id || "47");
   // 角色身份只由用户选择决定。页面场景不再覆盖成另一只猫。
   const option = optionForValue(profile.furType, profile.userId);
-  return `<span class="cat-character sports-cat sports-cat-${option.value}" role="img" aria-label="${safeText(label)}，${option.label}"><img src="${option.asset}" alt="" loading="lazy" decoding="async" draggable="false" /></span>`;
+  return `<span class="cat-character sports-cat sports-cat-${option.value}" role="img" aria-label="${safeText(label)}，${option.label}"><img src="${option.asset}" alt="" loading="lazy" decoding="async" draggable="false" />${winterAccessoryMarkup(option.value)}</span>`;
 }
