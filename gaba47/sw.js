@@ -1,10 +1,10 @@
-const CACHE = 'gaba47-v71'
+const CACHE = 'gaba47-v72'
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
-  './app.css?v=35',
+  './app.css?v=36',
   './photo-fix.js?v=1',
-  './app.js?v=63',
+  './app.js?v=64',
   './sports-cat-ui.js?v=6',
   './winter-report.js?v=5',
   './winter-cat-accessories.js?v=1',
